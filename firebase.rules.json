@@ -1,0 +1,58 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "rooms": {
+      "$room": {
+        ".read": "auth != null && data.child('meta/hostUid').val() === auth.uid",
+        ".write": "auth != null && ((!data.exists() && newData.child('meta/hostUid').val() === auth.uid) || data.child('meta/hostUid').val() === auth.uid)",
+        "meta": {
+          ".read": "auth != null"
+        },
+        "control": {
+          ".read": "auth != null && (root.child('rooms').child($room).child('meta').child('hostUid').val() === auth.uid || root.child('rooms').child($room).child('participants').child(auth.uid).exists())"
+        },
+        "publicStats": {
+          ".read": "auth != null && (root.child('rooms').child($room).child('meta').child('hostUid').val() === auth.uid || root.child('rooms').child($room).child('participants').child(auth.uid).exists())"
+        },
+        "participants": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid",
+            "studentName": {
+              ".validate": "newData.isString() && newData.val().length >= 2 && newData.val().length <= 20"
+            },
+            "schoolLevel": {
+              ".validate": "newData.val() === 'middle' || newData.val() === 'high'"
+            }
+          }
+        },
+        "presence": {
+          "$uid": {
+            ".write": "auth != null && auth.uid === $uid"
+          }
+        },
+        "answers": {
+          "$stage": {
+            "$question": {
+              "$uid": {
+                ".read": "auth != null && auth.uid === $uid",
+                ".write": "auth != null && auth.uid === $uid && !data.exists()",
+                ".validate": "newData.hasChildren(['choice','at']) && newData.child('choice').isNumber() && newData.child('choice').val() >= 0 && newData.child('choice').val() <= 3"
+              }
+            }
+          }
+        },
+        "pledges": {
+          "$uid": {
+            ".read": "auth != null && auth.uid === $uid",
+            ".write": "auth != null && auth.uid === $uid",
+            "text": {
+              ".validate": "newData.isString() && newData.val().length >= 8 && newData.val().length <= 160"
+            }
+          }
+        }
+      }
+    }
+  }
+}

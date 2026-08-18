@@ -616,7 +616,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = '실시간 서버 연결';
+    $('#serverStatus').textContent = '실시간 서버 연결 · v4.1';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
 

@@ -17,7 +17,10 @@ window.CHEONGRYEOM_CONTENT={
     {key:'pledge',name:'청렴실천',short:'실천'},
     {key:'result',name:'자격판정',short:'결과'}
   ],
-  intro:{title:'청렴은 정답을 외우는 지식보다, 선택의 순간에 드러나는 역량입니다.',body:'학교생활과 디지털 환경에서 실제로 마주칠 수 있는 상황을 판단하고, 친구들의 생각과 비교·토론한 뒤 다시 선택하면서 나만의 청렴 기준을 만들어 봅니다.'},
+  intro:{
+    title:'청렴은 정답을 외우는 지식보다, 선택의 순간에 드러나는 역량입니다.',
+    body:'학교생활과 디지털 환경에서 실제로 마주칠 수 있는 상황을 스스로 판단하고, 친구들의 생각과 비교·토론하며 나만의 청렴 기준을 만들어 봅니다.'
+  },
   written:[
     {id:'w1',virtue:'honesty',q:'생성형 AI로 수행평가 초안을 만들었습니다. 가장 정직한 제출 방식에 가까운 것은?',options:['AI가 만든 내용을 거의 그대로 제출한다.','AI를 사용했다는 사실은 굳이 말하지 않는다.','학교 지침을 확인하고, 사용한 부분을 밝힌 뒤 내 생각과 검토를 거쳐 다시 작성한다.','문장 몇 개만 바꾸면 내가 쓴 글과 같으므로 그대로 제출한다.'],correct:2,ex:'도구를 사용하는 것 자체보다 사용 사실과 범위를 숨기고 결과물을 자신의 성과처럼 제시하는지가 핵심입니다.',impact:{honesty:100,responsibility:55}},
     {id:'w2',virtue:'promise',q:'친구들과 정한 모둠 온라인 회의 시간에 다른 약속이 생겼습니다. 가장 적절한 행동은?',options:['아무 말 없이 참석하지 않는다.','친한 친구에게만 개인적으로 말한다.','가능한 빨리 모두에게 알리고 새로운 시간을 함께 조정한다.','회의가 중요하지 않다고 생각되면 나중에 자료만 받는다.'],correct:2,ex:'약속은 시간을 지키는 것뿐 아니라 지키기 어려운 상황이 생겼을 때 상대방에게 미리 알리고 함께 조정하는 책임까지 포함합니다.',impact:{promise:100,responsibility:55}},
@@ -52,3 +55,131 @@ window.CHEONGRYEOM_CONTENT={
   ],
   scoring:{writtenWeight:30,practicalWeight:40,processWeight:20,pledgeWeight:10,leaderTotal:85,leaderPractical:80}
 };
+
+// 6대 청렴역량 중 상위 2개 조합으로 산출하는 15가지 '나의 청렴유형'.
+// 역사 인물은 성격을 단정하는 진단이 아니라 청렴가치를 이해하기 위한 교육적 상징 연결입니다.
+window.CHEONGRYEOM_TYPES = [
+  {
+    virtues:['honesty','promise'], name:'신뢰실천형', figure:'도산 안창호', symbol:'🤝',
+    summary:'솔직함과 약속을 행동으로 옮겨 주변의 신뢰를 쌓아가는 유형입니다.',
+    mission:'말한 작은 약속 하나를 오늘 행동으로 끝까지 실천해보기'
+  },
+  {
+    virtues:['honesty','care'], name:'진심배려형', figure:'세종대왕', symbol:'💚',
+    summary:'사실을 바르게 바라보면서도 상대의 어려움과 마음을 함께 살피는 유형입니다.',
+    mission:'누군가의 입장을 먼저 묻고, 필요한 도움 한 가지를 직접 실천해보기'
+  },
+  {
+    virtues:['honesty','responsibility'], name:'원칙완수형', figure:'이순신', symbol:'🛡️',
+    summary:'문제를 숨기지 않고 바른 기준을 지키며 맡은 일을 끝까지 완수하는 유형입니다.',
+    mission:'미루고 있던 내 몫의 일을 오늘 하나 끝까지 마무리해보기'
+  },
+  {
+    virtues:['honesty','restraint'], name:'청렴수양형', figure:'퇴계 이황', symbol:'🌿',
+    summary:'스스로에게 정직한 기준을 세우고 욕심과 충동을 조절하려는 유형입니다.',
+    mission:'나에게 유리하더라도 기준에 맞지 않는 선택 한 가지를 스스로 멈춰보기'
+  },
+  {
+    virtues:['honesty','fairness'], name:'원칙수호형', figure:'안중근', symbol:'⚖️',
+    summary:'친분이나 눈치보다 사실과 원칙, 공정한 기준을 우선하려는 유형입니다.',
+    mission:'친한 사람에게도 같은 기준을 적용해야 하는 상황을 한 번 실천해보기'
+  },
+  {
+    virtues:['promise','care'], name:'신뢰나눔형', figure:'김만덕', symbol:'❤️',
+    summary:'사람 사이의 신뢰를 소중히 여기며 어려운 사람과 함께하려는 유형입니다.',
+    mission:'주변에서 도움이 필요한 사람에게 먼저 다가가 작은 도움을 건네보기'
+  },
+  {
+    virtues:['promise','responsibility'], name:'약속지킴이형', figure:'도산 안창호', symbol:'📜',
+    summary:'한 번 한 약속과 맡은 역할을 끝까지 지켜 신뢰를 만드는 유형입니다.',
+    mission:'오늘 정한 시간과 역할 약속 하나를 정확히 지켜보기'
+  },
+  {
+    virtues:['promise','restraint'], name:'신의절제형', figure:'퇴계 이황', symbol:'🌱',
+    summary:'순간의 편리함보다 스스로 정한 약속과 기준을 지키려는 유형입니다.',
+    mission:'하고 싶은 마음보다 지켜야 할 약속을 우선하는 선택을 한 번 해보기'
+  },
+  {
+    virtues:['promise','fairness'], name:'공정신뢰형', figure:'정조', symbol:'⚖️',
+    summary:'약속한 기준을 누구에게나 일관되게 적용하여 신뢰를 만드는 유형입니다.',
+    mission:'모둠이나 친구 관계에서 미리 정한 기준을 모두에게 똑같이 적용해보기'
+  },
+  {
+    virtues:['care','responsibility'], name:'공감실천형', figure:'김만덕', symbol:'🌳',
+    summary:'다른 사람의 어려움을 알아차리는 데서 그치지 않고 직접 행동하는 유형입니다.',
+    mission:'도움이 필요해 보이는 사람을 발견하면 내가 할 수 있는 행동 하나를 실행해보기'
+  },
+  {
+    virtues:['care','restraint'], name:'겸손배려형', figure:'퇴계 이황', symbol:'🍃',
+    summary:'내 욕심을 조금 내려놓고 상대와 공동체를 먼저 생각할 수 있는 유형입니다.',
+    mission:'내가 먼저 하고 싶은 것을 한 번 양보하고 모두에게 좋은 방법을 찾아보기'
+  },
+  {
+    virtues:['care','fairness'], name:'균형조정형', figure:'세종대왕', symbol:'⚖️',
+    summary:'서로 다른 입장을 살피면서 모두가 납득할 수 있는 균형점을 찾는 유형입니다.',
+    mission:'의견이 다른 두 사람의 말을 모두 듣고 공통점을 한 가지 찾아보기'
+  },
+  {
+    virtues:['responsibility','restraint'], name:'책임완수형', figure:'이순신', symbol:'🛡️',
+    summary:'어려움이나 유혹이 있어도 자신을 다스리며 맡은 임무를 끝까지 해내는 유형입니다.',
+    mission:'해야 할 일을 먼저 끝낸 뒤 하고 싶은 일을 하는 순서를 한 번 실천해보기'
+  },
+  {
+    virtues:['responsibility','fairness'], name:'공정리더형', figure:'정약용', symbol:'👑',
+    summary:'맡은 책임을 다하면서 합리적이고 공정한 기준으로 문제를 해결하려는 유형입니다.',
+    mission:'공동의 일을 정할 때 이유와 기준을 먼저 공개하고 결정해보기'
+  },
+  {
+    virtues:['restraint','fairness'], name:'청렴원칙형', figure:'정약용', symbol:'🌿',
+    summary:'개인적 이익을 절제하고 공동체의 기준과 공익을 우선하려는 유형입니다.',
+    mission:'나에게 이익이 되는 선택과 모두에게 공정한 선택을 비교해 후자를 실천해보기'
+  }
+];
+
+window.getCheongryeomType = function(scoreMap){
+  const order = CHEONGRYEOM_CONTENT.virtues.map((v, index) => ({
+    key: v.key,
+    name: v.name,
+    score: Number(scoreMap?.[v.key] || 0),
+    order: index
+  }));
+
+  const ranked = order
+    .slice()
+    .sort((a,b) => (b.score - a.score) || (a.order - b.order));
+
+  // 응답 근거가 거의 없을 때는 억지로 역사 인물을 매칭하지 않는다.
+  if ((ranked[0]?.score || 0) === 0 && (ranked[1]?.score || 0) === 0) {
+    return {
+      name:'청렴 탐색형',
+      figure:'유형 판정 보류',
+      symbol:'🌱',
+      summary:'아직 청렴역량 유형을 판단할 수 있는 응답이 충분하지 않습니다.',
+      mission:'다음 활동에서는 시간 안에 문항을 제출하고 나의 판단 기준을 확인해보기',
+      primary: ranked[0] || {key:'honesty',name:'정직',score:0},
+      secondary: ranked[1] || {key:'promise',name:'약속',score:0},
+      pairKey:''
+    };
+  }
+
+  const top = ranked.slice(0,2);
+  const idx = Object.fromEntries(
+    CHEONGRYEOM_CONTENT.virtues.map((v,i)=>[v.key,i])
+  );
+  const keys = top.map(x=>x.key).sort((a,b)=>idx[a]-idx[b]);
+  const found = CHEONGRYEOM_TYPES.find(t =>
+    t.virtues[0] === keys[0] && t.virtues[1] === keys[1]
+  );
+
+  return {
+    ...(found || {
+      name:'청렴 성장형', figure:'역사 인물 매칭 준비 중', symbol:'🌳',
+      summary:'여러 청렴가치가 고르게 나타나는 성장형입니다.',
+      mission:'가장 낮은 청렴역량 한 가지를 골라 오늘 실천해보기'
+    }),
+    primary: top[0],
+    secondary: top[1],
+    pairKey: keys.join('|')
+  };
+};
+

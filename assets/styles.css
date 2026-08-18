@@ -21,3 +21,71 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 @media(max-width:760px){.utility{display:none}.header-inner{height:70px;padding:0 13px}.official-ci{width:260px;max-width:66vw}.service-tag strong{font-size:18px}.service-tag span{display:none}.nav-inner{height:50px;padding:0 13px;gap:22px;overflow:auto}.nav-inner a{height:50px;white-space:nowrap;font-size:12px}.contest-note{display:none}.main-wrap{padding:16px 13px 36px}.hero{grid-template-columns:1fr}.hero-copy{padding:29px 22px}.hero h1{font-size:30px}.hero p{font-size:12px}.hero-visual{padding:18px}.hero-visual:before{display:none}.hero-character{max-width:100%}.role-grid{grid-template-columns:1fr}.role-card{grid-template-columns:80px 1fr auto}.role-character{width:72px}.flow{grid-template-columns:repeat(2,1fr)}.virtue-grid{grid-template-columns:repeat(2,1fr)}.footer-inner{flex-direction:column}.footer-ci{max-width:260px}.setup-grid{grid-template-columns:1fr}.teacher-layout{display:block}.teacher-side{position:static;height:auto;margin-bottom:14px}.teacher-grid{grid-template-columns:1fr}.section-head{flex-direction:column}.roster-list{grid-template-columns:repeat(2,1fr)}.student-header-grid{grid-template-columns:1fr 100px}.student-character img{max-width:98px}}
 @media(max-width:390px){.student-header-grid{grid-template-columns:1fr}.student-character{display:none}.student-virtues{grid-template-columns:1fr}.roster-list{grid-template-columns:1fr}}
 @media print{body *{visibility:hidden}.certificate,.certificate *{visibility:visible}.certificate{position:absolute;left:0;top:0;width:100%;box-shadow:none}}
+
+
+/* v4 - 6대 청렴역량 조합 기반 청렴유형 */
+.integrity-type-card{
+  margin:16px 0;
+  padding:16px;
+  border:1px solid #cfe2ea;
+  border-radius:16px;
+  background:linear-gradient(135deg,#f8fcfe,#eef8fc);
+  display:grid;
+  grid-template-columns:72px 1fr;
+  gap:14px;
+  align-items:start
+}
+.integrity-type-card.compact{grid-template-columns:56px 1fr;padding:12px}
+.integrity-type-symbol{
+  width:68px;height:68px;border-radius:50%;
+  display:grid;place-items:center;
+  background:#fff;border:1px solid #d8e7ed;
+  font-size:34px;box-shadow:0 7px 18px rgba(30,92,120,.08)
+}
+.integrity-type-kicker{
+  display:block;font-size:8px;font-weight:900;letter-spacing:.08em;
+  color:#1676a2;margin-bottom:3px
+}
+.integrity-type-card h3{
+  margin:0 0 5px!important;font-size:18px!important;color:#234e68!important
+}
+.integrity-type-figure{
+  font-size:10px;color:#5f737f;margin-bottom:8px
+}
+.integrity-type-figure b{color:#245d7b}
+.integrity-type-top{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.integrity-type-top span{
+  padding:5px 8px;border-radius:999px;background:#fff;
+  border:1px solid #d7e5eb;font-size:9px;font-weight:800;color:#245b76
+}
+.integrity-type-card p{
+  margin:0 0 9px;font-size:10px;line-height:1.7;color:#536873
+}
+.integrity-mission{
+  padding:9px 10px;border-radius:10px;background:#fff9e8;
+  border:1px solid #f0dfac;font-size:9px;line-height:1.65;color:#675939
+}
+.integrity-type-card small{
+  display:block;margin-top:7px;font-size:7.5px;line-height:1.5;color:#829097
+}
+.cert-integrity-type{
+  display:inline-block;margin:1px 0 10px;padding:5px 9px;border-radius:999px;
+  background:#eef7fb;color:#245d7b;font-size:8px;font-weight:900
+}
+.type-distribution{
+  margin-top:12px;padding:12px;border:1px solid #d7e5eb;border-radius:12px;background:#f8fbfc
+}
+.type-distribution>b{display:block;font-size:10px;color:#2b566f;margin-bottom:8px}
+.type-distribution-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.type-distribution-grid span{
+  display:flex;justify-content:space-between;gap:8px;
+  border:1px solid #e0e9ed;border-radius:8px;background:#fff;padding:7px;
+  font-size:8px;color:#64757e
+}
+.type-distribution-grid strong{color:#285c78}
+.type-distribution small{display:block;margin-top:7px;font-size:7.5px;color:#839097}
+@media(max-width:520px){
+  .integrity-type-card{grid-template-columns:1fr;text-align:left}
+  .integrity-type-symbol{width:58px;height:58px;font-size:29px}
+  .type-distribution-grid{grid-template-columns:1fr 1fr}
+}

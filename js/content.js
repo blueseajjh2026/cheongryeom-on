@@ -11,15 +11,15 @@ window.CHEONGRYEOM_CONTENT={
     {key:'waiting',name:'수험등록',short:'등록'},
     {key:'intro',name:'오리엔테이션',short:'OT'},
     {key:'written',name:'필기평가',short:'필기'},
-    {key:'practical',name:'실기평가',short:'실기'},
+    {key:'practical',name:'작업형 실기',short:'실기'},
     {key:'process',name:'과정평가',short:'과정'},
     {key:'diagnosis',name:'역량진단',short:'진단'},
     {key:'pledge',name:'청렴실천',short:'실천'},
     {key:'result',name:'자격판정',short:'결과'}
   ],
   intro:{
-    title:'청렴은 정답을 외우는 지식보다, 선택의 순간에 드러나는 역량입니다.',
-    body:'학교생활과 디지털 환경에서 실제로 마주칠 수 있는 상황을 스스로 판단하고, 친구들의 생각과 비교·토론하며 나만의 청렴 기준을 만들어 봅니다.'
+    title:'청렴은 아는 것에서 끝나지 않습니다. 실제 상황을 처리하는 과정에서 역량이 드러납니다.',
+    body:'필기에서는 청렴의 기본 기준을 확인하고, 작업형 실기에서는 지급자료를 검토해 기준을 적용하고 기록을 작성한 뒤 작업물을 제출합니다. 이후 토론·성찰·실천을 거쳐 나의 청렴역량을 확인합니다.'
   },
   written:[
     {id:'w1',virtue:'honesty',q:'생성형 AI로 수행평가 초안을 만들었습니다. 가장 정직한 제출 방식에 가까운 것은?',options:['AI가 만든 내용을 거의 그대로 제출한다.','AI를 사용했다는 사실은 굳이 말하지 않는다.','학교 지침을 확인하고, 사용한 부분을 밝힌 뒤 내 생각과 검토를 거쳐 다시 작성한다.','문장 몇 개만 바꾸면 내가 쓴 글과 같으므로 그대로 제출한다.'],correct:2,ex:'도구를 사용하는 것 자체보다 사용 사실과 범위를 숨기고 결과물을 자신의 성과처럼 제시하는지가 핵심입니다.',impact:{honesty:100,responsibility:55}},
@@ -30,24 +30,65 @@ window.CHEONGRYEOM_CONTENT={
     {id:'w6',virtue:'fairness',q:'학생회 지원자 중 친한 친구가 있습니다. 가장 공정한 선발 방식은?',options:['친구가 평소 좋은 사람이므로 높은 점수를 준다.','지원자에게 평가기준을 미리 공개하고 모든 지원자에게 같은 기준을 적용한다.','친구는 오해를 살 수 있으니 무조건 낮은 점수를 준다.','모두 똑같이 대우하기 위해 지원 내용을 보지 않고 추첨한다.'],correct:1,ex:'공정은 친분의 영향을 배제하는 동시에, 합리적이고 공개된 기준을 일관되게 적용하는 것을 의미합니다.',impact:{fairness:100,honesty:40}}
   ],
   practical:[
-    {id:'p1',title:'실기 ① 축제 예산 30만 원',context:'학급 축제 부스의 회계를 맡았습니다. 친한 친구가 “우리 삼촌 가게에서 사자. 다른 곳보다 조금 비싸지만 서비스는 더 줄 거야.”라고 제안합니다.',q:'가장 먼저 어떤 판단을 하겠습니까?',options:[
-      {text:'친구가 부탁했으니 그 가게에서 바로 구매한다.',score:25,impact:{fairness:20,responsibility:35,restraint:30}},
-      {text:'여러 판매처의 가격·품질·조건을 같은 기준으로 비교한 뒤 결정한다.',score:100,impact:{fairness:100,responsibility:85,restraint:65}},
-      {text:'친구와 관련된 가게는 무조건 제외한다.',score:72,impact:{fairness:70,responsibility:55}},
-      {text:'내가 결정하면 책임이 생기므로 다른 친구에게 맡긴다.',score:42,impact:{responsibility:20,fairness:45}}
-    ]},
-    {id:'p2',title:'실기 ② 남은 예산 17,000원',context:'행사가 끝난 뒤 예산 17,000원이 남았습니다. 친구들이 “우리 고생했으니까 이 돈으로 음료수 사 먹자. 이 정도는 괜찮잖아.”라고 합니다.',q:'가장 청렴한 판단에 가까운 것은?',options:[
-      {text:'금액이 작으므로 수고한 학생끼리 사용한다.',score:28,impact:{restraint:20,responsibility:30}},
-      {text:'반 친구 과반이 찬성하면 사용한다.',score:55,impact:{fairness:50,restraint:45}},
-      {text:'남은 예산의 처리 기준을 확인하고 사용내역과 잔액을 학급에 공개한다.',score:100,impact:{restraint:100,responsibility:95,honesty:80}},
-      {text:'문제가 생기지 않도록 다른 학생에게 돈을 넘긴다.',score:38,impact:{responsibility:20}}
-    ]},
-    {id:'p3',title:'실기 ③ 사라진 영수증',context:'정산 중 친한 친구가 영수증 한 장을 잃어버렸습니다. 친구는 “다른 영수증 금액에 조금 섞어서 적으면 아무도 몰라.”라고 제안합니다.',q:'당신이라면 어떻게 하겠습니까?',options:[
-      {text:'친구를 위해 이번 한 번은 모른 척한다.',score:22,impact:{honesty:15,care:35}},
-      {text:'사실을 그대로 공유하고 증빙이 없어진 상황을 해결할 수 있는 방법을 함께 찾는다.',score:100,impact:{honesty:100,responsibility:95,care:70}},
-      {text:'친구의 실수이므로 모든 책임을 친구에게 넘긴다.',score:62,impact:{honesty:70,responsibility:40,care:20}},
-      {text:'금액이 작다면 기록에서 빼고 넘어간다.',score:30,impact:{honesty:25,responsibility:30}}
-    ]}
+    {
+      id:'p1',kind:'procurement',title:'작업형 제1과제 · 공정한 예산집행',code:'P-01',timeLimitSec:300,
+      objective:'지급자료를 검토하고 이해관계를 확인한 뒤, 공정한 기준에 따라 구매계획을 완성하십시오.',
+      context:'학급 축제 부스 물품 구매 담당자입니다. 사용 가능한 예산은 300,000원이며, 세 업체의 견적과 학교의 예산집행 기준이 지급되었습니다.',
+      deliverables:['지급자료 확인','이해관계 확인','비교기준 설정','업체 선정','처리방식 및 선정사유 기록'],
+      docs:[
+        {id:'rule',icon:'📘',title:'자료 1 · 예산집행 기준',body:'① 필요한 물품을 예산 범위 안에서 구매합니다. ② 가격만이 아니라 품질·납기 등 합리적인 기준을 함께 비교할 수 있습니다. ③ 담당자와 개인적 이해관계가 있는 업체가 있으면 그 사실을 공개하고 동일한 기준으로 검토해야 합니다. ④ 선정 과정과 사유를 기록으로 남깁니다.'},
+        {id:'A',icon:'📄',title:'자료 2 · 행복문구 견적서',body:'총액 268,000원 · 품질 4/5 · 배송: 다음 날 오전 · 미개봉 반품 가능 · 담당자와의 이해관계 없음'},
+        {id:'B',icon:'📄',title:'자료 3 · 드림상사 견적서',body:'총액 251,000원 · 품질 4/5 · 배송: 2일 후 · 불량품 교환 가능 · 담당자와의 이해관계 없음'},
+        {id:'C',icon:'📄',title:'자료 4 · 우리문구 견적서',body:'총액 262,000원 · 품질 5/5 · 배송: 당일 · 미개봉 반품 가능 · 친구의 삼촌이 운영 · 사은품 20개 제공 제안'}
+      ],
+      criteria:[
+        {key:'price',label:'가격'},{key:'quality',label:'품질'},{key:'delivery',label:'배송·납기'},{key:'conflict',label:'이해관계'}
+      ],
+      vendors:[
+        {id:'A',name:'행복문구',price:'268,000원',quality:'4/5',delivery:'다음 날 오전'},
+        {id:'B',name:'드림상사',price:'251,000원',quality:'4/5',delivery:'2일 후'},
+        {id:'C',name:'우리문구',price:'262,000원',quality:'5/5',delivery:'당일'}
+      ],
+      rubric:['자료검토 10','이해관계 확인 20','비교기준 적용 20','최종판단 20','공개·기록 15','선정사유 15']
+    },
+    {
+      id:'p2',kind:'sequence',title:'작업형 제2과제 · 증빙누락 처리',code:'P-02',timeLimitSec:300,
+      objective:'정산자료와 메시지를 확인하고, 증빙이 누락된 지출을 투명하게 처리하는 절차를 순서대로 완성하십시오.',
+      context:'축제 정산을 하던 중 게임물품 47,000원의 영수증이 보이지 않습니다. 물품을 구매한 친구가 “다른 영수증 금액에 조금 섞으면 아무도 몰라.”라고 말했습니다.',
+      ledger:[
+        {item:'장식품',amount:'82,000원',proof:true},{item:'음료',amount:'56,000원',proof:true},{item:'게임물품',amount:'47,000원',proof:false},{item:'인쇄비',amount:'38,000원',proof:true}
+      ],
+      actions:[
+        {id:'fact',text:'구매내역·금액 등 사실관계를 먼저 확인한다.'},
+        {id:'reissue',text:'판매처에 영수증 재발급이 가능한지 확인한다.'},
+        {id:'report',text:'담당자에게 증빙 누락 사실을 그대로 보고한다.'},
+        {id:'actual',text:'실제 지출액대로 기록하고 증빙 누락 상태와 처리결과를 남긴다.'},
+        {id:'mix',text:'다른 영수증 금액에 47,000원을 나누어 포함한다.'},
+        {id:'hide',text:'금액이 크지 않으므로 해당 지출을 기록에서 빼고 넘어간다.'}
+      ],
+      rubric:['적정 절차 선택 60','처리순서 20','정산의견 20','부적정 처리 선택 시 감점']
+    },
+    {
+      id:'p3',kind:'panel',title:'작업형 제3과제 · 공정한 학생대표 선발',code:'P-03',timeLimitSec:420,
+      objective:'공개된 평가표에 따라 지원자를 직접 채점한 뒤, 추가로 알게 된 친분 관계에도 동일한 기준을 유지할 수 있는지 판단하십시오.',
+      context:'학급 대표 1명을 선발하는 심사위원입니다. 지원자의 이름은 가리고 A·B·C로 표시했습니다. 먼저 지원자료만 보고 채점한 후 추가정보를 확인합니다.',
+      rubricFields:[
+        {key:'plan',label:'활동계획',max:40},{key:'responsibility',label:'책임감',max:30},{key:'collaboration',label:'협업경험',max:20},{key:'presentation',label:'발표내용',max:10}
+      ],
+      candidates:[
+        {id:'A',name:'지원자 A',profile:'활동계획에 일정·예산이 구체적으로 제시됨. 학급 행사 총무 2회. 협업 프로젝트 2회. 발표 핵심이 명확함.',reference:{plan:35,responsibility:27,collaboration:16,presentation:8}},
+        {id:'B',name:'지원자 B',profile:'아이디어는 참신하나 일정 계획이 다소 부족함. 맡은 역할을 성실히 수행한 기록이 있음. 협업 프로젝트 3회. 발표 전달력이 좋음.',reference:{plan:30,responsibility:25,collaboration:19,presentation:9}},
+        {id:'C',name:'지원자 C',profile:'활동계획이 구체적이고 안전대책까지 포함함. 학교행사 책임자 경험 2회. 협업 프로젝트 2회. 발표가 안정적임.',reference:{plan:36,responsibility:29,collaboration:17,presentation:8}}
+      ],
+      extraInfo:'추가정보: 지원자 C는 당신과 가장 친한 친구입니다.',
+      responses:[
+        '친분 관계를 공개하고, 이미 정한 평가기준과 점수를 그대로 유지한다.',
+        '친구의 장점을 더 잘 아니까 지원자 C에게 가점을 추가한다.',
+        '오해가 생길 수 있으므로 지원자 C를 평가대상에서 자동 제외한다.',
+        '부담되므로 내가 한 평가를 모두 취소하고 다른 학생에게 넘긴다.'
+      ],
+      rubric:['기준표에 따른 채점 50','이해관계 인식 10','동일기준 유지 25','판단근거 기록 15']
+    }
   ],
   process:[
     {id:'d1',title:'청렴 판단 LAB ① 친구와 규칙',context:'친한 친구가 학교 규칙을 어긴 사실을 알게 되었습니다. 친구는 “우리 사이인데 말하지 않을 거지?”라고 부탁합니다.',q:'친구의 잘못을 선생님에게 알리는 것은 청렴한 행동일까요?',options:['그렇다','아니다','상황에 따라 다르다'],discussion:['규칙 위반으로 피해를 보는 사람이 있는가?','친구를 배려하는 것과 잘못을 숨기는 것은 어떻게 다른가?','공정·책임·배려가 충돌한다면 어떤 기준이 필요한가?']},
@@ -55,6 +96,91 @@ window.CHEONGRYEOM_CONTENT={
   ],
   scoring:{writtenWeight:30,practicalWeight:40,processWeight:20,pledgeWeight:10,leaderTotal:85,leaderPractical:80}
 };
+
+window.CHEONGRYEOM_EVALUATE_PRACTICAL = function(q, answer){
+  if(!q || !answer || !answer.work) return {score:0,impact:{},details:[]};
+  const w=answer.work||{};
+  const clamp=x=>Math.max(0,Math.min(100,Math.round(x)));
+  const details=[];
+  let score=0,impact={};
+
+  if(q.kind==='procurement'){
+    const opened=Array.isArray(w.openedDocs)?new Set(w.openedDocs).size:0;
+    const docScore=Math.min(10, opened*2.5); score+=docScore; details.push(['지급자료 검토',Math.round(docScore),10]);
+    const conflictScore=w.conflictVendor==='C'?20:0; score+=conflictScore; details.push(['이해관계 확인',conflictScore,20]);
+    const selectedCriteria=new Set(Array.isArray(w.criteria)?w.criteria:[]);
+    const criteriaScore=['price','quality','delivery','conflict'].reduce((a,k)=>a+(selectedCriteria.has(k)?5:0),0); score+=criteriaScore; details.push(['비교기준 적용',criteriaScore,20]);
+    let decision=0;
+    if(Number(w.selectedVendor)===1) decision=20;
+    else if(Number(w.selectedVendor)===0) decision=16;
+    else if(Number(w.selectedVendor)===2) decision=(w.conflictVendor==='C'&&w.disclosure)?12:4;
+    score+=decision; details.push(['최종업체 판단',decision,20]);
+    const disclosure=w.disclosure?15:0; score+=disclosure; details.push(['이해관계 공개·기록',disclosure,15]);
+    const reason=String(w.reason||'').trim();
+    const keywordGroups=[/가격|예산|금액/,/품질|배송|납기|조건/,/이해관계|친구|공개|기준|공정/];
+    let reasonScore=reason.length>=15?6:reason.length>=8?3:0;
+    reasonScore+=keywordGroups.reduce((a,r)=>a+(r.test(reason)?3:0),0);
+    reasonScore=Math.min(15,reasonScore); score+=reasonScore; details.push(['선정사유 기록',reasonScore,15]);
+    impact={
+      fairness:clamp(conflictScore*2+criteriaScore*2+decision),
+      responsibility:clamp(docScore*4+disclosure*2+reasonScore*2),
+      honesty:clamp(conflictScore*3+disclosure*2),
+      restraint:clamp((Number(w.selectedVendor)!==2?55:25)+criteriaScore)
+    };
+  }
+
+  if(q.kind==='sequence'){
+    const order=Array.isArray(w.order)?w.order:[];
+    const correct=['fact','reissue','report','actual'];
+    const bad=['mix','hide'];
+    const includeScore=correct.reduce((a,k)=>a+(order.includes(k)?15:0),0); score+=includeScore; details.push(['적정 절차 선택',includeScore,60]);
+    const orderScore=correct.reduce((a,k,i)=>a+(order[i]===k?5:0),0); score+=orderScore; details.push(['처리순서',orderScore,20]);
+    const note=String(w.note||'').trim();
+    let noteScore=note.length>=20?8:note.length>=8?4:0;
+    [/사실|확인/,/보고|공개|알리/,/실제|정산|증빙|재발급/].forEach(r=>{if(r.test(note))noteScore+=4});
+    noteScore=Math.min(20,noteScore); score+=noteScore; details.push(['정산의견',noteScore,20]);
+    const penalty=bad.reduce((a,k)=>a+(order.includes(k)?25:0),0); score-=penalty;
+    if(penalty) details.push(['부적정 처리 감점',-penalty,0]);
+    impact={
+      honesty:clamp((order.includes('report')?45:0)+(order.includes('actual')?35:0)+(noteScore)),
+      responsibility:clamp((order.includes('fact')?25:0)+(order.includes('reissue')?25:0)+(order.includes('actual')?25:0)+orderScore),
+      care:clamp((order.includes('reissue')?35:0)+noteScore*2),
+      fairness:clamp((order.includes('actual')?55:0)+(order.includes('report')?25:0))
+    };
+  }
+
+  if(q.kind==='panel'){
+    const scores=w.lockedScores||w.scores||{};
+    let matrixScore=0,completed=0;
+    q.candidates.forEach(c=>q.rubricFields.forEach(f=>{
+      const val=Number(scores?.[c.id]?.[f.key]);
+      if(Number.isFinite(val)&&val>0&&val<=f.max){
+        completed++;
+        const ref=Number(c.reference[f.key]);
+        const gap=Math.abs(val-ref);
+        matrixScore += gap<=3?4.1667:gap<=6?3:gap<=10?1.5:0.5;
+      }
+    }));
+    matrixScore=Math.min(50,matrixScore); score+=matrixScore; details.push(['기준표에 따른 채점',Math.round(matrixScore),50]);
+    const reveal=w.revealed?10:0; score+=reveal; details.push(['이해관계 인식',reveal,10]);
+    const responseScores=[25,0,10,8];
+    const responseScore=Number.isInteger(Number(w.response))?(responseScores[Number(w.response)]||0):0;
+    score+=responseScore; details.push(['동일기준 유지',responseScore,25]);
+    const reason=String(w.reason||'').trim();
+    let reasonScore=reason.length>=18?6:reason.length>=8?3:0;
+    [/기준|동일|점수/,/친분|친구|이해관계|공개/,/공정|근거|자료/].forEach(r=>{if(r.test(reason))reasonScore+=3});
+    reasonScore=Math.min(15,reasonScore); score+=reasonScore; details.push(['판단근거 기록',reasonScore,15]);
+    impact={
+      fairness:clamp(matrixScore+responseScore*2+reveal),
+      restraint:clamp(responseScore*3+reveal),
+      responsibility:clamp(matrixScore+reasonScore*2),
+      honesty:clamp(reveal*5+reasonScore*2)
+    };
+  }
+
+  return {score:clamp(score),impact,details};
+};
+
 
 // 6대 청렴역량 중 상위 2개 조합으로 산출하는 15가지 '나의 청렴유형'.
 // 역사 인물은 성격을 단정하는 진단이 아니라 청렴가치를 이해하기 위한 교육적 상징 연결입니다.
@@ -182,4 +308,5 @@ window.getCheongryeomType = function(scoreMap){
     pairKey: keys.join('|')
   };
 };
+
 

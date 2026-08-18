@@ -155,7 +155,6 @@ function compForUser(uid) {
   C.written.forEach(q => {
     const a = answers?.written?.[q.id]?.[uid];
     if (!a) return;
-
     Object.entries(q.impact || {}).forEach(([k, v]) => {
       sums[k].s += (a.choice === q.correct ? v : Math.round(v * 0.3));
       sums[k].n++;
@@ -165,10 +164,10 @@ function compForUser(uid) {
   C.practical.forEach(q => {
     const a = answers?.practical?.[q.id]?.[uid];
     if (!a) return;
-
-    const o = q.options[a.choice];
-    Object.entries(o?.impact || {}).forEach(([k, v]) => {
-      sums[k].s += v;
+    const ev = CHEONGRYEOM_EVALUATE_PRACTICAL(q, a);
+    Object.entries(ev.impact || {}).forEach(([k, v]) => {
+      if (!sums[k]) return;
+      sums[k].s += Number(v || 0);
       sums[k].n++;
     });
   });
@@ -180,7 +179,6 @@ function compForUser(uid) {
     ])
   );
 }
-
 
 function typeForUser(uid) {
   return getCheongryeomType(compForUser(uid));
@@ -233,33 +231,29 @@ function calcStudent(uid) {
 
   let writtenCorrect = 0;
   let writtenAnswered = 0;
-
   C.written.forEach(q => {
     const a = answers?.written?.[q.id]?.[uid];
     if (a) writtenAnswered++;
     if (a?.choice === q.correct) writtenCorrect++;
   });
-
   const w = Math.round(writtenCorrect / C.written.length * 100);
 
   let practicalSum = 0;
   let practicalAnswered = 0;
-
+  const practicalTaskScores=[];
   C.practical.forEach(q => {
-    const a = answers?.practical?.[q.id]?.[uid];
-    if (Number.isInteger(a?.choice)) {
-      practicalAnswered++;
-      practicalSum += Number(q.options[a.choice]?.score || 0);
-    }
+    const a=answers?.practical?.[q.id]?.[uid];
+    const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);
+    if(a) practicalAnswered++;
+    practicalSum += a ? ev.score : 0;
+    practicalTaskScores.push(a?ev.score:0);
   });
-
   const p = Math.round(practicalSum / C.practical.length);
 
   let processAnswered = 0;
   C.process.forEach(q => {
     if (answers?.process?.[q.id]?.[uid]) processAnswered++;
   });
-
   const pr = Math.round(processAnswered / C.process.length * 100);
   const pl = pledges?.[uid]?.text ? 100 : 0;
 
@@ -283,8 +277,52 @@ function calcStudent(uid) {
   return {
     w, p, pr, pl, total, qualification,
     writtenAnswered, practicalAnswered, processAnswered,
+    practicalTaskScores,
     missingQuestions
   };
+}
+
+
+function teacherTimerHTML(q){
+  const end=Number(control?.timerEnd||0);
+  const left=end-Date.now();
+  const running=end&&left>0;
+  const expired=end&&left<=0;
+  const fmt=ms=>{const sec=Math.max(0,Math.ceil(ms/1000));return `${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`};
+  return `<div class="teacher-timer ${expired?'expired':''}"><div><span>작업시간</span><b id="teacherTimer">${end?fmt(left):Math.round(q.timeLimitSec/60)+'분'}</b><small>${running?'카운트다운 진행 중':expired?'시간 종료':'시작 전'}</small></div><div class="teacher-timer-actions"><button id="startTimerBtn" class="btn soft" ${running?'disabled':''}>${expired?'타이머 다시 시작':'타이머 시작'}</button><button id="endTimerBtn" class="btn outline" ${!end?'disabled':''}>시간 종료</button></div></div>`;
+}
+
+function practicalTeacherHTML(q){
+  return `<span class="eyebrow">WORK-BASED PRACTICAL · ${q.code}</span>
+    <h2>${q.title}</h2>
+    <p class="context-box">${q.objective}</p>
+    ${teacherTimerHTML(q)}
+    <div class="teacher-work-grid">
+      <div class="teacher-work-card"><b>작업상황</b><p>${q.context}</p></div>
+      <div class="teacher-work-card"><b>제출물</b><ol>${(q.deliverables||q.rubric||[]).map(x=>`<li>${x}</li>`).join('')}</ol></div>
+    </div>
+    <div class="rubric-teacher"><b>채점요소</b><div>${q.rubric.map(x=>`<span>${x}</span>`).join('')}</div></div>
+    <div class="feedback info">학생은 보기 하나를 고르는 대신 지급자료 검토 → 실제 작업 → 기록 작성 → 작업물 제출을 수행합니다. 제출은 1회만 가능합니다.</div>`;
+}
+
+async function startPracticalTimer(){
+  const q=item(); if(!q||control.stage!=='practical') return;
+  await DB.setControl(code,{timerEnd:Date.now()+Number(q.timeLimitSec||300)*1000});
+}
+async function endPracticalTimer(){
+  if(control.stage!=='practical') return;
+  await DB.setControl(code,{timerEnd:Date.now()-1000});
+}
+function bindTeacherPractical(){
+  const st=$('#startTimerBtn'); if(st) st.onclick=startPracticalTimer;
+  const et=$('#endTimerBtn'); if(et) et.onclick=endPracticalTimer;
+}
+function updateTeacherTimer(){
+  const el=$('#teacherTimer'); if(!el||!control?.timerEnd)return;
+  const ms=Number(control.timerEnd)-Date.now();
+  const sec=Math.max(0,Math.ceil(ms/1000));
+  el.textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
+  if(ms<=0){const wrap=el.closest('.teacher-timer');if(wrap)wrap.classList.add('expired');}
 }
 
 function renderContent() {
@@ -334,14 +372,7 @@ function renderContent() {
   }
 
   if (control.stage === 'practical') {
-    h = `<span class="eyebrow">${q.title} · ${Number(control.index) + 1}/${C.practical.length}</span>
-      <h2>${q.q}</h2>
-      <p class="context-box">${q.context}</p>
-      <div class="option-grid">${
-        q.options.map((x, i) =>
-          `<div class="option-view"><b>${String.fromCharCode(65 + i)}.</b> ${x.text}</div>`
-        ).join('')
-      }</div>`;
+    h = practicalTeacherHTML(q);
   }
 
   if (control.stage === 'process') {
@@ -408,6 +439,8 @@ function renderContent() {
 
   $('#teacherContent').innerHTML =
     `<div class="teacher-content-grid"><div>${h}</div>${charBox(control.stage)}</div>`;
+  if (control.stage === 'practical') bindTeacherPractical();
+  updateTeacherTimer();
 
   renderStats();
   renderClassComp();
@@ -436,7 +469,17 @@ function renderStats() {
     labels = q.options;
   } else if (control.stage === 'practical') {
     list = ans('practical', q.id);
-    labels = q.options.map(o => o.text);
+    const submitted = list.length;
+    const total = Object.keys(participants || {}).length;
+    const evals = list.map(a => CHEONGRYEOM_EVALUATE_PRACTICAL(q, a));
+    const avg = evals.length ? Math.round(evals.reduce((a,b)=>a+b.score,0)/evals.length) : 0;
+    const high = evals.filter(x=>x.score>=80).length;
+    const mid = evals.filter(x=>x.score>=60&&x.score<80).length;
+    const low = evals.filter(x=>x.score<60).length;
+    $('#responseChip').textContent = `${submitted}/${total}명 제출`;
+    $('#statsArea').className = '';
+    $('#statsArea').innerHTML = `<div class="work-live-summary"><div><span>작업물 제출</span><b>${submitted}</b><small>미제출 ${Math.max(0,total-submitted)}명</small></div><div><span>제출자 평균</span><b>${avg}</b><small>100점 기준</small></div><div><span>80점 이상</span><b>${high}</b><small>60~79 ${mid} · 60미만 ${low}</small></div></div>`;
+    return;
   } else if (control.stage === 'process') {
     list = ans('process', q.id);
     labels = q.options;
@@ -464,7 +507,8 @@ async function go(stage, index = 0) {
     index,
     phase: 'single',
     reveal: false,
-    locked: false
+    locked: false,
+    timerEnd: null
   });
 }
 
@@ -476,7 +520,8 @@ async function next() {
     return DB.setControl(code, {
       index: i + 1,
       reveal: false,
-      phase: 'single'
+      phase: 'single',
+      timerEnd: null
     });
   }
 
@@ -494,7 +539,8 @@ async function prev() {
     return DB.setControl(code, {
       index: i - 1,
       reveal: false,
-      phase: 'single'
+      phase: 'single',
+      timerEnd: null
     });
   }
 
@@ -564,7 +610,7 @@ function csv() {
     '수험ID', '학생이름', '학교급',
     '필기', '실기', '과정', '실천', '종합',
     '미응답문항수', '자격', '청렴유형', '상징역사인물',
-    '상위역량1', '상위역량2', '실천약속'
+    '상위역량1', '상위역량2', '실기1', '실기2', '실기3', '실천약속'
   ]];
 
   Object.entries(participants).forEach(([uid, p]) => {
@@ -586,6 +632,9 @@ function csv() {
       t.figure,
       `${t.primary.name} ${t.primary.score}`,
       `${t.secondary.name} ${t.secondary.score}`,
+      r.practicalTaskScores[0] || 0,
+      r.practicalTaskScores[1] || 0,
+      r.practicalTaskScores[2] || 0,
       pledges?.[uid]?.text || ''
     ]);
   });
@@ -616,9 +665,10 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = '실시간 서버 연결 · v4.1';
+    $('#serverStatus').textContent = '실시간 서버 연결 · v5.0 작업형';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
+    setInterval(updateTeacherTimer, 500);
 
     $('#createRoomBtn').onclick = create;
     $('#nextBtn').onclick = next;

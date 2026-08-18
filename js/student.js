@@ -12,6 +12,8 @@ let submitting = false;
 
 // 실시간 화면 갱신이 일어나도 학생이 선택한 답이 사라지지 않도록 문항별 임시선택을 보관
 const pendingChoices = {};
+const practicalDrafts = {};
+let timerTicker = null;
 
 const stageCharacter = {
   waiting: 'character-listen.png',
@@ -101,9 +103,10 @@ function comp() {
   C.practical.forEach(q => {
     const a = mine('practical', q.id);
     if (!a) return;
-    const o = q.options[a.choice];
-    Object.entries(o?.impact || {}).forEach(([k, v]) => {
-      sums[k].s += v;
+    const ev = CHEONGRYEOM_EVALUATE_PRACTICAL(q, a);
+    Object.entries(ev.impact || {}).forEach(([k, v]) => {
+      if (!sums[k]) return;
+      sums[k].s += Number(v || 0);
       sums[k].n++;
     });
   });
@@ -119,7 +122,6 @@ function comp() {
 function scores() {
   const S = C.scoring;
 
-  // 필기: 미응답 문항은 자동 0점
   let writtenCorrect = 0;
   let writtenAnswered = 0;
   C.written.forEach(q => {
@@ -129,26 +131,24 @@ function scores() {
   });
   const w = Math.round(writtenCorrect / C.written.length * 100);
 
-  // 실기: 각 미응답 문항을 0점으로 포함해 전체 문항 수로 평균
   let practicalSum = 0;
   let practicalAnswered = 0;
+  const practicalTaskScores = [];
   C.practical.forEach(q => {
     const a = mine('practical', q.id);
-    if (Number.isInteger(a?.choice)) {
-      practicalAnswered++;
-      practicalSum += Number(q.options[a.choice]?.score || 0);
-    }
+    const ev = CHEONGRYEOM_EVALUATE_PRACTICAL(q, a);
+    if (a) practicalAnswered++;
+    practicalSum += a ? ev.score : 0;
+    practicalTaskScores.push({id:q.id,title:q.title,score:a?ev.score:0,answered:!!a});
   });
   const p = Math.round(practicalSum / C.practical.length);
 
-  // 과정평가: 재선택 없이 문항별 1회 제출. 미응답은 0점
   let processAnswered = 0;
   C.process.forEach(q => {
     if (mine('process', q.id)) processAnswered++;
   });
   const pr = Math.round(processAnswered / C.process.length * 100);
 
-  // 실천약속 미제출은 0점
   const pl = myPledge?.text ? 100 : 0;
 
   const total = Math.round(
@@ -158,7 +158,6 @@ function scores() {
     pl * S.pledgeWeight / 100
   );
 
-  // 시간 내 미제출은 0점으로 반영하고 결과 자체는 정상 산출
   const qualification =
     total >= S.leaderTotal && p >= S.leaderPractical
       ? '청렴 리더'
@@ -172,10 +171,10 @@ function scores() {
   return {
     w, p, pr, pl, total, qualification,
     writtenAnswered, practicalAnswered, processAnswered,
+    practicalTaskScores,
     missingQuestions
   };
 }
-
 
 function integrityType() {
   return getCheongryeomType(comp());
@@ -237,6 +236,204 @@ function waiting(title, body) {
   </div>`;
 }
 
+
+function escapeHTML(v) {
+  return String(v ?? '')
+    .replaceAll('&', '&amp;').replaceAll('<', '&lt;')
+    .replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+}
+
+function practicalDraft(q) {
+  if (practicalDrafts[q.id]) return practicalDrafts[q.id];
+  let d;
+  if (q.kind === 'procurement') {
+    d = { openedDocs: [], activeDoc: null, conflictVendor: '', criteria: [], selectedVendor: null, disclosure: false, reason: '' };
+  } else if (q.kind === 'sequence') {
+    d = { order: [], note: '' };
+  } else {
+    const scores = {};
+    q.candidates.forEach(c => {
+      scores[c.id] = {};
+      q.rubricFields.forEach(f => scores[c.id][f.key] = 0);
+    });
+    d = { scores, lockedScores: null, revealed: false, response: null, reason: '' };
+  }
+  practicalDrafts[q.id] = d;
+  return d;
+}
+
+function practicalExpired() {
+  return !!(control?.timerEnd && Date.now() >= Number(control.timerEnd));
+}
+
+function formatRemaining(ms) {
+  const sec = Math.max(0, Math.ceil(ms / 1000));
+  const m = Math.floor(sec / 60);
+  const s = String(sec % 60).padStart(2, '0');
+  return `${m}:${s}`;
+}
+
+function studentTimerHTML(q) {
+  if (!control?.timerEnd) {
+    return `<div class="work-timer idle"><span>⏱ 제한시간</span><b>${Math.round(q.timeLimitSec / 60)}분</b><small>교사가 타이머를 시작하면 카운트다운됩니다.</small></div>`;
+  }
+  const left = Number(control.timerEnd) - Date.now();
+  return `<div class="work-timer ${left <= 0 ? 'expired' : ''}"><span>⏱ 남은 작업시간</span><b id="studentTimer">${formatRemaining(left)}</b><small>${left <= 0 ? '작업시간이 종료되었습니다. 미제출 과제는 0점 처리됩니다.' : '제출 버튼을 누르는 순간 작업물이 확정됩니다.'}</small></div>`;
+}
+
+function updateTimerDisplay() {
+  const el = $('#studentTimer');
+  if (!el || !control?.timerEnd) return;
+  const left = Number(control.timerEnd) - Date.now();
+  el.textContent = formatRemaining(left);
+  const wrap = el.closest('.work-timer');
+  if (left <= 0 && wrap) {
+    wrap.classList.add('expired');
+    const b = $('#submitPracticalBtn');
+    if (b) { b.disabled = true; b.textContent = '작업시간 종료'; }
+  }
+}
+
+function practicalHeader(q, ex) {
+  return `<div class="work-exam-head">
+    <div><span class="stage-tag">작업형 실기 ${Number(control.index) + 1}/${C.practical.length}</span><h2>${q.title}</h2><p>${q.objective}</p></div>
+    <div class="work-code"><small>과제번호</small><b>${q.code}</b></div>
+  </div>
+  ${studentTimerHTML(q)}
+  <div class="work-notice"><b>수험자 유의사항</b><span>지급자료를 충분히 확인하고 작업물을 완성한 뒤 한 번만 제출합니다. 제출 후에는 수정할 수 없습니다.</span></div>
+  ${ex ? `<div class="feedback good"><b>✓ 작업물 제출 완료</b><br>이 과제는 확정되었습니다. 교사의 안내에 따라 다음 과제로 이동하세요.</div>` : ''}`;
+}
+
+function renderProcurement(q, d) {
+  const active = q.docs.find(x => x.id === d.activeDoc);
+  return `${practicalHeader(q, mine('practical', q.id))}
+    <div class="work-context">${q.context}</div>
+    <section class="work-section"><div class="work-section-title"><span>01</span><div><b>지급자료 검토</b><small>문서를 눌러 내용을 확인하세요.</small></div></div>
+      <div class="work-docs">${q.docs.map(doc => `<button type="button" class="work-doc ${d.openedDocs.includes(doc.id)?'opened':''}" data-doc="${doc.id}"><span>${doc.icon}</span><b>${doc.title}</b><small>${d.openedDocs.includes(doc.id)?'확인함':'열어보기'}</small></button>`).join('')}</div>
+      ${active ? `<div class="work-document"><b>${active.title}</b><p>${active.body}</p></div>` : '<div class="work-document muted">지급자료를 선택하면 이곳에 내용이 표시됩니다.</div>'}
+    </section>
+    <section class="work-section"><div class="work-section-title"><span>02</span><div><b>이해관계 확인</b><small>개인적 이해관계가 있는 업체를 표시하세요.</small></div></div>
+      <div class="mini-choice-grid">${['A','B','C','NONE'].map(v => `<button type="button" class="mini-choice ${d.conflictVendor===v?'selected':''}" data-conflict="${v}">${v==='NONE'?'없음':`업체 ${v}`}</button>`).join('')}</div>
+    </section>
+    <section class="work-section"><div class="work-section-title"><span>03</span><div><b>비교기준 설정</b><small>구매 결정에 반영할 기준을 선택하세요.</small></div></div>
+      <div class="criteria-grid">${q.criteria.map(c => `<label class="criteria-chip ${d.criteria.includes(c.key)?'selected':''}"><input type="checkbox" data-criteria="${c.key}" ${d.criteria.includes(c.key)?'checked':''}><span>${c.label}</span></label>`).join('')}</div>
+      <div class="vendor-table"><div class="vendor-head"><span>업체</span><span>가격</span><span>품질</span><span>배송</span></div>${q.vendors.map((v,i)=>`<div class="vendor-row"><b>${v.id} · ${v.name}</b><span>${v.price}</span><span>${v.quality}</span><span>${v.delivery}</span></div>`).join('')}</div>
+    </section>
+    <section class="work-section"><div class="work-section-title"><span>04</span><div><b>구매계획 작성</b><small>최종업체와 처리방식을 결정하고 근거를 남기세요.</small></div></div>
+      <label class="work-label">선정업체</label><div class="mini-choice-grid">${q.vendors.map((v,i)=>`<button type="button" class="mini-choice ${d.selectedVendor!==null&&Number(d.selectedVendor)===i?'selected':''}" data-vendor="${i}">${v.id} · ${v.name}</button>`).join('')}</div>
+      <label class="work-check"><input id="disclosureCheck" type="checkbox" ${d.disclosure?'checked':''}><span>이해관계가 있는 업체가 있다면 그 사실을 기록에 공개하고 동일 기준으로 검토하겠습니다.</span></label>
+      <label class="work-label" for="practicalReason">선정사유 및 처리기록</label><textarea id="practicalReason" class="work-textarea" maxlength="300" placeholder="비교한 기준과 업체를 선정한 이유를 구체적으로 기록하세요.">${escapeHTML(d.reason)}</textarea>
+    </section>`;
+}
+
+function renderSequence(q, d) {
+  const map = Object.fromEntries(q.actions.map(a=>[a.id,a]));
+  return `${practicalHeader(q, mine('practical', q.id))}
+    <div class="work-context">${q.context}</div>
+    <section class="work-section"><div class="work-section-title"><span>01</span><div><b>정산자료 확인</b><small>증빙 누락 항목을 확인하세요.</small></div></div>
+      <div class="ledger-table">${q.ledger.map(x=>`<div class="ledger-row ${x.proof?'':'missing'}"><b>${x.item}</b><span>${x.amount}</span><span>${x.proof?'✅ 증빙 있음':'⚠️ 증빙 없음'}</span></div>`).join('')}</div>
+    </section>
+    <section class="work-section"><div class="work-section-title"><span>02</span><div><b>처리절차 구성</b><small>필요하다고 판단한 카드를 실제 처리 순서대로 4개 선택하세요.</small></div></div>
+      <div class="sequence-selected">${d.order.length?d.order.map((id,i)=>`<button type="button" class="sequence-slot" data-remove-action="${id}"><span>${i+1}</span>${map[id]?.text||id}<small>눌러서 제거</small></button>`).join(''):'<div class="sequence-empty">아래 처리카드를 눌러 순서를 구성하세요.</div>'}</div>
+      <div class="action-bank">${q.actions.map(a=>`<button type="button" class="action-card ${d.order.includes(a.id)?'used':''}" data-action="${a.id}" ${d.order.includes(a.id)||d.order.length>=4?'disabled':''}><span>＋</span>${a.text}</button>`).join('')}</div>
+    </section>
+    <section class="work-section"><div class="work-section-title"><span>03</span><div><b>정산의견 기록</b><small>증빙 누락 사실을 어떻게 처리할지 기록하세요.</small></div></div>
+      <textarea id="sequenceNote" class="work-textarea" maxlength="300" placeholder="사실확인, 보고, 재발급, 실제 정산 등의 처리 근거를 적어보세요.">${escapeHTML(d.note)}</textarea>
+    </section>`;
+}
+
+function candidateTotal(q, d, cid) {
+  const source = d.lockedScores || d.scores;
+  return q.rubricFields.reduce((a,f)=>a+Number(source?.[cid]?.[f.key]||0),0);
+}
+
+function panelScoresComplete(q,d) {
+  return q.candidates.every(c => q.rubricFields.every(f => {
+    const v=Number(d.scores?.[c.id]?.[f.key]||0);
+    return v>0 && v<=f.max;
+  }));
+}
+
+function renderPanel(q, d) {
+  const scores = d.lockedScores || d.scores;
+  const totals = q.candidates.map(c=>({id:c.id,total:candidateTotal(q,d,c.id)})).sort((a,b)=>b.total-a.total);
+  return `${practicalHeader(q, mine('practical', q.id))}
+    <div class="work-context">${q.context}</div>
+    <section class="work-section"><div class="work-section-title"><span>01</span><div><b>평가기준 확인</b><small>모든 지원자에게 같은 배점을 적용합니다.</small></div></div>
+      <div class="rubric-strip">${q.rubricFields.map(f=>`<span><b>${f.label}</b>${f.max}점</span>`).join('')}</div>
+    </section>
+    <section class="work-section"><div class="work-section-title"><span>02</span><div><b>지원자료 채점</b><small>${d.revealed?'1차 채점이 확정되었습니다.':'지원자료만 보고 각 항목의 점수를 입력하세요.'}</small></div></div>
+      <div class="candidate-list">${q.candidates.map(c=>`<article class="candidate-card"><div class="candidate-head"><b>${c.name}</b><strong>${candidateTotal(q,d,c.id)}점</strong></div><p>${c.profile}</p><div class="candidate-sliders">${q.rubricFields.map(f=>{const val=Number(scores?.[c.id]?.[f.key]||0);return `<label><span>${f.label}<b data-score-label="${c.id}:${f.key}">${val}</b> / ${f.max}</span><input type="range" min="0" max="${f.max}" step="1" value="${val}" data-candidate="${c.id}" data-field="${f.key}" ${d.revealed?'disabled':''}></label>`}).join('')}</div></article>`).join('')}</div>
+      ${!d.revealed?`<button id="revealRelationBtn" class="btn soft large full" ${panelScoresComplete(q,d)?'':'disabled'}>1차 채점 확정 → 추가정보 확인</button>`:`<div class="work-alert"><b>⚠️ 추가정보</b><span>${q.extraInfo}</span></div>`}
+    </section>
+    ${d.revealed?`<section class="work-section"><div class="work-section-title"><span>03</span><div><b>이해관계 상황 처리</b><small>1차 점수는 잠겼습니다. 이제 처리방식을 결정하세요.</small></div></div>
+      <div class="locked-result">현재 1위 <b>지원자 ${totals[0]?.id}</b> · ${totals[0]?.total||0}점 <small>동점이면 교사의 추가 절차에 따릅니다.</small></div>
+      <div class="response-list">${q.responses.map((x,i)=>`<button type="button" class="response-card ${d.response!==null&&Number(d.response)===i?'selected':''}" data-response="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div>
+      <label class="work-label" for="panelReason">최종 판단근거</label><textarea id="panelReason" class="work-textarea" maxlength="300" placeholder="친분 관계와 평가기준을 어떻게 다뤘는지 근거를 적어보세요.">${escapeHTML(d.reason)}</textarea>
+    </section>`:''}`;
+}
+
+function practicalReady(q,d) {
+  if (q.kind==='procurement') return !!d.conflictVendor && d.criteria.length>=2 && d.selectedVendor!==null && Number.isInteger(Number(d.selectedVendor)) && String(d.reason||'').trim().length>=8;
+  if (q.kind==='sequence') return d.order.length===4 && String(d.note||'').trim().length>=8;
+  return d.revealed && d.response!==null && Number.isInteger(Number(d.response)) && String(d.reason||'').trim().length>=8;
+}
+
+function renderPractical(q, ex) {
+  if (ex) {
+    const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,ex);
+    return `${practicalHeader(q, ex)}<div class="work-score-preview"><span>제출된 작업물</span><b>${ev.score}점</b><small>최종 결과 단계에서 전체 실기점수와 청렴역량에 반영됩니다.</small></div>`;
+  }
+  const d=practicalDraft(q);
+  const body=q.kind==='procurement'?renderProcurement(q,d):q.kind==='sequence'?renderSequence(q,d):renderPanel(q,d);
+  const ready=practicalReady(q,d) && !practicalExpired();
+  return `${body}<div class="work-submit-sticky"><div><b>작업물 제출</b><small>${practicalExpired()?'시간이 종료되어 제출할 수 없습니다.':ready?'필수 작업이 완료되었습니다. 제출 후 수정할 수 없습니다.':'필수 작업을 모두 완성하면 제출할 수 있습니다.'}</small></div><button id="submitPracticalBtn" class="btn primary large" ${ready?'':'disabled'}>${practicalExpired()?'작업시간 종료':'작업물 최종 제출'}</button></div>`;
+}
+
+function bindPractical(q, ex) {
+  if (ex) return;
+  const d=practicalDraft(q);
+  document.querySelectorAll('[data-doc]').forEach(b=>b.onclick=()=>{const id=b.dataset.doc;if(!d.openedDocs.includes(id))d.openedDocs.push(id);d.activeDoc=id;render();});
+  document.querySelectorAll('[data-conflict]').forEach(b=>b.onclick=()=>{d.conflictVendor=b.dataset.conflict;render();});
+  document.querySelectorAll('[data-criteria]').forEach(x=>x.onchange=()=>{const k=x.dataset.criteria;d.criteria=x.checked?[...new Set([...d.criteria,k])]:d.criteria.filter(v=>v!==k);render();});
+  document.querySelectorAll('[data-vendor]').forEach(b=>b.onclick=()=>{d.selectedVendor=Number(b.dataset.vendor);render();});
+  const dc=$('#disclosureCheck'); if(dc) dc.onchange=()=>{d.disclosure=dc.checked;};
+  const pr=$('#practicalReason'); if(pr) pr.oninput=()=>{d.reason=pr.value;const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
+  document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{if(d.order.length<4&&!d.order.includes(b.dataset.action)){d.order.push(b.dataset.action);render();}});
+  document.querySelectorAll('[data-remove-action]').forEach(b=>b.onclick=()=>{d.order=d.order.filter(x=>x!==b.dataset.removeAction);render();});
+  const sn=$('#sequenceNote'); if(sn) sn.oninput=()=>{d.note=sn.value;const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
+  document.querySelectorAll('[data-candidate]').forEach(x=>x.oninput=()=>{const cid=x.dataset.candidate,f=x.dataset.field;d.scores[cid][f]=Number(x.value);const l=document.querySelector(`[data-score-label="${cid}:${f}"]`);if(l)l.textContent=x.value;const card=x.closest('.candidate-card');if(card){const t=card.querySelector('.candidate-head strong');if(t)t.textContent=candidateTotal(q,d,cid)+'점';}const rb=$('#revealRelationBtn');if(rb)rb.disabled=!panelScoresComplete(q,d);});
+  const rr=$('#revealRelationBtn'); if(rr) rr.onclick=()=>{if(!panelScoresComplete(q,d))return;d.lockedScores=JSON.parse(JSON.stringify(d.scores));d.revealed=true;render();};
+  document.querySelectorAll('[data-response]').forEach(b=>b.onclick=()=>{d.response=Number(b.dataset.response);render();});
+  const pa=$('#panelReason'); if(pa) pa.oninput=()=>{d.reason=pa.value;const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
+  const sb=$('#submitPracticalBtn'); if(sb) sb.onclick=()=>submitPractical(q);
+}
+
+async function submitPractical(q) {
+  if (submitting || practicalExpired()) return;
+  const d=practicalDraft(q);
+  if(!practicalReady(q,d)) return toast('필수 작업을 모두 완성해주세요.');
+  let choice=0;
+  if(q.kind==='procurement') choice=Number(d.selectedVendor);
+  if(q.kind==='panel') choice=Number(d.response);
+  const payload={choice,work:JSON.parse(JSON.stringify(d))};
+  const btn=$('#submitPracticalBtn');
+  submitting=true;
+  if(btn){btn.disabled=true;btn.textContent='작업물 저장 중...';}
+  try{
+    await DB.submitAnswer(code,'practical',q.id,payload);
+    await syncMyResult();
+    toast('작업물을 제출했습니다.');
+  }catch(e){
+    toast('이미 제출했거나 저장 중 오류가 발생했습니다.');
+    if(btn){btn.disabled=false;btn.textContent='작업물 최종 제출';}
+  }finally{submitting=false;}
+}
+
+function practicalBreakdownHTML(s) {
+  return `<div class="practical-breakdown"><b>작업형 실기 결과</b>${s.practicalTaskScores.map((x,i)=>`<div><span>제${i+1}과제</span><strong>${x.score}</strong><small>${x.answered?'제출':'미제출 · 0점'}</small></div>`).join('')}</div>`;
+}
+
 function render() {
   if (!control) return;
 
@@ -288,21 +485,7 @@ function render() {
 
   if (stage === 'practical') {
     const ex = mine('practical', q.id);
-    const pending = pendingChoices[answerKey()];
-
-    h = `<span class="stage-tag">실기평가 ${Number(control.index) + 1}/${C.practical.length}</span>
-      <h2>${q.title}</h2>
-      <div class="student-context">${q.context}</div>
-      <h3>${q.q}</h3>
-      ${choiceHTML(q.options, ex, pending)}
-      ${!ex ? `<div class="student-submit">
-        <button id="submitBtn" class="btn primary large full" ${pending == null ? 'disabled' : ''}>
-          나의 선택 제출
-        </button>
-      </div>` : `<div class="feedback info">
-        ✓ 선택이 확정되었습니다.<br>
-        제출한 답안은 다시 변경할 수 없습니다.
-      </div>`}`;
+    h = renderPractical(q, ex);
   }
 
   if (stage === 'process') {
@@ -377,6 +560,7 @@ function render() {
           <div><span>실천</span><b>${s.pl}</b></div>
         </div>
       </div>
+      ${practicalBreakdownHTML(s)}
       ${missingNotice}
       ${typeCardHTML(t)}
       <div id="certificate" class="certificate ${s.qualification === '청렴 리더' ? 'leader' : ''}">
@@ -403,6 +587,8 @@ function render() {
 
   $('#studentContent').innerHTML = h;
   bindChoices();
+  if (stage === 'practical' && q) bindPractical(q, mine('practical', q.id));
+  updateTimerDisplay();
 
   if ($('#submitBtn')) $('#submitBtn').onclick = submit;
   if ($('#pledgeBtn')) $('#pledgeBtn').onclick = savePledge;
@@ -555,10 +741,11 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v4.1';
+    $('#studentStatus').textContent = '실시간 연결 · v5.0 작업형';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;
+    if (!timerTicker) timerTicker = setInterval(updateTimerDisplay, 500);
   } catch (e) {
     $('#configError').classList.remove('hidden');
     $('#studentStatus').textContent = '연결 실패';

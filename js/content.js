@@ -12,14 +12,14 @@ window.CHEONGRYEOM_CONTENT={
     {key:'intro',name:'오리엔테이션',short:'OT'},
     {key:'written',name:'필기평가',short:'필기'},
     {key:'practical',name:'작업형 실기',short:'실기'},
-    {key:'process',name:'과정평가',short:'과정'},
+    {key:'team',name:'종합 팀 실기',short:'팀실기'},
     {key:'diagnosis',name:'역량진단',short:'진단'},
     {key:'pledge',name:'청렴실천',short:'실천'},
     {key:'result',name:'자격판정',short:'결과'}
   ],
   intro:{
     title:'청렴은 아는 것에서 끝나지 않습니다. 실제 상황을 처리하는 과정에서 역량이 드러납니다.',
-    body:'필기에서는 청렴의 기본 기준을 확인하고, 작업형 실기에서는 지급자료를 검토해 기준을 적용하고 기록을 작성한 뒤 작업물을 제출합니다. 이후 토론·성찰·실천을 거쳐 나의 청렴역량을 확인합니다.'
+    body:'필기에서는 청렴의 기본 기준을 확인하고, 개인 작업형 실기에서는 실제 자료를 처리합니다. 마지막 종합 팀 실기에서는 팀원마다 다른 정보를 공유하고 돌발상황에 대응해 하나의 청렴 의사결정 보고서를 완성합니다.'
   },
   written:[
     {id:'w1',virtue:'honesty',q:'생성형 AI로 수행평가 초안을 만들었습니다. 가장 정직한 제출 방식에 가까운 것은?',options:['AI가 만든 내용을 거의 그대로 제출한다.','AI를 사용했다는 사실은 굳이 말하지 않는다.','학교 지침을 확인하고, 사용한 부분을 밝힌 뒤 내 생각과 검토를 거쳐 다시 작성한다.','문장 몇 개만 바꾸면 내가 쓴 글과 같으므로 그대로 제출한다.'],correct:2,ex:'도구를 사용하는 것 자체보다 사용 사실과 범위를 숨기고 결과물을 자신의 성과처럼 제시하는지가 핵심입니다.',impact:{honesty:100,responsibility:55}},
@@ -90,11 +90,58 @@ window.CHEONGRYEOM_CONTENT={
       rubric:['기준표에 따른 채점 50','이해관계 인식 10','동일기준 유지 25','판단근거 기록 15']
     }
   ],
-  process:[
-    {id:'d1',title:'청렴 판단 LAB ① 친구와 규칙',context:'친한 친구가 학교 규칙을 어긴 사실을 알게 되었습니다. 친구는 “우리 사이인데 말하지 않을 거지?”라고 부탁합니다.',q:'친구의 잘못을 선생님에게 알리는 것은 청렴한 행동일까요?',options:['그렇다','아니다','상황에 따라 다르다'],discussion:['규칙 위반으로 피해를 보는 사람이 있는가?','친구를 배려하는 것과 잘못을 숨기는 것은 어떻게 다른가?','공정·책임·배려가 충돌한다면 어떤 기준이 필요한가?']},
-    {id:'d2',title:'청렴 판단 LAB ② 단체 채팅방',context:'반 단체 채팅방에서 시험 범위와 관련된 미확인 정보가 빠르게 퍼지고 있습니다. 출처를 묻는 친구에게 누군가 “다들 알고 있으니 그냥 믿어”라고 말합니다.',q:'확실하지 않은 정보를 전달하지 않는 것도 청렴과 관련이 있을까요?',options:['그렇다','아니다','상황에 따라 다르다'],discussion:['정보를 전달하는 사람에게 어떤 책임이 있는가?','사실 확인이 필요한 이유는 무엇인가?','정직과 책임은 온라인 공간에서 어떻게 나타나는가?']}
-  ],
-  scoring:{writtenWeight:30,practicalWeight:40,processWeight:20,pledgeWeight:10,leaderTotal:85,leaderPractical:80}
+  team:{
+    id:'t1',code:'T-01',title:'종합 팀 작업형 · 청렴 의사결정 위원회',timeLimitSec:720,
+    objective:'팀원마다 서로 다른 지급정보를 공유하고, 공정한 기준을 세운 뒤 돌발상황까지 반영하여 하나의 최종 의사결정 보고서를 완성하십시오.',
+    context:'학교 축제 하루 전, 준비위원회는 200개의 체험키트를 긴급 구매해야 합니다. 예산·업체·행사시간·이해관계 정보가 서로 다른 팀원에게 나누어 지급됩니다. 혼자서는 전체 상황을 알 수 없으므로 반드시 정보를 공유해야 합니다.',
+    roleOrder:['records','finance','purchase','operations','verify'],
+    roles:{
+      records:{key:'records',name:'기록·조정 담당',icon:'🗂️',secret:'학교 구매규정에는 개인적 이해관계가 있는 업체가 있으면 관계를 공개하고, 같은 기준으로 공동심의하며 선정사유를 기록하도록 되어 있습니다. 또한 B업체 대표는 준비위원장의 이모입니다.',options:['B업체와의 이해관계를 공개하고 동일 기준으로 심의·기록해야 한다.','친척 업체는 이유를 따지지 않고 무조건 탈락시켜야 한다.','친척 관계는 가격과 무관하므로 팀에 알릴 필요가 없다.'],correct:0,keywords:['이해관계','공개','기준','기록']},
+      finance:{key:'finance',name:'회계 담당',icon:'💰',secret:'이번 긴급구매에 사용할 수 있는 예산은 최대 240,000원입니다. A업체 215,000원, B업체 208,000원, C업체 198,000원으로 세 업체 모두 예산 안이지만 가격만으로 결정해서는 안 됩니다.',options:['세 업체 모두 예산 범위이며 가격 외 조건도 함께 비교해야 한다.','가장 싼 C업체를 바로 선택해야 한다.','예산이 남으므로 가장 비싼 업체를 선택해도 된다.'],correct:0,keywords:['예산','가격','조건','비교']},
+      purchase:{key:'purchase',name:'구매 담당',icon:'📦',secret:'A업체는 오늘 17:00 납품·품질 4/5, B업체는 내일 09:00 납품·품질 5/5, C업체는 내일 11:30 납품·품질 4/5입니다. 현재 조건만 보면 B업체가 가격·품질·납기 면에서 경쟁력이 있습니다.',options:['업체별 가격·품질·납기를 같은 기준으로 비교해야 한다.','품질이 가장 좋은 업체는 다른 조건 없이 바로 선정한다.','친분 있는 업체가 있으면 그 업체의 장점을 우선 반영한다.'],correct:0,keywords:['가격','품질','납기','기준']},
+      operations:{key:'operations',name:'행사 운영 담당',icon:'⏰',secret:'축제 체험은 내일 10:00에 시작하고, 안전점검 때문에 체험키트는 늦어도 09:30까지 현장에 도착해야 합니다. 09:30 이후 도착하는 물품은 사용할 수 없습니다.',options:['09:30 이전 납품 가능 여부는 필수 기준이다.','행사는 10시에 시작하므로 10시까지 오면 된다.','조금 늦어도 가격이 싸면 기다릴 수 있다.'],correct:0,keywords:['09:30','납품','시간','필수']},
+      verify:{key:'verify',name:'검증 담당',icon:'🔎',secret:'공정한 구매에서는 사은품, 개인적 친분, 인기 같은 사적 요소를 평가기준으로 삼지 않습니다. 판단에 사용한 기준과 변경사유는 나중에 확인할 수 있도록 기록해야 합니다.',options:['사적 요소는 배제하고 객관적 기준과 변경사유를 기록해야 한다.','사은품이 많으면 학교에도 이익이므로 중요한 기준이다.','팀원 다수가 좋아하는 업체를 선택하면 공정하다.'],correct:0,keywords:['사적','객관','기준','기록']}
+    },
+    supplemental:{
+      purchase:'보완 지급자료 · 구매정보: A 215,000원/오늘 17:00/품질4, B 208,000원/내일 09:00/품질5, C 198,000원/내일 11:30/품질4.',
+      operations:'보완 지급자료 · 행사정보: 체험은 내일 10:00 시작, 안전점검 때문에 09:30까지 납품 완료가 필수입니다.',
+      finance:'보완 지급자료 · 회계정보: 최대 예산 240,000원이며 세 업체 모두 예산 범위입니다.'
+    },
+    issues:[
+      {key:'budget',label:'예산 240,000원 범위 확인',good:true},
+      {key:'deadline',label:'09:30 납품 마감시간 확인',good:true},
+      {key:'conflict',label:'B업체와 준비위원장의 이해관계 확인',good:true},
+      {key:'record',label:'기준·선정사유 기록 의무 확인',good:true},
+      {key:'popularity',label:'친구들이 선호하는 업체 확인',good:false},
+      {key:'gift',label:'사은품이 많은 업체 확인',good:false}
+    ],
+    criteria:[
+      {key:'price',label:'가격',good:true},{key:'quality',label:'품질',good:true},
+      {key:'delivery',label:'납기',good:true},{key:'conflictProcess',label:'이해관계 공개·처리',good:true},
+      {key:'friendship',label:'개인적 친분',good:false},{key:'gift',label:'사은품',good:false}
+    ],
+    conflictResponses:[
+      '이해관계를 팀에 공개하고, 정한 기준을 동일하게 적용해 공동심의·기록한다.',
+      '친척 업체이므로 조건과 관계없이 자동 탈락시킨다.',
+      '가격이 좋다면 관계는 공개하지 않아도 된다.',
+      '부담되므로 업체 비교를 중단한다.'
+    ],
+    vendors:[
+      {id:'A',name:'A업체',price:'215,000원',quality:'4/5',delivery:'오늘 17:00'},
+      {id:'B',name:'B업체',price:'208,000원',quality:'5/5',delivery:'내일 09:00'},
+      {id:'C',name:'C업체',price:'198,000원',quality:'4/5',delivery:'내일 11:30'}
+    ],
+    twist:'⚠️ 돌발상황: B업체에서 물류차량 고장으로 납품시간이 내일 10:30으로 변경되었다고 연락했습니다. 09:30 납품 마감 기준을 더 이상 충족하지 못합니다.',
+    twistResponses:[
+      '새 정보를 공식 조건으로 반영하여 업체를 다시 비교한다.',
+      '처음 결정한 기준과 결과를 지키기 위해 변경하지 않는다.',
+      '친분 있는 업체이므로 1시간 정도는 기다려준다.',
+      '팀원 다수결만으로 즉시 결정한다.'
+    ],
+    reportRubric:['문제 발견 15','정보 공유·종합 15','이해관계 처리 15','공정한 기준 설정 20','돌발상황 대응 15','최종 의사결정·기록 20'],
+    finalVendor:'A'
+  },
+  scoring:{writtenWeight:25,practicalWeight:45,teamWeight:20,pledgeWeight:10,leaderTotal:85,leaderPractical:80,leaderTeam:75}
 };
 
 window.CHEONGRYEOM_EVALUATE_PRACTICAL = function(q, answer){
@@ -181,6 +228,74 @@ window.CHEONGRYEOM_EVALUATE_PRACTICAL = function(q, answer){
   return {score:clamp(score),impact,details};
 };
 
+
+
+window.CHEONGRYEOM_EVALUATE_TEAM_ROLE = function(team, answer){
+  if(!team || !answer) return {score:0,impact:{},details:[]};
+  const roleKey=String(answer?.work?.roleKey||'');
+  const role=team.roles?.[roleKey];
+  if(!role) return {score:0,impact:{},details:[]};
+  const note=String(answer?.work?.note||'').trim();
+  const choiceScore=Number(answer.choice)===Number(role.correct)?60:0;
+  const noteScore=note.length>=18?20:note.length>=8?12:0;
+  const keywordHits=(role.keywords||[]).filter(k=>note.includes(k)).length;
+  const keywordScore=Math.min(20,keywordHits*5);
+  const score=Math.max(0,Math.min(100,choiceScore+noteScore+keywordScore));
+  const impacts={
+    records:{honesty:100,fairness:95,responsibility:70},
+    finance:{responsibility:95,restraint:85,fairness:65},
+    purchase:{fairness:90,responsibility:80,restraint:65},
+    operations:{promise:95,responsibility:95,care:60},
+    verify:{fairness:95,restraint:95,honesty:70}
+  };
+  const base=impacts[roleKey]||{responsibility:70,fairness:70};
+  const impact=Object.fromEntries(Object.entries(base).map(([k,v])=>[k,Math.round(v*score/100)]));
+  return {score,impact,details:[['핵심정보 식별',choiceScore,60],['팀 공유기록',noteScore,20],['역할 핵심개념',keywordScore,20]]};
+};
+
+window.CHEONGRYEOM_EVALUATE_TEAM_REPORT = function(team, reportAnswer, memberAnswers){
+  const clamp=x=>Math.max(0,Math.min(100,Math.round(x)));
+  if(!team || !reportAnswer?.work) return {score:0,impact:{},details:[]};
+  const w=reportAnswer.work||{};
+  const selectedIssues=new Set(Array.isArray(w.issues)?w.issues:[]);
+  const issueGood=team.issues.filter(x=>x.good).map(x=>x.key);
+  const issueBad=team.issues.filter(x=>!x.good).map(x=>x.key);
+  let issueScore=issueGood.reduce((a,k)=>a+(selectedIssues.has(k)?3.75:0),0)-issueBad.reduce((a,k)=>a+(selectedIssues.has(k)?2.5:0),0);
+  issueScore=Math.max(0,Math.min(15,issueScore));
+
+  const members=Array.isArray(memberAnswers)?memberAnswers:[];
+  const roleScores=members.map(x=>window.CHEONGRYEOM_EVALUATE_TEAM_ROLE(team,x.answer).score);
+  const sharingScore=roleScores.length?Math.round(roleScores.reduce((a,b)=>a+b,0)/roleScores.length*0.15):0;
+
+  const conflictScore=Number(w.conflictResponse)===0?15:Number(w.conflictResponse)===1?7:0;
+
+  const selectedCriteria=new Set(Array.isArray(w.criteria)?w.criteria:[]);
+  const criteriaGood=team.criteria.filter(x=>x.good).map(x=>x.key);
+  const criteriaBad=team.criteria.filter(x=>!x.good).map(x=>x.key);
+  let criteriaScore=criteriaGood.reduce((a,k)=>a+(selectedCriteria.has(k)?5:0),0)-criteriaBad.reduce((a,k)=>a+(selectedCriteria.has(k)?3:0),0);
+  criteriaScore=Math.max(0,Math.min(20,criteriaScore));
+
+  const twistScore=Number(w.twistResponse)===0?15:0;
+  const vendorScore=String(w.vendor||'')===String(team.finalVendor)?10:0;
+  const reason=String(w.reason||'').trim();
+  let reasonScore=reason.length>=30?4:reason.length>=15?2:0;
+  [/09:30|납기|시간/,/이해관계|공개|친척/,/가격|품질|기준/,/기록|사유|근거/].forEach(r=>{if(r.test(reason))reasonScore+=1.5});
+  reasonScore=Math.min(10,reasonScore);
+  const finalScore=vendorScore+reasonScore;
+  const score=clamp(issueScore+sharingScore+conflictScore+criteriaScore+twistScore+finalScore);
+  const impact={
+    honesty:clamp(conflictScore*4+reasonScore*3),
+    promise:clamp(twistScore*3+sharingScore*2),
+    care:clamp(sharingScore*4+issueScore*2),
+    responsibility:clamp(issueScore*3+finalScore*3+sharingScore),
+    restraint:clamp(criteriaScore*3+conflictScore*2),
+    fairness:clamp(conflictScore*3+criteriaScore*3+twistScore)
+  };
+  return {score,impact,details:[
+    ['문제 발견',Math.round(issueScore),15],['정보 공유·종합',sharingScore,15],['이해관계 처리',conflictScore,15],
+    ['공정한 기준 설정',Math.round(criteriaScore),20],['돌발상황 대응',twistScore,15],['최종 의사결정·기록',Math.round(finalScore),20]
+  ]};
+};
 
 // 6대 청렴역량 중 상위 2개 조합으로 산출하는 15가지 '나의 청렴유형'.
 // 역사 인물은 성격을 단정하는 진단이 아니라 청렴가치를 이해하기 위한 교육적 상징 연결입니다.

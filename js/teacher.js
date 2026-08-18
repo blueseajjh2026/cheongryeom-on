@@ -22,8 +22,7 @@ const stageIdx = k => stages.findIndex(s => s.key === k);
 
 const items = k =>
   k === 'written' ? C.written :
-  k === 'practical' ? C.practical :
-  k === 'process' ? C.process : [];
+  k === 'practical' ? C.practical : [];
 
 const item = () => items(control.stage)[Number(control.index || 0)] || null;
 
@@ -32,7 +31,7 @@ const stageCharacter = {
   intro: 'character-explain.png',
   written: 'character-warning.png',
   practical: 'character-tablet.png',
-  process: 'character-listen.png',
+  team: 'character-together.png',
   diagnosis: 'character-best.png',
   pledge: 'character-love.png',
   result: 'character-harmony.png'
@@ -46,20 +45,11 @@ function charBox(stage) {
 }
 
 function responseProgress(uid) {
-  let answered = 0;
-  let total = C.written.length + C.practical.length + C.process.length;
-
-  C.written.forEach(q => {
-    if (answers?.written?.[q.id]?.[uid]) answered++;
-  });
-  C.practical.forEach(q => {
-    if (answers?.practical?.[q.id]?.[uid]) answered++;
-  });
-  C.process.forEach(q => {
-    if (answers?.process?.[q.id]?.[uid]) answered++;
-  });
-
-  return { answered, total };
+  let answered=0; const total=C.written.length+C.practical.length+1;
+  C.written.forEach(q=>{if(answers?.written?.[q.id]?.[uid])answered++;});
+  C.practical.forEach(q=>{if(answers?.practical?.[q.id]?.[uid])answered++;});
+  if(answers?.team?.role?.[uid])answered++;
+  return {answered,total};
 }
 
 function renderRoster() {
@@ -78,7 +68,7 @@ function renderRoster() {
         return `<div class="roster-item ${atResult ? 'done' : ''}">
           <b>${p.studentName || '이름 미확인'}</b>
           <span>
-            ${p.schoolLevel === 'high' ? '고등학생' : '중학생'} ·
+            ${p.schoolLevel === 'high' ? '고등학생' : '중학생'} · ${p.teamLabel?`${p.teamLabel} · ${p.teamRoleName} · `:''}
             ${atResult ? `${r.qualification} · ${r.total}점 · ${typeForUser(uid).name}` : `응답 ${rp.answered}/${rp.total}`}
           </span>
         </div>`;
@@ -100,7 +90,7 @@ function renderNav() {
   ).join('');
 
   document.querySelectorAll('.stage-btn').forEach(b => {
-    b.onclick = () => go(b.dataset.key, 0);
+    b.onclick = () => { const target=b.dataset.key; if(control.stage==='team'&&stageIdx(target)>stageIdx('team')&&control.teamPhase!=='scored') return toast('팀 채점·결과공개 후 다음 단계로 이동하세요.'); go(target,0); };
   });
 }
 
@@ -148,36 +138,14 @@ function bars(labels, list) {
 }
 
 function compForUser(uid) {
-  const sums = Object.fromEntries(
-    C.virtues.map(v => [v.key, { s: 0, n: 0 }])
-  );
-
-  C.written.forEach(q => {
-    const a = answers?.written?.[q.id]?.[uid];
-    if (!a) return;
-    Object.entries(q.impact || {}).forEach(([k, v]) => {
-      sums[k].s += (a.choice === q.correct ? v : Math.round(v * 0.3));
-      sums[k].n++;
-    });
-  });
-
-  C.practical.forEach(q => {
-    const a = answers?.practical?.[q.id]?.[uid];
-    if (!a) return;
-    const ev = CHEONGRYEOM_EVALUATE_PRACTICAL(q, a);
-    Object.entries(ev.impact || {}).forEach(([k, v]) => {
-      if (!sums[k]) return;
-      sums[k].s += Number(v || 0);
-      sums[k].n++;
-    });
-  });
-
-  return Object.fromEntries(
-    Object.entries(sums).map(([k, v]) => [
-      k,
-      v.n ? Math.round(v.s / v.n) : 0
-    ])
-  );
+  const sums=Object.fromEntries(C.virtues.map(v=>[v.key,{s:0,n:0}]));
+  C.written.forEach(q=>{const a=answers?.written?.[q.id]?.[uid];if(!a)return;Object.entries(q.impact||{}).forEach(([k,v])=>{sums[k].s+=(a.choice===q.correct?v:Math.round(v*.3));sums[k].n++;});});
+  C.practical.forEach(q=>{const a=answers?.practical?.[q.id]?.[uid];if(!a)return;const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);Object.entries(ev.impact||{}).forEach(([k,v])=>{if(sums[k]){sums[k].s+=Number(v||0);sums[k].n++;}});});
+  const roleEv=CHEONGRYEOM_EVALUATE_TEAM_ROLE(C.team,answers?.team?.role?.[uid]);
+  Object.entries(roleEv.impact||{}).forEach(([k,v])=>{if(sums[k]){sums[k].s+=Number(v||0);sums[k].n++;}});
+  const p=participants?.[uid]; const pub=p?.teamId?control?.teamScores?.[p.teamId]:null;
+  Object.entries(pub?.impact||{}).forEach(([k,v])=>{if(sums[k]){sums[k].s+=Number(v||0);sums[k].n++;}});
+  return Object.fromEntries(Object.entries(sums).map(([k,v])=>[k,v.n?Math.round(v.s/v.n):0]));
 }
 
 function typeForUser(uid) {
@@ -227,61 +195,21 @@ function renderClassComp() {
 }
 
 function calcStudent(uid) {
-  const S = C.scoring;
-
-  let writtenCorrect = 0;
-  let writtenAnswered = 0;
-  C.written.forEach(q => {
-    const a = answers?.written?.[q.id]?.[uid];
-    if (a) writtenAnswered++;
-    if (a?.choice === q.correct) writtenCorrect++;
-  });
-  const w = Math.round(writtenCorrect / C.written.length * 100);
-
-  let practicalSum = 0;
-  let practicalAnswered = 0;
-  const practicalTaskScores=[];
-  C.practical.forEach(q => {
-    const a=answers?.practical?.[q.id]?.[uid];
-    const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);
-    if(a) practicalAnswered++;
-    practicalSum += a ? ev.score : 0;
-    practicalTaskScores.push(a?ev.score:0);
-  });
-  const p = Math.round(practicalSum / C.practical.length);
-
-  let processAnswered = 0;
-  C.process.forEach(q => {
-    if (answers?.process?.[q.id]?.[uid]) processAnswered++;
-  });
-  const pr = Math.round(processAnswered / C.process.length * 100);
-  const pl = pledges?.[uid]?.text ? 100 : 0;
-
-  const total = Math.round(
-    w * S.writtenWeight / 100 +
-    p * S.practicalWeight / 100 +
-    pr * S.processWeight / 100 +
-    pl * S.pledgeWeight / 100
-  );
-
-  const qualification =
-    total >= S.leaderTotal && p >= S.leaderPractical
-      ? '청렴 리더'
-      : '청렴 서포터';
-
-  const missingQuestions =
-    (C.written.length - writtenAnswered) +
-    (C.practical.length - practicalAnswered) +
-    (C.process.length - processAnswered);
-
-  return {
-    w, p, pr, pl, total, qualification,
-    writtenAnswered, practicalAnswered, processAnswered,
-    practicalTaskScores,
-    missingQuestions
-  };
+  const S=C.scoring; let wc=0,wa=0;
+  C.written.forEach(q=>{const a=answers?.written?.[q.id]?.[uid];if(a)wa++;if(a?.choice===q.correct)wc++;});
+  const w=Math.round(wc/C.written.length*100);
+  let ps=0,pa=0;const practicalTaskScores=[];
+  C.practical.forEach(q=>{const a=answers?.practical?.[q.id]?.[uid];const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);if(a)pa++;ps+=a?ev.score:0;practicalTaskScores.push(a?ev.score:0);});
+  const p=Math.round(ps/C.practical.length);
+  const roleEv=CHEONGRYEOM_EVALUATE_TEAM_ROLE(C.team,answers?.team?.role?.[uid]);
+  const part=participants?.[uid]||{}; const pub=part.teamId?control?.teamScores?.[part.teamId]:null;
+  const team=pub?Math.round(Number(pub.teamScore||0)*.8+roleEv.score*.2):0;
+  const pl=pledges?.[uid]?.text?100:0;
+  const total=Math.round(w*S.writtenWeight/100+p*S.practicalWeight/100+team*S.teamWeight/100+pl*S.pledgeWeight/100);
+  const qualification=total>=S.leaderTotal&&p>=S.leaderPractical&&team>=S.leaderTeam?'청렴 리더':'청렴 서포터';
+  const missingQuestions=(C.written.length-wa)+(C.practical.length-pa)+(answers?.team?.role?.[uid]?0:1);
+  return {w,p,team,roleScore:roleEv.score,teamBase:Number(pub?.teamScore||0),teamComplete:!!pub,pl,total,qualification,writtenAnswered:wa,practicalAnswered:pa,practicalTaskScores,missingQuestions};
 }
-
 
 function teacherTimerHTML(q){
   const end=Number(control?.timerEnd||0);
@@ -323,6 +251,48 @@ function updateTeacherTimer(){
   const sec=Math.max(0,Math.ceil(ms/1000));
   el.textContent=`${Math.floor(sec/60)}:${String(sec%60).padStart(2,'0')}`;
   if(ms<=0){const wrap=el.closest('.teacher-timer');if(wrap)wrap.classList.add('expired');}
+}
+
+
+function teamGroups(){
+  const groups={}; Object.entries(participants||{}).forEach(([uid,p])=>{if(!p.teamId)return;(groups[p.teamId] ||= {id:p.teamId,label:p.teamLabel||p.teamId,members:[]}).members.push({uid,...p});});
+  return Object.values(groups).sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
+}
+async function assignTeams(){
+  const ids=Object.keys(participants||{}).sort((a,b)=>Number(participants[a]?.joinedAt||0)-Number(participants[b]?.joinedAt||0));
+  if(!ids.length)return toast('먼저 학생이 입장해야 합니다.');
+  const teamCount=Math.max(1,Math.round(ids.length/4)); const base=Math.floor(ids.length/teamCount), rem=ids.length%teamCount;
+  let pos=0; const roleOrder=C.team.roleOrder;
+  for(let ti=0;ti<teamCount;ti++){
+    const size=base+(ti<rem?1:0); const teamId=`T${ti+1}`, teamLabel=`${ti+1}팀`;
+    for(let j=0;j<size;j++){
+      const uid=ids[pos++]; const rk=roleOrder[Math.min(j,roleOrder.length-1)]; const role=C.team.roles[rk];
+      await DB.db.ref(`rooms/${code}/participants/${uid}`).update({teamId,teamLabel,teamSize:size,teamRoleKey:rk,teamRoleName:role.name});
+    }
+  }
+  await DB.setControl(code,{teamPhase:'briefing',teamScores:null}); toast(`${teamCount}개 팀으로 자동 편성했습니다.`);
+}
+function teamReportAnswer(group){const recorder=group.members.find(m=>m.teamRoleKey==='records')||group.members[0];return recorder?answers?.team?.report?.[recorder.uid]:null;}
+function teamEval(group){
+  const members=group.members.map(m=>({roleKey:m.teamRoleKey,answer:answers?.team?.role?.[m.uid]}));
+  const report=teamReportAnswer(group); return CHEONGRYEOM_EVALUATE_TEAM_REPORT(C.team,report,members);
+}
+async function setTeamPhase(phase){if(!teamGroups().length)return toast('먼저 팀을 편성해주세요.');await DB.setControl(code,{teamPhase:phase});}
+async function publishTeamScores(){
+  const groups=teamGroups(); if(!groups.length)return toast('먼저 팀을 편성해주세요.');
+  const scores={}; groups.forEach(g=>{const ev=teamEval(g);scores[g.id]={teamLabel:g.label,teamScore:ev.score,details:ev.details,impact:ev.impact,reportSubmitted:!!teamReportAnswer(g),publishedAt:Date.now()};});
+  await DB.setControl(code,{teamPhase:'scored',teamScores:scores}); toast('팀 작업결과를 채점·공개했습니다.');
+}
+function teamTeacherHTML(){
+  const groups=teamGroups(), phase=control?.teamPhase||'briefing';
+  const phaseNames={briefing:'분산정보 공유',twist:'돌발상황 공개',report:'최종보고서 작성',scored:'채점·결과공개'};
+  return `<span class="eyebrow">TEAM-BASED PRACTICAL · ${C.team.code}</span><h2>${C.team.title}</h2><p class="context-box">${C.team.objective}</p><div class="team-teacher-controls"><button id="assignTeamsBtn" class="btn soft">${groups.length?'팀 재편성':'① 팀 자동편성'}</button><button id="teamTwistBtn" class="btn outline" ${!groups.length?'disabled':''}>② 돌발상황 공개</button><button id="teamReportBtn" class="btn outline" ${!groups.length?'disabled':''}>③ 최종보고서 작성</button><button id="teamScoreBtn" class="btn primary" ${!groups.length?'disabled':''}>④ 팀 채점·결과공개</button></div><div class="team-phase-teacher"><b>현재 단계</b><span>${phaseNames[phase]||phase}</span></div><div class="teacher-work-grid"><div class="teacher-work-card"><b>팀 과제 구조</b><p>팀원마다 서로 다른 정보 지급 → 말로 정보 공유 → 이해관계·기준 합의 → 돌발상황 공개 → 기록담당이 공동보고서 제출</p></div><div class="teacher-work-card"><b>최종 채점</b><p>팀 수행점수 80% + 학생 개인 역할수행 20%를 합산합니다.</p></div></div><div class="rubric-teacher"><b>팀 수행 채점요소</b><div>${C.team.reportRubric.map(x=>`<span>${x}</span>`).join('')}</div></div>${groups.length?`<div class="team-group-list">${groups.map(g=>{const roles=g.members.filter(m=>answers?.team?.role?.[m.uid]).length;const report=!!teamReportAnswer(g);const pub=control?.teamScores?.[g.id];return `<article class="team-group-card"><div class="team-group-head"><b>${g.label}</b><span>${g.members.length}명</span>${pub?`<strong>${pub.teamScore}점</strong>`:''}</div><div class="team-members">${g.members.map(m=>`<span><b>${m.studentName}</b><small>${m.teamRoleName}${answers?.team?.role?.[m.uid]?' · ✓공유':''}</small></span>`).join('')}</div><div class="team-group-foot">개인정보 공유 ${roles}/${g.members.length} · 최종보고서 ${report?'제출':'미제출'}</div>${pub?`<div class="teacher-team-score">${pub.details.map(d=>`<span>${d[0]} <b>${d[1]}/${d[2]}</b></span>`).join('')}</div>`:''}</article>`;}).join('')}</div>`:`<div class="empty">학생 입장이 끝나면 ‘팀 자동편성’을 눌러주세요. 4명 안팎으로 균형 편성됩니다.</div>`}`;
+}
+function bindTeacherTeam(){
+  const a=$('#assignTeamsBtn');if(a)a.onclick=assignTeams;
+  const t=$('#teamTwistBtn');if(t)t.onclick=()=>setTeamPhase('twist');
+  const r=$('#teamReportBtn');if(r)r.onclick=()=>setTeamPhase('report');
+  const s=$('#teamScoreBtn');if(s)s.onclick=publishTeamScores;
 }
 
 function renderContent() {
@@ -375,29 +345,13 @@ function renderContent() {
     h = practicalTeacherHTML(q);
   }
 
-  if (control.stage === 'process') {
-    h = `<span class="eyebrow">${q.title} · 1회 판단</span>
-      <h2>${q.q}</h2>
-      <p class="context-box">${q.context}</p>
-      <div class="option-grid">${
-        q.options.map((x, i) =>
-          `<div class="option-view"><b>${String.fromCharCode(65 + i)}.</b> ${x}</div>`
-        ).join('')
-      }</div>
-      <div class="change-box">
-        <b>응답 후 토론 질문</b><br>
-        ${q.discussion.join(' · ')}
-      </div>
-      <div class="feedback info">
-        학생은 문항당 한 번만 제출합니다. 제출 후에는 변경할 수 없습니다.
-      </div>`;
-  }
+  if (control.stage === 'team') { h = teamTeacherHTML(); }
 
   if (control.stage === 'diagnosis') {
     h = `<span class="eyebrow">DIAGNOSIS</span>
       <h2>6대 청렴역량을 함께 확인합니다.</h2>
       <p class="context-box">
-        학생들의 필기·실기 선택을 바탕으로 정직·약속·배려·책임·절제·공정의 학급 평균을 확인합니다.
+        학생들의 필기·개인실기·팀 종합실기 수행을 바탕으로 정직·약속·배려·책임·절제·공정의 학급 평균을 확인합니다.
         점수는 학생의 인격을 평가하는 값이 아니라 오늘의 판단 경향을 돌아보기 위한 교육용 피드백입니다.
       </p>`;
   }
@@ -418,7 +372,7 @@ function renderContent() {
     const avg = rs.length
       ? Math.round(rs.reduce((a, b) => a + b.total, 0) / rs.length)
       : 0;
-    const missing = rs.reduce((a, b) => a + b.missingQuestions + (b.pl === 0 ? 1 : 0), 0);
+    const missing = rs.reduce((a, b) => a + b.missingQuestions + (!b.teamComplete ? 1 : 0) + (b.pl === 0 ? 1 : 0), 0);
 
     h = `<span class="eyebrow">QUALIFICATION</span>
       <h2>청렴역량 자격판정</h2>
@@ -440,6 +394,7 @@ function renderContent() {
   $('#teacherContent').innerHTML =
     `<div class="teacher-content-grid"><div>${h}</div>${charBox(control.stage)}</div>`;
   if (control.stage === 'practical') bindTeacherPractical();
+  if (control.stage === 'team') bindTeacherTeam();
   updateTeacherTimer();
 
   renderStats();
@@ -477,12 +432,16 @@ function renderStats() {
     const mid = evals.filter(x=>x.score>=60&&x.score<80).length;
     const low = evals.filter(x=>x.score<60).length;
     $('#responseChip').textContent = `${submitted}/${total}명 제출`;
+    const byUid=answers?.practical?.[q.id]||{};
+    const detailList=Object.entries(byUid).sort((a,b)=>String(participants[a[0]]?.studentName||'').localeCompare(String(participants[b[0]]?.studentName||''),'ko')).map(([uid,a])=>{const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);return `<details class="teacher-score-detail"><summary><b>${participants[uid]?.studentName||'학생'}</b><strong>${ev.score}점</strong></summary><div>${ev.details.map(d=>`<span>${d[0]} <b>${d[1]}/${d[2]}</b></span>`).join('')}</div></details>`}).join('');
     $('#statsArea').className = '';
-    $('#statsArea').innerHTML = `<div class="work-live-summary"><div><span>작업물 제출</span><b>${submitted}</b><small>미제출 ${Math.max(0,total-submitted)}명</small></div><div><span>제출자 평균</span><b>${avg}</b><small>100점 기준</small></div><div><span>80점 이상</span><b>${high}</b><small>60~79 ${mid} · 60미만 ${low}</small></div></div>`;
+    $('#statsArea').innerHTML = `<div class="work-live-summary"><div><span>작업물 제출</span><b>${submitted}</b><small>미제출 ${Math.max(0,total-submitted)}명</small></div><div><span>제출자 평균</span><b>${avg}</b><small>100점 기준</small></div><div><span>80점 이상</span><b>${high}</b><small>60~79 ${mid} · 60미만 ${low}</small></div></div>${detailList?`<div class="teacher-score-list"><b>학생별 작업결과 채점표</b>${detailList}</div>`:''}`;
     return;
-  } else if (control.stage === 'process') {
-    list = ans('process', q.id);
-    labels = q.options;
+  } else if (control.stage === 'team') {
+    const groups=teamGroups(); const roleSubmitted=Object.keys(answers?.team?.role||{}).length; const reports=Object.keys(answers?.team?.report||{}).length;
+    const published=control?.teamScores||{}; const vals=Object.values(published); const avg=vals.length?Math.round(vals.reduce((a,b)=>a+Number(b.teamScore||0),0)/vals.length):0;
+    $('#responseChip').textContent=`${roleSubmitted}명 역할공유`;
+    $('#statsArea').className=''; $('#statsArea').innerHTML=`<div class="work-live-summary"><div><span>개인정보 공유</span><b>${roleSubmitted}</b><small>등록 ${Object.keys(participants).length}명</small></div><div><span>팀 보고서</span><b>${reports}</b><small>${groups.length}개 팀</small></div><div><span>팀 평균</span><b>${vals.length?avg:'-'}</b><small>${vals.length?'결과 공개됨':'채점 전'}</small></div></div>`; return;
   } else if (control.stage === 'pledge') {
     const n = Object.keys(pledges || {}).length;
     $('#responseChip').textContent = `${n}명 제출`;
@@ -513,6 +472,7 @@ async function go(stage, index = 0) {
 }
 
 async function next() {
+  if(control.stage==='team'&&control.teamPhase!=='scored') return toast('먼저 팀 채점·결과공개를 완료해주세요.');
   const a = items(control.stage);
   const i = Number(control.index || 0);
 
@@ -608,7 +568,7 @@ async function create() {
 function csv() {
   const rows = [[
     '수험ID', '학생이름', '학교급',
-    '필기', '실기', '과정', '실천', '종합',
+    '필기', '개인실기', '팀실기', '개인역할', '실천', '종합',
     '미응답문항수', '자격', '청렴유형', '상징역사인물',
     '상위역량1', '상위역량2', '실기1', '실기2', '실기3', '실천약속'
   ]];
@@ -623,7 +583,8 @@ function csv() {
       p.schoolLevel,
       r.w,
       r.p,
-      r.pr,
+      r.team,
+      r.roleScore,
       r.pl,
       r.total,
       r.missingQuestions,
@@ -665,7 +626,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = '실시간 서버 연결 · v5.0 작업형';
+    $('#serverStatus').textContent = '실시간 서버 연결 · v6.0 팀종합실기';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);

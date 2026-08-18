@@ -4,7 +4,7 @@ const $ = s => document.querySelector(s);
 
 let code = null;
 let control = null;
-let myAnswers = { written: {}, practical: {}, process: {} };
+let myAnswers = { written: {}, practical: {}, team: {role:null, report:null} };
 let myPledge = null;
 let me = null;
 let unsubs = [];
@@ -13,6 +13,8 @@ let submitting = false;
 // 실시간 화면 갱신이 일어나도 학생이 선택한 답이 사라지지 않도록 문항별 임시선택을 보관
 const pendingChoices = {};
 const practicalDrafts = {};
+let teamRoleDraft = {choice:null,note:''};
+let teamReportDraft = {issues:[],criteria:[],conflictResponse:null,twistResponse:null,vendor:null,reason:''};
 let timerTicker = null;
 
 const stageCharacter = {
@@ -20,7 +22,7 @@ const stageCharacter = {
   intro: 'character-explain.png',
   written: 'character-warning.png',
   practical: 'character-tablet.png',
-  process: 'character-listen.png',
+  team: 'character-together.png',
   diagnosis: 'character-best.png',
   pledge: 'character-love.png',
   result: 'character-harmony.png'
@@ -40,8 +42,7 @@ const stageIdx = k => stages.findIndex(s => s.key === k);
 function item() {
   const a =
     control?.stage === 'written' ? C.written :
-    control?.stage === 'practical' ? C.practical :
-    control?.stage === 'process' ? C.process : [];
+    control?.stage === 'practical' ? C.practical : [];
   return a[Number(control?.index || 0)] || null;
 }
 
@@ -87,9 +88,7 @@ function bindChoices() {
 }
 
 function comp() {
-  const sums = Object.fromEntries(
-    C.virtues.map(v => [v.key, { s: 0, n: 0 }])
-  );
+  const sums = Object.fromEntries(C.virtues.map(v => [v.key, { s: 0, n: 0 }]));
 
   C.written.forEach(q => {
     const a = mine('written', q.id);
@@ -106,74 +105,39 @@ function comp() {
     const ev = CHEONGRYEOM_EVALUATE_PRACTICAL(q, a);
     Object.entries(ev.impact || {}).forEach(([k, v]) => {
       if (!sums[k]) return;
-      sums[k].s += Number(v || 0);
-      sums[k].n++;
+      sums[k].s += Number(v || 0); sums[k].n++;
     });
   });
 
-  return Object.fromEntries(
-    Object.entries(sums).map(([k, v]) => [
-      k,
-      v.n ? Math.round(v.s / v.n) : 0
-    ])
-  );
+  const roleEv = CHEONGRYEOM_EVALUATE_TEAM_ROLE(C.team, myAnswers?.team?.role);
+  Object.entries(roleEv.impact || {}).forEach(([k,v])=>{if(sums[k]){sums[k].s+=Number(v||0);sums[k].n++;}});
+  const pub = me?.teamId ? control?.teamScores?.[me.teamId] : null;
+  Object.entries(pub?.impact || {}).forEach(([k,v])=>{if(sums[k]){sums[k].s+=Number(v||0);sums[k].n++;}});
+
+  return Object.fromEntries(Object.entries(sums).map(([k, v]) => [k, v.n ? Math.round(v.s / v.n) : 0]));
 }
 
 function scores() {
   const S = C.scoring;
-
-  let writtenCorrect = 0;
-  let writtenAnswered = 0;
-  C.written.forEach(q => {
-    const a = mine('written', q.id);
-    if (a) writtenAnswered++;
-    if (a?.choice === q.correct) writtenCorrect++;
-  });
+  let writtenCorrect = 0, writtenAnswered = 0;
+  C.written.forEach(q => { const a=mine('written',q.id); if(a)writtenAnswered++; if(a?.choice===q.correct)writtenCorrect++; });
   const w = Math.round(writtenCorrect / C.written.length * 100);
 
-  let practicalSum = 0;
-  let practicalAnswered = 0;
-  const practicalTaskScores = [];
-  C.practical.forEach(q => {
-    const a = mine('practical', q.id);
-    const ev = CHEONGRYEOM_EVALUATE_PRACTICAL(q, a);
-    if (a) practicalAnswered++;
-    practicalSum += a ? ev.score : 0;
-    practicalTaskScores.push({id:q.id,title:q.title,score:a?ev.score:0,answered:!!a});
-  });
-  const p = Math.round(practicalSum / C.practical.length);
+  let practicalSum=0, practicalAnswered=0; const practicalTaskScores=[];
+  C.practical.forEach(q=>{const a=mine('practical',q.id);const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);if(a)practicalAnswered++;practicalSum+=a?ev.score:0;practicalTaskScores.push({id:q.id,title:q.title,score:a?ev.score:0,answered:!!a,details:a?ev.details:[]});});
+  const p=Math.round(practicalSum/C.practical.length);
 
-  let processAnswered = 0;
-  C.process.forEach(q => {
-    if (mine('process', q.id)) processAnswered++;
-  });
-  const pr = Math.round(processAnswered / C.process.length * 100);
+  const roleEv=CHEONGRYEOM_EVALUATE_TEAM_ROLE(C.team,myAnswers?.team?.role);
+  const teamPub=me?.teamId?control?.teamScores?.[me.teamId]:null;
+  const teamBase=Number(teamPub?.teamScore||0);
+  const teamScore=teamPub?Math.round(teamBase*0.8+roleEv.score*0.2):0;
+  const teamComplete=!!teamPub;
+  const pl=myPledge?.text?100:0;
 
-  const pl = myPledge?.text ? 100 : 0;
-
-  const total = Math.round(
-    w * S.writtenWeight / 100 +
-    p * S.practicalWeight / 100 +
-    pr * S.processWeight / 100 +
-    pl * S.pledgeWeight / 100
-  );
-
-  const qualification =
-    total >= S.leaderTotal && p >= S.leaderPractical
-      ? '청렴 리더'
-      : '청렴 서포터';
-
-  const missingQuestions =
-    (C.written.length - writtenAnswered) +
-    (C.practical.length - practicalAnswered) +
-    (C.process.length - processAnswered);
-
-  return {
-    w, p, pr, pl, total, qualification,
-    writtenAnswered, practicalAnswered, processAnswered,
-    practicalTaskScores,
-    missingQuestions
-  };
+  const total=Math.round(w*S.writtenWeight/100+p*S.practicalWeight/100+teamScore*S.teamWeight/100+pl*S.pledgeWeight/100);
+  const qualification=total>=S.leaderTotal&&p>=S.leaderPractical&&teamScore>=S.leaderTeam?'청렴 리더':'청렴 서포터';
+  const missingQuestions=(C.written.length-writtenAnswered)+(C.practical.length-practicalAnswered)+(myAnswers?.team?.role?0:1);
+  return {w,p,team:teamScore,teamBase,roleScore:roleEv.score,teamComplete,pl,total,qualification,writtenAnswered,practicalAnswered,practicalTaskScores,missingQuestions};
 }
 
 function integrityType() {
@@ -206,7 +170,7 @@ async function syncMyResult() {
     await DB.updateMe(code, {
       writtenScore: s.w,
       practicalScore: s.p,
-      processScore: s.pr,
+      teamScore: s.team,
       pledgeScore: s.pl,
       totalScore: s.total,
       qualification: s.qualification,
@@ -382,7 +346,7 @@ function practicalReady(q,d) {
 function renderPractical(q, ex) {
   if (ex) {
     const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,ex);
-    return `${practicalHeader(q, ex)}<div class="work-score-preview"><span>제출된 작업물</span><b>${ev.score}점</b><small>최종 결과 단계에서 전체 실기점수와 청렴역량에 반영됩니다.</small></div>`;
+    return `${practicalHeader(q, ex)}${practicalScorecardHTML(q,ex)}`;
   }
   const d=practicalDraft(q);
   const body=q.kind==='procurement'?renderProcurement(q,d):q.kind==='sequence'?renderSequence(q,d):renderPanel(q,d);
@@ -430,8 +394,81 @@ async function submitPractical(q) {
   }finally{submitting=false;}
 }
 
+function scoreRowsHTML(details){
+  return `<div class="scorecard-rows">${(details||[]).map(d=>`<div class="scorecard-row"><span>${d[0]}</span><b>${d[1]} / ${d[2]}</b></div>`).join('')}</div>`;
+}
+function practicalScorecardHTML(q,ex){
+  const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,ex);
+  const positives=(ev.details||[]).filter(x=>x[2]>0).sort((a,b)=>(b[1]/b[2])-(a[1]/a[2]));
+  const best=positives[0], low=positives[positives.length-1];
+  return `<section class="work-result-card"><div class="work-result-head"><div><span>작업결과 채점표</span><h3>${q.code} · ${q.title.replace(/^작업형 제\d과제 · /,'')}</h3></div><strong>${ev.score}<small>/100</small></strong></div>${scoreRowsHTML(ev.details)}<div class="work-result-feedback"><p><b>✓ 강점</b>${best?`${best[0]} 수행이 가장 안정적이었습니다.`:'작업물을 제출했습니다.'}</p><p><b>△ 보완</b>${low&&low[2]>0?`${low[0]} 부분을 다음 판단에서 더 구체적으로 수행해보세요.`:'채점요소를 다시 확인해보세요.'}</p></div></section>`;
+}
 function practicalBreakdownHTML(s) {
-  return `<div class="practical-breakdown"><b>작업형 실기 결과</b>${s.practicalTaskScores.map((x,i)=>`<div><span>제${i+1}과제</span><strong>${x.score}</strong><small>${x.answered?'제출':'미제출 · 0점'}</small></div>`).join('')}</div>`;
+  return `<div class="practical-breakdown"><b>개인 작업형 실기 결과</b>${s.practicalTaskScores.map((x,i)=>`<div><span>제${i+1}과제</span><strong>${x.score}</strong><small>${x.answered?'제출':'미제출 · 0점'}</small></div>`).join('')}</div>`;
+}
+
+
+function teamRoleConfig(){ return C.team.roles?.[me?.teamRoleKey] || null; }
+function teamPublished(){ return me?.teamId ? control?.teamScores?.[me.teamId] : null; }
+function teamRoleScorecardHTML(){
+  const ev=CHEONGRYEOM_EVALUATE_TEAM_ROLE(C.team,myAnswers?.team?.role);
+  if(!myAnswers?.team?.role) return '';
+  return `<div class="team-role-result"><b>개인 역할수행 ${ev.score}점</b>${scoreRowsHTML(ev.details)}</div>`;
+}
+function supplementalHTML(){
+  if(me?.teamRoleKey!=='records') return '';
+  const size=Number(me?.teamSize||4); const arr=[];
+  if(size<4) arr.push(C.team.supplemental.operations);
+  if(size<3) arr.push(C.team.supplemental.purchase);
+  if(size<2) arr.push(C.team.supplemental.finance);
+  return arr.length?`<div class="team-supplement"><b>인원 부족 보완 지급자료</b>${arr.map(x=>`<p>${x}</p>`).join('')}</div>`:'';
+}
+function teamRoleCardHTML(){
+  const role=teamRoleConfig(); if(!role) return '<div class="waiting"><h2>팀 편성 대기</h2><p>교사가 팀을 편성하면 나의 역할과 지급정보가 표시됩니다.</p></div>';
+  const ex=myAnswers?.team?.role;
+  return `<section class="team-role-card"><div class="team-role-head"><span>${role.icon}</span><div><small>${me?.teamLabel||me?.teamId||'팀'} · 개인 역할</small><h3>${role.name}</h3></div></div><div class="team-secret"><b>🔐 나에게만 지급된 정보</b><p>${role.secret}</p></div>${supplementalHTML()}${ex?`<div class="feedback good"><b>✓ 핵심정보 공유 완료</b><br>이제 팀원들의 정보를 듣고 공동판단에 참여하세요.</div>${teamRoleScorecardHTML()}`:`<label class="work-label">팀에 반드시 공유할 핵심정보</label><div class="response-list">${role.options.map((x,i)=>`<button type="button" class="response-card ${teamRoleDraft.choice!==null&&Number(teamRoleDraft.choice)===i?'selected':''}" data-team-role-choice="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><label class="work-label">내가 팀에 공유한 내용 기록</label><textarea id="teamRoleNote" class="work-textarea" maxlength="220" placeholder="팀원에게 실제로 전달한 핵심정보를 내 말로 기록하세요.">${escapeHTML(teamRoleDraft.note)}</textarea><button id="submitTeamRoleBtn" class="btn primary large full" ${teamRoleDraft.choice===null||String(teamRoleDraft.note).trim().length<8?'disabled':''}>핵심정보 공유 완료</button>`}</section>`;
+}
+function teamReportReady(){const d=teamReportDraft;return d.issues.length>=4&&d.criteria.length>=4&&d.conflictResponse!==null&&d.twistResponse!==null&&d.vendor&&String(d.reason||'').trim().length>=15;}
+function teamReportHTML(){
+  if(me?.teamRoleKey!=='records') return `<div class="team-wait-report"><img class="official-character" src="assets/official/character-listen.png" alt=""><h3>팀 최종보고서 협의 중</h3><p><b>${me?.teamLabel||''} 기록·조정 담당</b>이 휴대폰에 팀의 합의내용을 입력합니다. 다른 팀원은 문제점·기준·돌발상황 대응이 정확히 기록되도록 함께 확인하세요.</p></div>`;
+  const ex=myAnswers?.team?.report;
+  if(ex) return `<div class="feedback good"><b>✓ 팀 최종보고서 제출 완료</b><br>교사가 팀 채점을 공개할 때까지 기다려주세요.</div>`;
+  const d=teamReportDraft;
+  return `<section class="team-report"><div class="work-section-title"><span>01</span><div><b>문제점 종합</b><small>팀원들이 공유한 정보에서 반드시 관리해야 할 문제를 선택하세요.</small></div></div><div class="criteria-grid">${C.team.issues.map(x=>`<label class="criteria-chip ${d.issues.includes(x.key)?'selected':''}"><input type="checkbox" data-team-issue="${x.key}" ${d.issues.includes(x.key)?'checked':''}><span>${x.label}</span></label>`).join('')}</div><div class="work-section-title"><span>02</span><div><b>공정한 판단기준</b><small>최종 결정에 실제로 적용할 기준을 선택하세요.</small></div></div><div class="criteria-grid">${C.team.criteria.map(x=>`<label class="criteria-chip ${d.criteria.includes(x.key)?'selected':''}"><input type="checkbox" data-team-criterion="${x.key}" ${d.criteria.includes(x.key)?'checked':''}><span>${x.label}</span></label>`).join('')}</div><div class="work-section-title"><span>03</span><div><b>이해관계 처리</b><small>B업체와 준비위원장의 친척관계를 어떻게 처리할지 결정하세요.</small></div></div><div class="response-list">${C.team.conflictResponses.map((x,i)=>`<button type="button" class="response-card ${d.conflictResponse!==null&&Number(d.conflictResponse)===i?'selected':''}" data-team-conflict="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="team-vendor-table">${C.team.vendors.map(v=>`<div><b>${v.id} · ${v.name}</b><span>${v.price}</span><span>품질 ${v.quality}</span><span>${v.delivery}</span></div>`).join('')}</div><div class="work-section-title"><span>04</span><div><b>돌발상황 대응</b><small>새로운 정보가 들어온 뒤 기존 판단을 어떻게 처리할지 정하세요.</small></div></div><div class="work-alert"><b>⚠️ 추가정보</b><span>${C.team.twist}</span></div><div class="response-list">${C.team.twistResponses.map((x,i)=>`<button type="button" class="response-card ${d.twistResponse!==null&&Number(d.twistResponse)===i?'selected':''}" data-team-twist="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="work-section-title"><span>05</span><div><b>최종 의사결정 보고서</b><small>팀의 최종 선정업체와 판단근거를 기록하세요.</small></div></div><label class="work-label">최종 선정업체</label><div class="mini-choice-grid">${C.team.vendors.map(v=>`<button type="button" class="mini-choice ${d.vendor===v.id?'selected':''}" data-team-vendor="${v.id}">${v.id} · ${v.name}</button>`).join('')}</div><label class="work-label">최종 판단근거</label><textarea id="teamReportReason" class="work-textarea" maxlength="420" placeholder="예산, 납기, 이해관계 처리, 돌발상황, 최종선정 사유를 하나의 보고서처럼 기록하세요.">${escapeHTML(d.reason)}</textarea><button id="submitTeamReportBtn" class="btn primary large full" ${teamReportReady()?'':'disabled'}>팀 작업물 최종 제출</button></section>`;
+}
+function teamScorecardHTML(){
+  const pub=teamPublished(); if(!pub) return `<div class="waiting"><h3>팀 채점 대기</h3><p>교사가 팀별 작업결과를 채점·공개하면 결과가 표시됩니다.</p></div>`;
+  const roleEv=CHEONGRYEOM_EVALUATE_TEAM_ROLE(C.team,myAnswers?.team?.role); const composite=Math.round(Number(pub.teamScore||0)*0.8+roleEv.score*0.2);
+  return `<section class="team-score-card"><div class="work-result-head"><div><span>${me?.teamLabel||'우리 팀'} 종합작업 결과</span><h3>팀 수행 80% + 개인 역할 20%</h3></div><strong>${composite}<small>/100</small></strong></div><div class="team-score-formula"><span>팀 수행 <b>${pub.teamScore}</b></span><span>개인 역할 <b>${roleEv.score}</b></span><span>개인 반영점수 <b>${composite}</b></span></div>${scoreRowsHTML(pub.details||[])}<div class="feedback info"><b>협업 평가의 의미</b><br>팀이 만든 공동 결과와 내가 맡은 역할의 수행 정도를 함께 반영했습니다.</div></section>`;
+}
+function renderTeam(){
+  if(!me?.teamId) return waiting('팀 편성 대기','교사가 종합 팀 실기용 팀을 편성하고 있습니다.');
+  const phase=control?.teamPhase||'briefing';
+  const phaseLabel={briefing:'① 분산정보 공유',twist:'② 돌발상황 대응',report:'③ 공동보고서 작성',scored:'④ 팀 작업결과'}[phase]||'팀 실기';
+  return `<div class="work-exam-head"><div><span class="stage-tag">종합 팀 작업형</span><h2>${C.team.title}</h2><p>${C.team.objective}</p></div><div class="work-code"><small>과제번호</small><b>${C.team.code}</b></div></div><div class="team-phase-banner"><b>${me.teamLabel||me.teamId}</b><span>${phaseLabel}</span><small>${me.teamRoleName||''}</small></div><div class="work-context">${C.team.context}</div>${teamRoleCardHTML()}${phase==='twist'||phase==='report'||phase==='scored'?`<div class="work-alert team-twist"><b>⚠️ 돌발상황 공개</b><span>${C.team.twist}</span></div>`:''}${phase==='report'?teamReportHTML():''}${phase==='scored'?teamScorecardHTML():''}`;
+}
+function bindTeam(){
+  document.querySelectorAll('[data-team-role-choice]').forEach(b=>b.onclick=()=>{teamRoleDraft.choice=Number(b.dataset.teamRoleChoice);render();});
+  const rn=$('#teamRoleNote'); if(rn) rn.oninput=()=>{teamRoleDraft.note=rn.value;const b=$('#submitTeamRoleBtn');if(b)b.disabled=teamRoleDraft.choice===null||rn.value.trim().length<8;};
+  const rb=$('#submitTeamRoleBtn'); if(rb) rb.onclick=submitTeamRole;
+  document.querySelectorAll('[data-team-issue]').forEach(x=>x.onchange=()=>{const k=x.dataset.teamIssue;teamReportDraft.issues=x.checked?[...new Set([...teamReportDraft.issues,k])]:teamReportDraft.issues.filter(v=>v!==k);render();});
+  document.querySelectorAll('[data-team-criterion]').forEach(x=>x.onchange=()=>{const k=x.dataset.teamCriterion;teamReportDraft.criteria=x.checked?[...new Set([...teamReportDraft.criteria,k])]:teamReportDraft.criteria.filter(v=>v!==k);render();});
+  document.querySelectorAll('[data-team-conflict]').forEach(b=>b.onclick=()=>{teamReportDraft.conflictResponse=Number(b.dataset.teamConflict);render();});
+  document.querySelectorAll('[data-team-twist]').forEach(b=>b.onclick=()=>{teamReportDraft.twistResponse=Number(b.dataset.teamTwist);render();});
+  document.querySelectorAll('[data-team-vendor]').forEach(b=>b.onclick=()=>{teamReportDraft.vendor=b.dataset.teamVendor;render();});
+  const tr=$('#teamReportReason'); if(tr) tr.oninput=()=>{teamReportDraft.reason=tr.value;const b=$('#submitTeamReportBtn');if(b)b.disabled=!teamReportReady();};
+  const sr=$('#submitTeamReportBtn'); if(sr) sr.onclick=submitTeamReport;
+}
+async function submitTeamRole(){
+  if(submitting||myAnswers?.team?.role)return; const role=teamRoleConfig(); if(!role||teamRoleDraft.choice===null||teamRoleDraft.note.trim().length<8)return;
+  const b=$('#submitTeamRoleBtn');submitting=true;if(b){b.disabled=true;b.textContent='저장 중...';}
+  try{await DB.submitAnswer(code,'team','role',{choice:Number(teamRoleDraft.choice),work:{teamId:me.teamId,roleKey:me.teamRoleKey,note:teamRoleDraft.note.trim()}});await syncMyResult();toast('핵심정보 공유를 완료했습니다.');}catch(e){toast('역할정보 저장 중 오류가 발생했습니다.');if(b){b.disabled=false;b.textContent='핵심정보 공유 완료';}}finally{submitting=false;}
+}
+async function submitTeamReport(){
+  if(submitting||myAnswers?.team?.report||me?.teamRoleKey!=='records'||!teamReportReady())return;
+  const b=$('#submitTeamReportBtn');submitting=true;if(b){b.disabled=true;b.textContent='팀 보고서 저장 중...';}
+  const vendorIndex=C.team.vendors.findIndex(v=>v.id===teamReportDraft.vendor);
+  try{await DB.submitAnswer(code,'team','report',{choice:vendorIndex,work:{teamId:me.teamId,issues:[...teamReportDraft.issues],criteria:[...teamReportDraft.criteria],conflictResponse:Number(teamReportDraft.conflictResponse),twistResponse:Number(teamReportDraft.twistResponse),vendor:teamReportDraft.vendor,reason:teamReportDraft.reason.trim()}});toast('팀 최종보고서를 제출했습니다.');}catch(e){toast('팀 보고서 저장 중 오류가 발생했습니다.');if(b){b.disabled=false;b.textContent='팀 작업물 최종 제출';}}finally{submitting=false;}
 }
 
 function render() {
@@ -488,23 +525,7 @@ function render() {
     h = renderPractical(q, ex);
   }
 
-  if (stage === 'process') {
-    const ex = mine('process', q.id);
-    const pending = pendingChoices[answerKey()];
-
-    h = `<span class="stage-tag">${q.title} · 1회 판단</span>
-      <h2>${q.q}</h2>
-      <div class="student-context">${q.context}</div>
-      ${choiceHTML(q.options, ex, pending)}
-      ${!ex ? `<div class="student-submit">
-        <button id="submitBtn" class="btn primary large full" ${pending == null ? 'disabled' : ''}>
-          선택 제출
-        </button>
-      </div>` : `<div class="feedback info">
-        ✓ 판단이 확정되었습니다.<br>
-        친구들의 생각과 비교하며 토론해보세요.
-      </div>`}`;
-  }
+  if (stage === 'team') { h = renderTeam(); }
 
   if (stage === 'diagnosis') {
     const c = comp();
@@ -541,11 +562,11 @@ function render() {
   if (stage === 'result') {
     const s = scores();
     const t = integrityType();
-    const missingNotice = s.missingQuestions > 0 || s.pl === 0
+    const missingNotice = s.missingQuestions > 0 || !s.teamComplete || s.pl === 0
       ? `<div class="feedback info">
           <b>채점 안내</b><br>
           ${s.missingQuestions > 0 ? `시간 내 제출하지 못한 ${s.missingQuestions}개 문항은 0점으로 반영되었습니다.<br>` : ''}
-          ${s.pl === 0 ? '청렴 실천약속 미제출은 0점으로 반영되었습니다.' : ''}
+          ${!s.teamComplete ? '종합 팀 실기 결과가 공개되지 않은 경우 팀 실기 점수는 0점으로 반영됩니다.<br>' : ''}${s.pl === 0 ? '청렴 실천약속 미제출은 0점으로 반영되었습니다.' : ''}
         </div>`
       : '';
 
@@ -556,11 +577,12 @@ function render() {
         <div class="score-grid">
           <div><span>필기</span><b>${s.w}</b></div>
           <div><span>실기</span><b>${s.p}</b></div>
-          <div><span>과정</span><b>${s.pr}</b></div>
+          <div><span>팀 실기</span><b>${s.team}</b></div>
           <div><span>실천</span><b>${s.pl}</b></div>
         </div>
       </div>
       ${practicalBreakdownHTML(s)}
+      ${s.teamComplete?teamScorecardHTML():''}
       ${missingNotice}
       ${typeCardHTML(t)}
       <div id="certificate" class="certificate ${s.qualification === '청렴 리더' ? 'leader' : ''}">
@@ -588,6 +610,7 @@ function render() {
   $('#studentContent').innerHTML = h;
   bindChoices();
   if (stage === 'practical' && q) bindPractical(q, mine('practical', q.id));
+  if (stage === 'team') bindTeam();
   updateTimerDisplay();
 
   if ($('#submitBtn')) $('#submitBtn').onclick = submit;
@@ -672,7 +695,7 @@ function subscribe() {
     })
   ];
 
-  myAnswers = { written: {}, practical: {}, process: {} };
+  myAnswers = { written: {}, practical: {}, team: {role:null, report:null} };
 
   C.written.forEach(q => {
     unsubs.push(DB.on(`answers/written/${q.id}/${DB.uid}`, code, v => {
@@ -690,14 +713,8 @@ function subscribe() {
     }));
   });
 
-  // 과정평가도 문항당 1회만 저장
-  C.process.forEach(q => {
-    unsubs.push(DB.on(`answers/process/${q.id}/${DB.uid}`, code, v => {
-      if (v) myAnswers.process[q.id] = v;
-      else delete myAnswers.process[q.id];
-      render();
-    }));
-  });
+  unsubs.push(DB.on(`answers/team/role/${DB.uid}`, code, v => { myAnswers.team.role=v||null; render(); }));
+  unsubs.push(DB.on(`answers/team/report/${DB.uid}`, code, v => { myAnswers.team.report=v||null; render(); }));
 
   setInterval(() => DB.heartbeat(code), 25000);
 }
@@ -741,7 +758,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v5.0 작업형';
+    $('#studentStatus').textContent = '실시간 연결 · v6.0 팀종합실기';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

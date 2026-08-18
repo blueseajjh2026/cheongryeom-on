@@ -519,6 +519,10 @@ function subscribe() {
   unsubs = [
     DB.on('control', code, v => {
       control = v || control;
+      if (control.stage === 'process') {
+        control = { ...control, stage: 'team', index: 0, teamPhase: control.teamPhase || 'briefing' };
+        DB.setControl(code, { stage: 'team', index: 0, teamPhase: control.teamPhase, reveal: false });
+      }
       renderContent();
     }),
     DB.on('participants', code, v => {
@@ -626,7 +630,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = '실시간 서버 연결 · v6.0 팀종합실기';
+    $('#serverStatus').textContent = '실시간 서버 연결 · v6.1 팀종합실기';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);

@@ -76,9 +76,9 @@ window.CHEONGRYEOM_CONTENT={
         {key:'plan',label:'활동계획',max:40},{key:'responsibility',label:'책임감',max:30},{key:'collaboration',label:'협업경험',max:20},{key:'presentation',label:'발표내용',max:10}
       ],
       candidates:[
-        {id:'A',name:'지원자 A',profile:'활동계획에 일정·예산이 구체적으로 제시됨. 학급 행사 총무 2회. 협업 프로젝트 2회. 발표 핵심이 명확함.',reference:{plan:35,responsibility:27,collaboration:16,presentation:8}},
-        {id:'B',name:'지원자 B',profile:'아이디어는 참신하나 일정 계획이 다소 부족함. 맡은 역할을 성실히 수행한 기록이 있음. 협업 프로젝트 3회. 발표 전달력이 좋음.',reference:{plan:30,responsibility:25,collaboration:19,presentation:9}},
-        {id:'C',name:'지원자 C',profile:'활동계획이 구체적이고 안전대책까지 포함함. 학교행사 책임자 경험 2회. 협업 프로젝트 2회. 발표가 안정적임.',reference:{plan:36,responsibility:29,collaboration:17,presentation:8}}
+        {id:'A',name:'지원자 A',profile:'활동계획에 일정·예산이 구체적으로 제시됨. 학급 행사 총무 2회. 협업 프로젝트 2회.',speech:'저는 행사 준비를 일정표와 예산표로 나누어 공개하고, 매주 진행상황을 친구들과 공유하겠습니다. 문제가 생기면 역할을 다시 조정해 끝까지 책임지겠습니다.',reference:{plan:35,responsibility:27,collaboration:16,presentation:8}},
+        {id:'B',name:'지원자 B',profile:'아이디어가 참신함. 맡은 역할을 성실히 수행한 기록이 있음. 협업 프로젝트 3회. 다만 세부 일정 계획은 다소 부족함.',speech:'친구들이 재미있게 참여할 수 있는 새로운 행사를 많이 만들고 싶습니다. 팀원들의 의견을 자주 듣고 즐겁게 참여할 수 있는 분위기를 만들겠습니다.',reference:{plan:30,responsibility:25,collaboration:19,presentation:9}},
+        {id:'C',name:'지원자 C',profile:'활동계획이 구체적이고 안전대책을 포함함. 학교행사 책임자 경험 2회. 협업 프로젝트 2회.',speech:'행사 전에 안전점검표와 역할표를 만들고, 준비가 늦어질 때를 대비한 대체안도 마련하겠습니다. 정한 기준은 모든 학생에게 똑같이 적용하겠습니다.',reference:{plan:36,responsibility:29,collaboration:17,presentation:8}}
       ],
       extraInfo:'추가정보: 지원자 C는 당신과 가장 친한 친구입니다.',
       responses:[
@@ -165,7 +165,7 @@ window.CHEONGRYEOM_EVALUATE_PRACTICAL = function(q, answer){
     const disclosure=w.disclosure?15:0; score+=disclosure; details.push(['이해관계 공개·기록',disclosure,15]);
     const reason=String(w.reason||'').trim();
     const keywordGroups=[/가격|예산|금액/,/품질|배송|납기|조건/,/이해관계|친구|공개|기준|공정/];
-    let reasonScore=reason.length>=15?6:reason.length>=8?3:0;
+    let reasonScore=reason.length>=15?6:reason.length>=10?3:0;
     reasonScore+=keywordGroups.reduce((a,r)=>a+(r.test(reason)?3:0),0);
     reasonScore=Math.min(15,reasonScore); score+=reasonScore; details.push(['선정사유 기록',reasonScore,15]);
     impact={
@@ -183,7 +183,7 @@ window.CHEONGRYEOM_EVALUATE_PRACTICAL = function(q, answer){
     const includeScore=correct.reduce((a,k)=>a+(order.includes(k)?15:0),0); score+=includeScore; details.push(['적정 절차 선택',includeScore,60]);
     const orderScore=correct.reduce((a,k,i)=>a+(order[i]===k?5:0),0); score+=orderScore; details.push(['처리순서',orderScore,20]);
     const note=String(w.note||'').trim();
-    let noteScore=note.length>=20?8:note.length>=8?4:0;
+    let noteScore=note.length>=20?8:note.length>=10?4:0;
     [/사실|확인/,/보고|공개|알리/,/실제|정산|증빙|재발급/].forEach(r=>{if(r.test(note))noteScore+=4});
     noteScore=Math.min(20,noteScore); score+=noteScore; details.push(['정산의견',noteScore,20]);
     const penalty=bad.reduce((a,k)=>a+(order.includes(k)?25:0),0); score-=penalty;
@@ -214,7 +214,7 @@ window.CHEONGRYEOM_EVALUATE_PRACTICAL = function(q, answer){
     const responseScore=Number.isInteger(Number(w.response))?(responseScores[Number(w.response)]||0):0;
     score+=responseScore; details.push(['동일기준 유지',responseScore,25]);
     const reason=String(w.reason||'').trim();
-    let reasonScore=reason.length>=18?6:reason.length>=8?3:0;
+    let reasonScore=reason.length>=18?6:reason.length>=10?3:0;
     [/기준|동일|점수/,/친분|친구|이해관계|공개/,/공정|근거|자료/].forEach(r=>{if(r.test(reason))reasonScore+=3});
     reasonScore=Math.min(15,reasonScore); score+=reasonScore; details.push(['판단근거 기록',reasonScore,15]);
     impact={
@@ -237,7 +237,7 @@ window.CHEONGRYEOM_EVALUATE_TEAM_ROLE = function(team, answer){
   if(!role) return {score:0,impact:{},details:[]};
   const note=String(answer?.work?.note||'').trim();
   const choiceScore=Number(answer.choice)===Number(role.correct)?60:0;
-  const noteScore=note.length>=18?20:note.length>=8?12:0;
+  const noteScore=note.length>=18?20:note.length>=10?12:0;
   const keywordHits=(role.keywords||[]).filter(k=>note.includes(k)).length;
   const keywordScore=Math.min(20,keywordHits*5);
   const score=Math.max(0,Math.min(100,choiceScore+noteScore+keywordScore));

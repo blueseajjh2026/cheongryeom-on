@@ -280,13 +280,16 @@ function renderProcurement(q, d) {
       <div class="mini-choice-grid">${['A','B','C','NONE'].map(v => `<button type="button" class="mini-choice ${d.conflictVendor===v?'selected':''}" data-conflict="${v}">${v==='NONE'?'없음':`업체 ${v}`}</button>`).join('')}</div>
     </section>
     <section class="work-section"><div class="work-section-title"><span>03</span><div><b>비교기준 설정</b><small>구매 결정에 반영할 기준을 선택하세요.</small></div></div>
+      <div class="required-note ${d.criteria.length>=2?'ok':''}">※ 필수 · 비교기준을 <b>2개 이상</b> 선택해야 합니다. <span>현재 ${d.criteria.length}개 선택</span></div>
       <div class="criteria-grid">${q.criteria.map(c => `<label class="criteria-chip ${d.criteria.includes(c.key)?'selected':''}"><input type="checkbox" data-criteria="${c.key}" ${d.criteria.includes(c.key)?'checked':''}><span>${c.label}</span></label>`).join('')}</div>
       <div class="vendor-table"><div class="vendor-head"><span>업체</span><span>가격</span><span>품질</span><span>배송</span></div>${q.vendors.map((v,i)=>`<div class="vendor-row"><b>${v.id} · ${v.name}</b><span>${v.price}</span><span>${v.quality}</span><span>${v.delivery}</span></div>`).join('')}</div>
     </section>
     <section class="work-section"><div class="work-section-title"><span>04</span><div><b>구매계획 작성</b><small>최종업체와 처리방식을 결정하고 근거를 남기세요.</small></div></div>
       <label class="work-label">선정업체</label><div class="mini-choice-grid">${q.vendors.map((v,i)=>`<button type="button" class="mini-choice ${d.selectedVendor!==null&&Number(d.selectedVendor)===i?'selected':''}" data-vendor="${i}">${v.id} · ${v.name}</button>`).join('')}</div>
       <label class="work-check"><input id="disclosureCheck" type="checkbox" ${d.disclosure?'checked':''}><span>이해관계가 있는 업체가 있다면 그 사실을 기록에 공개하고 동일 기준으로 검토하겠습니다.</span></label>
-      <label class="work-label" for="practicalReason">선정사유 및 처리기록</label><textarea id="practicalReason" class="work-textarea" maxlength="300" placeholder="비교한 기준과 업체를 선정한 이유를 구체적으로 기록하세요.">${escapeHTML(d.reason)}</textarea>
+      <label class="work-label" for="practicalReason">선정사유 및 처리기록</label>
+      <div class="required-note ${String(d.reason||'').trim().length>=10?'ok':''}">※ 필수 · <b>10글자 이상</b> 작성해야 제출할 수 있습니다. <span>현재 ${String(d.reason||'').trim().length}/10자</span></div>
+      <textarea id="practicalReason" class="work-textarea" maxlength="300" placeholder="비교한 기준과 업체를 선정한 이유를 구체적으로 기록하세요.">${escapeHTML(d.reason)}</textarea>
     </section>`;
 }
 
@@ -302,6 +305,7 @@ function renderSequence(q, d) {
       <div class="action-bank">${q.actions.map(a=>`<button type="button" class="action-card ${d.order.includes(a.id)?'used':''}" data-action="${a.id}" ${d.order.includes(a.id)||d.order.length>=4?'disabled':''}><span>＋</span>${a.text}</button>`).join('')}</div>
     </section>
     <section class="work-section"><div class="work-section-title"><span>03</span><div><b>정산의견 기록</b><small>증빙 누락 사실을 어떻게 처리할지 기록하세요.</small></div></div>
+      <div class="required-note ${String(d.note||'').trim().length>=10?'ok':''}">※ 필수 · 정산의견을 <b>10글자 이상</b> 작성해야 제출할 수 있습니다. <span>현재 ${String(d.note||'').trim().length}/10자</span></div>
       <textarea id="sequenceNote" class="work-textarea" maxlength="300" placeholder="사실확인, 보고, 재발급, 실제 정산 등의 처리 근거를 적어보세요.">${escapeHTML(d.note)}</textarea>
     </section>`;
 }
@@ -327,20 +331,29 @@ function renderPanel(q, d) {
       <div class="rubric-strip">${q.rubricFields.map(f=>`<span><b>${f.label}</b>${f.max}점</span>`).join('')}</div>
     </section>
     <section class="work-section"><div class="work-section-title"><span>02</span><div><b>지원자료 채점</b><small>${d.revealed?'1차 채점이 확정되었습니다.':'지원자료만 보고 각 항목의 점수를 입력하세요.'}</small></div></div>
-      <div class="candidate-list">${q.candidates.map(c=>`<article class="candidate-card"><div class="candidate-head"><b>${c.name}</b><strong>${candidateTotal(q,d,c.id)}점</strong></div><p>${c.profile}</p><div class="candidate-sliders">${q.rubricFields.map(f=>{const val=Number(scores?.[c.id]?.[f.key]||0);return `<label><span>${f.label}<b data-score-label="${c.id}:${f.key}">${val}</b> / ${f.max}</span><input type="range" min="0" max="${f.max}" step="1" value="${val}" data-candidate="${c.id}" data-field="${f.key}" ${d.revealed?'disabled':''}></label>`}).join('')}</div></article>`).join('')}</div>
+      <div class="candidate-list">${q.candidates.map(c=>`<article class="candidate-card"><div class="candidate-head"><b>${c.name}</b><strong>${candidateTotal(q,d,c.id)}점</strong></div>
+        <div class="candidate-profile"><b>지원자료</b><p>${c.profile}</p></div>
+        <div class="candidate-speech"><span>🎤 실제 발표</span><p>“${c.speech}”</p></div>
+        <div class="candidate-sliders">${q.rubricFields.map(f=>{const val=Number(scores?.[c.id]?.[f.key]||0);
+          if(f.key==='presentation'){
+            return `<div class="presentation-eval"><div class="presentation-eval-head"><span><b>발표내용</b> · 위 발표 멘트를 읽고 직접 채점하세요.</span><strong><b data-score-label="${c.id}:${f.key}">${val}</b> / ${f.max}점</strong></div><div class="presentation-score-grid">${Array.from({length:f.max},(_,i)=>i+1).map(n=>`<button type="button" class="presentation-score-btn ${val===n?'selected':''}" data-presentation-score="${n}" data-candidate="${c.id}" data-field="${f.key}" ${d.revealed?'disabled':''}>${n}</button>`).join('')}</div></div>`;
+          }
+          return `<label><span>${f.label}<b data-score-label="${c.id}:${f.key}">${val}</b> / ${f.max}</span><input type="range" min="0" max="${f.max}" step="1" value="${val}" data-candidate="${c.id}" data-field="${f.key}" ${d.revealed?'disabled':''}></label>`}).join('')}</div></article>`).join('')}</div>
       ${!d.revealed?`<button id="revealRelationBtn" class="btn soft large full" ${panelScoresComplete(q,d)?'':'disabled'}>1차 채점 확정 → 추가정보 확인</button>`:`<div class="work-alert"><b>⚠️ 추가정보</b><span>${q.extraInfo}</span></div>`}
     </section>
     ${d.revealed?`<section class="work-section"><div class="work-section-title"><span>03</span><div><b>이해관계 상황 처리</b><small>1차 점수는 잠겼습니다. 이제 처리방식을 결정하세요.</small></div></div>
       <div class="locked-result">현재 1위 <b>지원자 ${totals[0]?.id}</b> · ${totals[0]?.total||0}점 <small>동점이면 교사의 추가 절차에 따릅니다.</small></div>
       <div class="response-list">${q.responses.map((x,i)=>`<button type="button" class="response-card ${d.response!==null&&Number(d.response)===i?'selected':''}" data-response="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div>
-      <label class="work-label" for="panelReason">최종 판단근거</label><textarea id="panelReason" class="work-textarea" maxlength="300" placeholder="친분 관계와 평가기준을 어떻게 다뤘는지 근거를 적어보세요.">${escapeHTML(d.reason)}</textarea>
+      <label class="work-label" for="panelReason">최종 판단근거</label>
+      <div class="required-note ${String(d.reason||'').trim().length>=10?'ok':''}">※ 필수 · 최종 판단근거를 <b>10글자 이상</b> 작성해야 제출할 수 있습니다. <span>현재 ${String(d.reason||'').trim().length}/10자</span></div>
+      <textarea id="panelReason" class="work-textarea" maxlength="300" placeholder="친분 관계와 평가기준을 어떻게 다뤘는지 근거를 적어보세요.">${escapeHTML(d.reason)}</textarea>
     </section>`:''}`;
 }
 
 function practicalReady(q,d) {
-  if (q.kind==='procurement') return !!d.conflictVendor && d.criteria.length>=2 && d.selectedVendor!==null && Number.isInteger(Number(d.selectedVendor)) && String(d.reason||'').trim().length>=8;
-  if (q.kind==='sequence') return d.order.length===4 && String(d.note||'').trim().length>=8;
-  return d.revealed && d.response!==null && Number.isInteger(Number(d.response)) && String(d.reason||'').trim().length>=8;
+  if (q.kind==='procurement') return !!d.conflictVendor && d.criteria.length>=2 && d.selectedVendor!==null && Number.isInteger(Number(d.selectedVendor)) && String(d.reason||'').trim().length>=10;
+  if (q.kind==='sequence') return d.order.length===4 && String(d.note||'').trim().length>=10;
+  return d.revealed && d.response!==null && Number.isInteger(Number(d.response)) && String(d.reason||'').trim().length>=10;
 }
 
 function renderPractical(q, ex) {
@@ -366,7 +379,8 @@ function bindPractical(q, ex) {
   document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{if(d.order.length<4&&!d.order.includes(b.dataset.action)){d.order.push(b.dataset.action);render();}});
   document.querySelectorAll('[data-remove-action]').forEach(b=>b.onclick=()=>{d.order=d.order.filter(x=>x!==b.dataset.removeAction);render();});
   const sn=$('#sequenceNote'); if(sn) sn.oninput=()=>{d.note=sn.value;const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
-  document.querySelectorAll('[data-candidate]').forEach(x=>x.oninput=()=>{const cid=x.dataset.candidate,f=x.dataset.field;d.scores[cid][f]=Number(x.value);const l=document.querySelector(`[data-score-label="${cid}:${f}"]`);if(l)l.textContent=x.value;const card=x.closest('.candidate-card');if(card){const t=card.querySelector('.candidate-head strong');if(t)t.textContent=candidateTotal(q,d,cid)+'점';}const rb=$('#revealRelationBtn');if(rb)rb.disabled=!panelScoresComplete(q,d);});
+  document.querySelectorAll('input[data-candidate]').forEach(x=>x.oninput=()=>{const cid=x.dataset.candidate,f=x.dataset.field;d.scores[cid][f]=Number(x.value);const l=document.querySelector(`[data-score-label="${cid}:${f}"]`);if(l)l.textContent=x.value;const card=x.closest('.candidate-card');if(card){const t=card.querySelector('.candidate-head strong');if(t)t.textContent=candidateTotal(q,d,cid)+'점';}const rb=$('#revealRelationBtn');if(rb)rb.disabled=!panelScoresComplete(q,d);});
+  document.querySelectorAll('[data-presentation-score]').forEach(b=>b.onclick=()=>{const cid=b.dataset.candidate,f=b.dataset.field;d.scores[cid][f]=Number(b.dataset.presentationScore);const card=b.closest('.candidate-card');card?.querySelectorAll(`[data-presentation-score][data-candidate="${cid}"]`).forEach(x=>x.classList.toggle('selected',x===b));const l=document.querySelector(`[data-score-label="${cid}:${f}"]`);if(l)l.textContent=b.dataset.presentationScore;const t=card?.querySelector('.candidate-head strong');if(t)t.textContent=candidateTotal(q,d,cid)+'점';const rb=$('#revealRelationBtn');if(rb)rb.disabled=!panelScoresComplete(q,d);});
   const rr=$('#revealRelationBtn'); if(rr) rr.onclick=()=>{if(!panelScoresComplete(q,d))return;d.lockedScores=JSON.parse(JSON.stringify(d.scores));d.revealed=true;render();};
   document.querySelectorAll('[data-response]').forEach(b=>b.onclick=()=>{d.response=Number(b.dataset.response);render();});
   const pa=$('#panelReason'); if(pa) pa.oninput=()=>{d.reason=pa.value;const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
@@ -426,7 +440,7 @@ function supplementalHTML(){
 function teamRoleCardHTML(){
   const role=teamRoleConfig(); if(!role) return '<div class="waiting"><h2>팀 편성 대기</h2><p>교사가 팀을 편성하면 나의 역할과 지급정보가 표시됩니다.</p></div>';
   const ex=myAnswers?.team?.role;
-  return `<section class="team-role-card"><div class="team-role-head"><span>${role.icon}</span><div><small>${me?.teamLabel||me?.teamId||'팀'} · 개인 역할</small><h3>${role.name}</h3></div></div><div class="team-secret"><b>🔐 나에게만 지급된 정보</b><p>${role.secret}</p></div>${supplementalHTML()}${ex?`<div class="feedback good"><b>✓ 핵심정보 공유 완료</b><br>이제 팀원들의 정보를 듣고 공동판단에 참여하세요.</div>${teamRoleScorecardHTML()}`:`<label class="work-label">팀에 반드시 공유할 핵심정보</label><div class="response-list">${role.options.map((x,i)=>`<button type="button" class="response-card ${teamRoleDraft.choice!==null&&Number(teamRoleDraft.choice)===i?'selected':''}" data-team-role-choice="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><label class="work-label">내가 팀에 공유한 내용 기록</label><textarea id="teamRoleNote" class="work-textarea" maxlength="220" placeholder="팀원에게 실제로 전달한 핵심정보를 내 말로 기록하세요.">${escapeHTML(teamRoleDraft.note)}</textarea><button id="submitTeamRoleBtn" class="btn primary large full" ${teamRoleDraft.choice===null||String(teamRoleDraft.note).trim().length<8?'disabled':''}>핵심정보 공유 완료</button>`}</section>`;
+  return `<section class="team-role-card"><div class="team-role-head"><span>${role.icon}</span><div><small>${me?.teamLabel||me?.teamId||'팀'} · 개인 역할</small><h3>${role.name}</h3></div></div><div class="team-secret"><b>🔐 나에게만 지급된 정보</b><p>${role.secret}</p></div>${supplementalHTML()}${ex?`<div class="feedback good"><b>✓ 핵심정보 공유 완료</b><br>이제 팀원들의 정보를 듣고 공동판단에 참여하세요.</div>${teamRoleScorecardHTML()}`:`<label class="work-label">팀에 반드시 공유할 핵심정보</label><div class="response-list">${role.options.map((x,i)=>`<button type="button" class="response-card ${teamRoleDraft.choice!==null&&Number(teamRoleDraft.choice)===i?'selected':''}" data-team-role-choice="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><label class="work-label">내가 팀에 공유한 내용 기록</label><div class="required-note ${String(teamRoleDraft.note||'').trim().length>=10?'ok':''}">※ 필수 · 공유 내용을 <b>10글자 이상</b> 기록하세요. <span>현재 ${String(teamRoleDraft.note||'').trim().length}/10자</span></div><textarea id="teamRoleNote" class="work-textarea" maxlength="220" placeholder="팀원에게 실제로 전달한 핵심정보를 내 말로 기록하세요.">${escapeHTML(teamRoleDraft.note)}</textarea><button id="submitTeamRoleBtn" class="btn primary large full" ${teamRoleDraft.choice===null||String(teamRoleDraft.note).trim().length<10?'disabled':''}>핵심정보 공유 완료</button>`}</section>`;
 }
 function teamReportReady(){const d=teamReportDraft;return d.issues.length>=4&&d.criteria.length>=4&&d.conflictResponse!==null&&d.twistResponse!==null&&d.vendor&&String(d.reason||'').trim().length>=15;}
 function teamReportHTML(){
@@ -434,7 +448,7 @@ function teamReportHTML(){
   const ex=myAnswers?.team?.report;
   if(ex) return `<div class="feedback good"><b>✓ 팀 최종보고서 제출 완료</b><br>교사가 팀 채점을 공개할 때까지 기다려주세요.</div>`;
   const d=teamReportDraft;
-  return `<section class="team-report"><div class="work-section-title"><span>01</span><div><b>문제점 종합</b><small>팀원들이 공유한 정보에서 반드시 관리해야 할 문제를 선택하세요.</small></div></div><div class="criteria-grid">${C.team.issues.map(x=>`<label class="criteria-chip ${d.issues.includes(x.key)?'selected':''}"><input type="checkbox" data-team-issue="${x.key}" ${d.issues.includes(x.key)?'checked':''}><span>${x.label}</span></label>`).join('')}</div><div class="work-section-title"><span>02</span><div><b>공정한 판단기준</b><small>최종 결정에 실제로 적용할 기준을 선택하세요.</small></div></div><div class="criteria-grid">${C.team.criteria.map(x=>`<label class="criteria-chip ${d.criteria.includes(x.key)?'selected':''}"><input type="checkbox" data-team-criterion="${x.key}" ${d.criteria.includes(x.key)?'checked':''}><span>${x.label}</span></label>`).join('')}</div><div class="work-section-title"><span>03</span><div><b>이해관계 처리</b><small>B업체와 준비위원장의 친척관계를 어떻게 처리할지 결정하세요.</small></div></div><div class="response-list">${C.team.conflictResponses.map((x,i)=>`<button type="button" class="response-card ${d.conflictResponse!==null&&Number(d.conflictResponse)===i?'selected':''}" data-team-conflict="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="team-vendor-table">${C.team.vendors.map(v=>`<div><b>${v.id} · ${v.name}</b><span>${v.price}</span><span>품질 ${v.quality}</span><span>${v.delivery}</span></div>`).join('')}</div><div class="work-section-title"><span>04</span><div><b>돌발상황 대응</b><small>새로운 정보가 들어온 뒤 기존 판단을 어떻게 처리할지 정하세요.</small></div></div><div class="work-alert"><b>⚠️ 추가정보</b><span>${C.team.twist}</span></div><div class="response-list">${C.team.twistResponses.map((x,i)=>`<button type="button" class="response-card ${d.twistResponse!==null&&Number(d.twistResponse)===i?'selected':''}" data-team-twist="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="work-section-title"><span>05</span><div><b>최종 의사결정 보고서</b><small>팀의 최종 선정업체와 판단근거를 기록하세요.</small></div></div><label class="work-label">최종 선정업체</label><div class="mini-choice-grid">${C.team.vendors.map(v=>`<button type="button" class="mini-choice ${d.vendor===v.id?'selected':''}" data-team-vendor="${v.id}">${v.id} · ${v.name}</button>`).join('')}</div><label class="work-label">최종 판단근거</label><textarea id="teamReportReason" class="work-textarea" maxlength="420" placeholder="예산, 납기, 이해관계 처리, 돌발상황, 최종선정 사유를 하나의 보고서처럼 기록하세요.">${escapeHTML(d.reason)}</textarea><button id="submitTeamReportBtn" class="btn primary large full" ${teamReportReady()?'':'disabled'}>팀 작업물 최종 제출</button></section>`;
+  return `<section class="team-report"><div class="work-section-title"><span>01</span><div><b>문제점 종합</b><small>팀원들이 공유한 정보에서 반드시 관리해야 할 문제를 선택하세요.</small></div></div><div class="required-note ${d.issues.length>=4?'ok':''}">※ 팀 합의로 <b>4개 이상</b> 선택하세요. <span>현재 ${d.issues.length}개</span></div><div class="criteria-grid">${C.team.issues.map(x=>`<label class="criteria-chip ${d.issues.includes(x.key)?'selected':''}"><input type="checkbox" data-team-issue="${x.key}" ${d.issues.includes(x.key)?'checked':''}><span>${x.label}</span></label>`).join('')}</div><div class="work-section-title"><span>02</span><div><b>공정한 판단기준</b><small>최종 결정에 실제로 적용할 기준을 선택하세요.</small></div></div><div class="required-note ${d.criteria.length>=4?'ok':''}">※ 팀 합의로 판단기준을 <b>4개 이상</b> 선택하세요. <span>현재 ${d.criteria.length}개</span></div><div class="criteria-grid">${C.team.criteria.map(x=>`<label class="criteria-chip ${d.criteria.includes(x.key)?'selected':''}"><input type="checkbox" data-team-criterion="${x.key}" ${d.criteria.includes(x.key)?'checked':''}><span>${x.label}</span></label>`).join('')}</div><div class="work-section-title"><span>03</span><div><b>이해관계 처리</b><small>B업체와 준비위원장의 친척관계를 어떻게 처리할지 결정하세요.</small></div></div><div class="response-list">${C.team.conflictResponses.map((x,i)=>`<button type="button" class="response-card ${d.conflictResponse!==null&&Number(d.conflictResponse)===i?'selected':''}" data-team-conflict="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="team-vendor-table">${C.team.vendors.map(v=>`<div><b>${v.id} · ${v.name}</b><span>${v.price}</span><span>품질 ${v.quality}</span><span>${v.delivery}</span></div>`).join('')}</div><div class="work-section-title"><span>04</span><div><b>돌발상황 대응</b><small>새로운 정보가 들어온 뒤 기존 판단을 어떻게 처리할지 정하세요.</small></div></div><div class="work-alert"><b>⚠️ 추가정보</b><span>${C.team.twist}</span></div><div class="response-list">${C.team.twistResponses.map((x,i)=>`<button type="button" class="response-card ${d.twistResponse!==null&&Number(d.twistResponse)===i?'selected':''}" data-team-twist="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="work-section-title"><span>05</span><div><b>최종 의사결정 보고서</b><small>팀의 최종 선정업체와 판단근거를 기록하세요.</small></div></div><label class="work-label">최종 선정업체</label><div class="mini-choice-grid">${C.team.vendors.map(v=>`<button type="button" class="mini-choice ${d.vendor===v.id?'selected':''}" data-team-vendor="${v.id}">${v.id} · ${v.name}</button>`).join('')}</div><label class="work-label">최종 판단근거</label><div class="required-note ${String(d.reason||'').trim().length>=15?'ok':''}">※ 팀 최종 판단근거를 <b>15글자 이상</b> 작성하세요. <span>현재 ${String(d.reason||'').trim().length}/15자</span></div><textarea id="teamReportReason" class="work-textarea" maxlength="420" placeholder="예산, 납기, 이해관계 처리, 돌발상황, 최종선정 사유를 하나의 보고서처럼 기록하세요.">${escapeHTML(d.reason)}</textarea><button id="submitTeamReportBtn" class="btn primary large full" ${teamReportReady()?'':'disabled'}>팀 작업물 최종 제출</button></section>`;
 }
 function teamScorecardHTML(){
   const pub=teamPublished(); if(!pub) return `<div class="waiting"><h3>팀 채점 대기</h3><p>교사가 팀별 작업결과를 채점·공개하면 결과가 표시됩니다.</p></div>`;
@@ -449,7 +463,7 @@ function renderTeam(){
 }
 function bindTeam(){
   document.querySelectorAll('[data-team-role-choice]').forEach(b=>b.onclick=()=>{teamRoleDraft.choice=Number(b.dataset.teamRoleChoice);render();});
-  const rn=$('#teamRoleNote'); if(rn) rn.oninput=()=>{teamRoleDraft.note=rn.value;const b=$('#submitTeamRoleBtn');if(b)b.disabled=teamRoleDraft.choice===null||rn.value.trim().length<8;};
+  const rn=$('#teamRoleNote'); if(rn) rn.oninput=()=>{teamRoleDraft.note=rn.value;const b=$('#submitTeamRoleBtn');if(b)b.disabled=teamRoleDraft.choice===null||rn.value.trim().length<10;};
   const rb=$('#submitTeamRoleBtn'); if(rb) rb.onclick=submitTeamRole;
   document.querySelectorAll('[data-team-issue]').forEach(x=>x.onchange=()=>{const k=x.dataset.teamIssue;teamReportDraft.issues=x.checked?[...new Set([...teamReportDraft.issues,k])]:teamReportDraft.issues.filter(v=>v!==k);render();});
   document.querySelectorAll('[data-team-criterion]').forEach(x=>x.onchange=()=>{const k=x.dataset.teamCriterion;teamReportDraft.criteria=x.checked?[...new Set([...teamReportDraft.criteria,k])]:teamReportDraft.criteria.filter(v=>v!==k);render();});
@@ -551,8 +565,9 @@ function render() {
       </div>
       <div class="pledge-area">
         <textarea id="pledgeText" maxlength="160" placeholder="예: 모둠활동에서 친한 친구 의견만 편들지 않고 모두의 의견을 같은 기준으로 듣겠습니다.">${myPledge?.text || ''}</textarea>
+        <div id="pledgeRequirement" class="required-note ${String(myPledge?.text||'').trim().length>=10?'ok':''}">※ 필수 · 실천약속을 <b>10글자 이상</b> 작성해야 서명할 수 있습니다. <span>현재 ${String(myPledge?.text||'').trim().length}/10자</span></div>
         <div class="student-submit">
-          <button id="pledgeBtn" class="btn primary large full">
+          <button id="pledgeBtn" class="btn primary large full" ${String(myPledge?.text||'').trim().length>=10?'':'disabled'}>
             ${myPledge ? '실천약속 수정' : '실천약속 서명'}
           </button>
         </div>
@@ -615,6 +630,17 @@ function render() {
 
   if ($('#submitBtn')) $('#submitBtn').onclick = submit;
   if ($('#pledgeBtn')) $('#pledgeBtn').onclick = savePledge;
+  const pledgeTextEl = $('#pledgeText');
+  if (pledgeTextEl) pledgeTextEl.oninput = () => {
+    const n = pledgeTextEl.value.trim().length;
+    const b = $('#pledgeBtn');
+    const note = $('#pledgeRequirement');
+    if (b) b.disabled = n < 10;
+    if (note) {
+      note.classList.toggle('ok', n >= 10);
+      note.innerHTML = `※ 필수 · 실천약속을 <b>10글자 이상</b> 작성해야 서명할 수 있습니다. <span>현재 ${n}/10자</span>`;
+    }
+  };
   if ($('#saveCert')) $('#saveCert').onclick = saveCert;
 }
 
@@ -654,7 +680,7 @@ async function submit() {
 
 async function savePledge() {
   const t = $('#pledgeText').value.trim();
-  if (t.length < 8) return toast('실천약속을 조금 더 구체적으로 적어주세요.');
+  if (t.length < 10) return toast('실천약속을 10글자 이상 구체적으로 적어주세요.');
 
   await DB.savePledge(code, t);
   await syncMyResult();
@@ -683,6 +709,9 @@ function subscribe() {
   unsubs = [
     DB.on('control', code, v => {
       control = v || { stage: 'waiting' };
+      if (control.stage === 'process') {
+        control = { ...control, stage: 'team', index: 0, teamPhase: control.teamPhase || 'briefing' };
+      }
       render();
     }),
     DB.on(`pledges/${DB.uid}`, code, v => {
@@ -758,7 +787,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v6.0 팀종합실기';
+    $('#studentStatus').textContent = '실시간 연결 · v6.1 팀종합실기';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

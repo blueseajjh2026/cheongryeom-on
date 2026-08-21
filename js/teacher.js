@@ -262,15 +262,16 @@ async function assignTeams(){
   const ids=Object.keys(participants||{}).sort((a,b)=>Number(participants[a]?.joinedAt||0)-Number(participants[b]?.joinedAt||0));
   if(!ids.length)return toast('먼저 학생이 입장해야 합니다.');
   const teamCount=Math.max(1,Math.round(ids.length/4)); const base=Math.floor(ids.length/teamCount), rem=ids.length%teamCount;
-  let pos=0; const roleOrder=C.team.roleOrder;
+  let pos=0; const roleOrder=C.team.roleOrder; const teamRosters={};
   for(let ti=0;ti<teamCount;ti++){
-    const size=base+(ti<rem?1:0); const teamId=`T${ti+1}`, teamLabel=`${ti+1}팀`;
+    const size=base+(ti<rem?1:0); const teamId=`T${ti+1}`, teamLabel=`${ti+1}팀`; teamRosters[teamId]={teamId,teamLabel,members:[]};
     for(let j=0;j<size;j++){
-      const uid=ids[pos++]; const rk=roleOrder[Math.min(j,roleOrder.length-1)]; const role=C.team.roles[rk];
+      const uid=ids[pos++]; const rk=roleOrder[Math.min(j,roleOrder.length-1)]; const role=C.team.roles[rk]; const studentName=participants[uid]?.studentName||'학생';
       await DB.db.ref(`rooms/${code}/participants/${uid}`).update({teamId,teamLabel,teamSize:size,teamRoleKey:rk,teamRoleName:role.name});
+      teamRosters[teamId].members.push({uid,studentName,roleKey:rk,roleName:role.name,isRecorder:rk==='records'});
     }
   }
-  await DB.setControl(code,{teamPhase:'briefing',teamScores:null}); toast(`${teamCount}개 팀으로 자동 편성했습니다.`);
+  await DB.setControl(code,{teamPhase:'briefing',teamScores:null,teamRosters}); toast(`${teamCount}개 팀으로 자동 편성했습니다. 학생 화면에 조원과 서기가 표시됩니다.`);
 }
 function teamReportAnswer(group){const recorder=group.members.find(m=>m.teamRoleKey==='records')||group.members[0];return recorder?answers?.team?.report?.[recorder.uid]:null;}
 function teamEval(group){
@@ -286,7 +287,7 @@ async function publishTeamScores(){
 function teamTeacherHTML(){
   const groups=teamGroups(), phase=control?.teamPhase||'briefing';
   const phaseNames={briefing:'분산정보 공유',twist:'돌발상황 공개',report:'최종보고서 작성',scored:'채점·결과공개'};
-  return `<span class="eyebrow">TEAM-BASED PRACTICAL · ${C.team.code}</span><h2>${C.team.title}</h2><p class="context-box">${C.team.objective}</p><div class="team-teacher-controls"><button id="assignTeamsBtn" class="btn soft">${groups.length?'팀 재편성':'① 팀 자동편성'}</button><button id="teamTwistBtn" class="btn outline" ${!groups.length?'disabled':''}>② 돌발상황 공개</button><button id="teamReportBtn" class="btn outline" ${!groups.length?'disabled':''}>③ 최종보고서 작성</button><button id="teamScoreBtn" class="btn primary" ${!groups.length?'disabled':''}>④ 팀 채점·결과공개</button></div><div class="team-phase-teacher"><b>현재 단계</b><span>${phaseNames[phase]||phase}</span></div><div class="teacher-work-grid"><div class="teacher-work-card"><b>팀 과제 구조</b><p>팀원마다 서로 다른 정보 지급 → 말로 정보 공유 → 이해관계·기준 합의 → 돌발상황 공개 → 기록담당이 공동보고서 제출</p></div><div class="teacher-work-card"><b>최종 채점</b><p>팀 수행점수 80% + 학생 개인 역할수행 20%를 합산합니다.</p></div></div><div class="rubric-teacher"><b>팀 수행 채점요소</b><div>${C.team.reportRubric.map(x=>`<span>${x}</span>`).join('')}</div></div>${groups.length?`<div class="team-group-list">${groups.map(g=>{const roles=g.members.filter(m=>answers?.team?.role?.[m.uid]).length;const report=!!teamReportAnswer(g);const pub=control?.teamScores?.[g.id];return `<article class="team-group-card"><div class="team-group-head"><b>${g.label}</b><span>${g.members.length}명</span>${pub?`<strong>${pub.teamScore}점</strong>`:''}</div><div class="team-members">${g.members.map(m=>`<span><b>${m.studentName}</b><small>${m.teamRoleName}${answers?.team?.role?.[m.uid]?' · ✓공유':''}</small></span>`).join('')}</div><div class="team-group-foot">개인정보 공유 ${roles}/${g.members.length} · 최종보고서 ${report?'제출':'미제출'}</div>${pub?`<div class="teacher-team-score">${pub.details.map(d=>`<span>${d[0]} <b>${d[1]}/${d[2]}</b></span>`).join('')}</div>`:''}</article>`;}).join('')}</div>`:`<div class="empty">학생 입장이 끝나면 ‘팀 자동편성’을 눌러주세요. 4명 안팎으로 균형 편성됩니다.</div>`}`;
+  return `<span class="eyebrow">VOCATIONAL TEAM PRACTICAL · ${C.team.code}</span><h2>${C.team.title}</h2><p class="context-box">${C.team.objective}</p><div class="team-teacher-controls"><button id="assignTeamsBtn" class="btn soft">${groups.length?'팀 재편성':'① 팀 자동편성'}</button><button id="teamTwistBtn" class="btn outline" ${!groups.length?'disabled':''}>② 돌발상황 공개</button><button id="teamReportBtn" class="btn outline" ${!groups.length?'disabled':''}>③ 최종보고서 작성</button><button id="teamScoreBtn" class="btn primary" ${!groups.length?'disabled':''}>④ 팀 채점·결과공개</button></div><div class="team-phase-teacher"><b>현재 단계</b><span>${phaseNames[phase]||phase}</span></div><div class="teacher-work-grid"><div class="teacher-work-card"><b>팀 과제 구조</b><p>부서원마다 서로 다른 업무정보 지급 → 말로 정보 공유 → 이해관계·기준 합의 → 돌발상황 공개 → 서기가 공동보고서 제출</p></div><div class="teacher-work-card"><b>최종 채점</b><p>팀 수행점수 80% + 학생 개인 역할수행 20%를 합산합니다.</p></div></div><div class="rubric-teacher"><b>팀 수행 채점요소</b><div>${C.team.reportRubric.map(x=>`<span>${x}</span>`).join('')}</div></div>${groups.length?`<div class="team-group-list">${groups.map(g=>{const roles=g.members.filter(m=>answers?.team?.role?.[m.uid]).length;const report=!!teamReportAnswer(g);const pub=control?.teamScores?.[g.id];return `<article class="team-group-card"><div class="team-group-head"><b>${g.label}</b><span>${g.members.length}명</span>${pub?`<strong>${pub.teamScore}점</strong>`:''}</div><div class="team-members">${g.members.map(m=>`<span><b>${m.studentName}</b><small>${m.teamRoleName}${answers?.team?.role?.[m.uid]?' · ✓공유':''}</small></span>`).join('')}</div><div class="team-group-foot">역할정보 공유 ${roles}/${g.members.length} · 최종보고서 ${report?'제출':'미제출'}</div>${pub?`<div class="teacher-team-score">${pub.details.map(d=>`<span>${d[0]} <b>${d[1]}/${d[2]}</b></span>`).join('')}</div>`:''}</article>`;}).join('')}</div>`:`<div class="empty">학생 입장이 끝나면 ‘팀 자동편성’을 눌러주세요. 4명 안팎으로 균형 편성됩니다.</div>`}`;
 }
 function bindTeacherTeam(){
   const a=$('#assignTeamsBtn');if(a)a.onclick=assignTeams;
@@ -441,7 +442,7 @@ function renderStats() {
     const groups=teamGroups(); const roleSubmitted=Object.keys(answers?.team?.role||{}).length; const reports=Object.keys(answers?.team?.report||{}).length;
     const published=control?.teamScores||{}; const vals=Object.values(published); const avg=vals.length?Math.round(vals.reduce((a,b)=>a+Number(b.teamScore||0),0)/vals.length):0;
     $('#responseChip').textContent=`${roleSubmitted}명 역할공유`;
-    $('#statsArea').className=''; $('#statsArea').innerHTML=`<div class="work-live-summary"><div><span>개인정보 공유</span><b>${roleSubmitted}</b><small>등록 ${Object.keys(participants).length}명</small></div><div><span>팀 보고서</span><b>${reports}</b><small>${groups.length}개 팀</small></div><div><span>팀 평균</span><b>${vals.length?avg:'-'}</b><small>${vals.length?'결과 공개됨':'채점 전'}</small></div></div>`; return;
+    $('#statsArea').className=''; $('#statsArea').innerHTML=`<div class="work-live-summary"><div><span>역할정보 공유</span><b>${roleSubmitted}</b><small>등록 ${Object.keys(participants).length}명</small></div><div><span>팀 보고서</span><b>${reports}</b><small>${groups.length}개 팀</small></div><div><span>팀 평균</span><b>${vals.length?avg:'-'}</b><small>${vals.length?'결과 공개됨':'채점 전'}</small></div></div>`; return;
   } else if (control.stage === 'pledge') {
     const n = Object.keys(pledges || {}).length;
     $('#responseChip').textContent = `${n}명 제출`;
@@ -630,7 +631,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = '실시간 서버 연결 · v6.1 팀종합실기';
+    $('#serverStatus').textContent = '실시간 서버 연결 · v7.0 특성화고 직업윤리';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);

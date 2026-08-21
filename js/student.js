@@ -422,6 +422,12 @@ function practicalBreakdownHTML(s) {
 }
 
 
+function teamRoster(){ return me?.teamId ? control?.teamRosters?.[me.teamId] : null; }
+function teamRosterHTML(){
+  const roster=teamRoster(); if(!roster?.members?.length) return '';
+  const recorder=roster.members.find(x=>x.isRecorder||x.roleKey==='records');
+  return `<section class="team-roster-card"><div class="team-roster-head"><div><small>우리 조 바로 확인</small><h3>${escapeHTML(roster.teamLabel||me?.teamLabel||'우리 조')}</h3></div><div class="team-recorder-badge"><span>✍ 서기</span><b>${escapeHTML(recorder?.studentName||'확인 중')}</b></div></div><div class="team-roster-members">${roster.members.map(x=>`<div class="team-member-chip ${x.isRecorder||x.roleKey==='records'?'recorder':''}"><b>${escapeHTML(x.studentName||'학생')}</b><span>${escapeHTML(x.roleName||'')}</span>${x.isRecorder||x.roleKey==='records'?'<em>서기</em>':''}</div>`).join('')}</div><p class="team-roster-guide">이름과 역할을 확인한 뒤 같은 조원끼리 모여주세요. <b>서기는 최종 합의내용을 입력하고, 모든 조원은 같은 직무상황 화면을 보며 함께 판단합니다.</b></p></section>`;
+}
 function teamRoleConfig(){ return C.team.roles?.[me?.teamRoleKey] || null; }
 function teamPublished(){ return me?.teamId ? control?.teamScores?.[me.teamId] : null; }
 function teamRoleScorecardHTML(){
@@ -444,7 +450,9 @@ function teamRoleCardHTML(){
 }
 function teamReportReady(){const d=teamReportDraft;return d.issues.length>=4&&d.criteria.length>=4&&d.conflictResponse!==null&&d.twistResponse!==null&&d.vendor&&String(d.reason||'').trim().length>=15;}
 function teamReportHTML(){
-  if(me?.teamRoleKey!=='records') return `<div class="team-wait-report"><img class="official-character" src="assets/official/character-listen.png" alt=""><h3>팀 최종보고서 협의 중</h3><p><b>${me?.teamLabel||''} 기록·조정 담당</b>이 휴대폰에 팀의 합의내용을 입력합니다. 다른 팀원은 문제점·기준·돌발상황 대응이 정확히 기록되도록 함께 확인하세요.</p></div>`;
+  const isRecorder=me?.teamRoleKey==='records';
+  const recorder=teamRoster()?.members?.find(x=>x.isRecorder||x.roleKey==='records');
+  if(!isRecorder) return `<section class="team-report team-report-viewer"><div class="team-shared-screen"><span>👥 조원 공통 화면</span><h3>직무상황 최종 의사결정 협의</h3><p>이 화면은 서기만 보는 화면이 아닙니다. <b>${escapeHTML(recorder?.studentName||'서기')} 학생</b>이 최종 내용을 입력하는 동안, 아래 항목을 모든 조원이 함께 보며 의견을 말해주세요.</p></div><div class="work-section-title"><span>01</span><div><b>문제점 종합</b><small>예산 · 납기 · 이해관계 · 기록의무를 함께 확인</small></div></div><div class="viewer-checklist">${C.team.issues.filter(x=>x.good).map(x=>`<span>□ ${x.label}</span>`).join('')}</div><div class="work-section-title"><span>02</span><div><b>공정한 판단기준</b><small>가격 · 품질 · 납기 · 이해관계 처리</small></div></div><div class="viewer-checklist">${C.team.criteria.filter(x=>x.good).map(x=>`<span>□ ${x.label}</span>`).join('')}</div><div class="work-section-title"><span>03</span><div><b>돌발상황 대응</b></div></div><div class="work-alert"><b>⚠️ 추가정보</b><span>${C.team.twist}</span></div><div class="work-section-title"><span>04</span><div><b>최종 합의</b><small>선정업체와 판단근거를 서기에게 말로 전달하세요.</small></div></div><div class="team-recorder-callout">✍ 최종 입력 담당: <b>${escapeHTML(recorder?.studentName||'서기')}</b><br><span>조원 모두가 합의한 뒤 서기가 제출합니다.</span></div></section>`;
   const ex=myAnswers?.team?.report;
   if(ex) return `<div class="feedback good"><b>✓ 팀 최종보고서 제출 완료</b><br>교사가 팀 채점을 공개할 때까지 기다려주세요.</div>`;
   const d=teamReportDraft;
@@ -456,10 +464,10 @@ function teamScorecardHTML(){
   return `<section class="team-score-card"><div class="work-result-head"><div><span>${me?.teamLabel||'우리 팀'} 종합작업 결과</span><h3>팀 수행 80% + 개인 역할 20%</h3></div><strong>${composite}<small>/100</small></strong></div><div class="team-score-formula"><span>팀 수행 <b>${pub.teamScore}</b></span><span>개인 역할 <b>${roleEv.score}</b></span><span>개인 반영점수 <b>${composite}</b></span></div>${scoreRowsHTML(pub.details||[])}<div class="feedback info"><b>협업 평가의 의미</b><br>팀이 만든 공동 결과와 내가 맡은 역할의 수행 정도를 함께 반영했습니다.</div></section>`;
 }
 function renderTeam(){
-  if(!me?.teamId) return waiting('팀 편성 대기','교사가 종합 팀 실기용 팀을 편성하고 있습니다.');
+  if(!me?.teamId) return waiting('팀 편성 대기','교사가 직무상황 종합평가용 팀을 편성하고 있습니다.');
   const phase=control?.teamPhase||'briefing';
   const phaseLabel={briefing:'① 분산정보 공유',twist:'② 돌발상황 대응',report:'③ 공동보고서 작성',scored:'④ 팀 작업결과'}[phase]||'팀 실기';
-  return `<div class="work-exam-head"><div><span class="stage-tag">종합 팀 작업형</span><h2>${C.team.title}</h2><p>${C.team.objective}</p></div><div class="work-code"><small>과제번호</small><b>${C.team.code}</b></div></div><div class="team-phase-banner"><b>${me.teamLabel||me.teamId}</b><span>${phaseLabel}</span><small>${me.teamRoleName||''}</small></div><div class="work-context">${C.team.context}</div>${teamRoleCardHTML()}${phase==='twist'||phase==='report'||phase==='scored'?`<div class="work-alert team-twist"><b>⚠️ 돌발상황 공개</b><span>${C.team.twist}</span></div>`:''}${phase==='report'?teamReportHTML():''}${phase==='scored'?teamScorecardHTML():''}`;
+  return `<div class="work-exam-head"><div><span class="stage-tag">직무상황 종합평가</span><h2>${C.team.title}</h2><p>${C.team.objective}</p></div><div class="work-code"><small>과제번호</small><b>${C.team.code}</b></div></div>${teamRosterHTML()}<div class="team-phase-banner"><b>${me.teamLabel||me.teamId}</b><span>${phaseLabel}</span><small>${me.teamRoleName||''}</small></div><div class="work-context">${C.team.context}</div>${teamRoleCardHTML()}${phase==='twist'||phase==='report'||phase==='scored'?`<div class="work-alert team-twist"><b>⚠️ 돌발상황 공개</b><span>${C.team.twist}</span></div>`:''}${phase==='report'?teamReportHTML():''}${phase==='scored'?teamScorecardHTML():''}`;
 }
 function bindTeam(){
   document.querySelectorAll('[data-team-role-choice]').forEach(b=>b.onclick=()=>{teamRoleDraft.choice=Number(b.dataset.teamRoleChoice);render();});
@@ -581,7 +589,7 @@ function render() {
       ? `<div class="feedback info">
           <b>채점 안내</b><br>
           ${s.missingQuestions > 0 ? `시간 내 제출하지 못한 ${s.missingQuestions}개 문항은 0점으로 반영되었습니다.<br>` : ''}
-          ${!s.teamComplete ? '종합 팀 실기 결과가 공개되지 않은 경우 팀 실기 점수는 0점으로 반영됩니다.<br>' : ''}${s.pl === 0 ? '청렴 실천약속 미제출은 0점으로 반영되었습니다.' : ''}
+          ${!s.teamComplete ? '직무상황 종합평가 결과가 공개되지 않은 경우 팀 실기 점수는 0점으로 반영됩니다.<br>' : ''}${s.pl === 0 ? '청렴 실천약속 미제출은 0점으로 반영되었습니다.' : ''}
         </div>`
       : '';
 
@@ -787,7 +795,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v6.1 팀종합실기';
+    $('#studentStatus').textContent = '실시간 연결 · v7.0 특성화고 직업윤리';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

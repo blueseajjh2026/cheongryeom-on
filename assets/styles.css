@@ -237,3 +237,15 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 @media(max-width:390px){
   .presentation-score-grid{grid-template-columns:repeat(5,1fr)}
 }
+
+
+/* v7.0 특성화고 직업윤리 · 팀 식별 UX */
+.team-roster-card{margin:14px 0 16px;padding:16px;border:2px solid #2f78a7;border-radius:18px;background:linear-gradient(180deg,#f6fbff,#fff);box-shadow:0 10px 24px rgba(28,83,118,.08)}
+.team-roster-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.team-roster-head small{display:block;color:#5e7f94;font-weight:800;margin-bottom:2px}.team-roster-head h3{margin:0;color:#174d70;font-size:22px}
+.team-recorder-badge{min-width:105px;padding:9px 11px;border-radius:12px;background:#fff4d8;border:1px solid #e9cd85;text-align:center}.team-recorder-badge span{display:block;font-size:10px;font-weight:900;color:#87651a}.team-recorder-badge b{display:block;margin-top:2px;font-size:15px;color:#6b4e0f}
+.team-roster-members{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.team-member-chip{position:relative;padding:10px 11px;border:1px solid #d7e5ed;border-radius:12px;background:#fff}.team-member-chip b{display:block;font-size:14px;color:#244d63}.team-member-chip span{display:block;margin-top:3px;font-size:10px;color:#728995}.team-member-chip.recorder{border-color:#dfbf66;background:#fffaf0}.team-member-chip em{position:absolute;right:8px;top:8px;padding:3px 6px;border-radius:999px;background:#8b6819;color:white;font-size:9px;font-style:normal;font-weight:900}
+.team-roster-guide{margin:11px 0 0;padding:10px 11px;border-radius:10px;background:#eaf6fc;color:#345f76;font-size:11px;line-height:1.6}
+.team-shared-screen{padding:13px 14px;margin-bottom:14px;border-radius:13px;background:#eef7fb;border:1px solid #c5dfea}.team-shared-screen>span{font-size:10px;font-weight:900;color:#17739c}.team-shared-screen h3{margin:5px 0 6px;color:#214e67}.team-shared-screen p{margin:0;font-size:11px;line-height:1.65;color:#4e6d7e}
+.viewer-checklist{display:grid;gap:7px;margin:8px 0 16px}.viewer-checklist span{padding:9px 10px;border:1px solid #d9e5eb;border-radius:10px;background:white;font-size:11px;color:#466373}.team-recorder-callout{margin-top:10px;padding:12px 13px;border-radius:11px;background:#fff7e5;border:1px solid #ecd092;color:#745716;font-size:12px;line-height:1.55}.team-recorder-callout span{font-size:10px;color:#796b48}
+@media(max-width:520px){.team-roster-members{grid-template-columns:1fr}.team-roster-head{align-items:stretch}.team-recorder-badge{min-width:96px}.team-roster-head h3{font-size:20px}}

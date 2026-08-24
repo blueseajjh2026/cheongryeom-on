@@ -962,7 +962,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v8.5 실기피드백·종합평가전환';
+    $('#studentStatus').textContent = '실시간 연결 · v8.6.1 최종 통합본';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

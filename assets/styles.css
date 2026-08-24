@@ -341,3 +341,194 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 .teacher-live-member{margin-top:7px;padding:10px;border-radius:10px;background:#fff;border:1px solid #dce8ed}.teacher-live-member.waiting{opacity:.7}.teacher-live-member header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid #e8eff2;padding-bottom:6px}.teacher-live-member header b{font-size:11px;color:#274f64}.teacher-live-member header span{display:block;font-size:9px;color:#6d818b;margin-top:2px}.teacher-live-member header em{font-style:normal;font-size:9px;color:#186f93;font-weight:800}.teacher-live-member p{margin:7px 0 0;padding:7px 8px;border-radius:8px;background:#f8fbfc;font-size:10px;line-height:1.6;color:#516b77}.teacher-live-member p b{display:block;font-size:9px;color:#286680;margin-bottom:2px}.teacher-live-member .teacher-question{background:#fff8e9;border:1px solid #f0dfb5}
 .pledge-live-list{display:grid;gap:8px}.pledge-live-list article{border:1px solid #d8e6ec;border-radius:11px;padding:10px;background:#fff}.pledge-live-list header{display:flex;justify-content:space-between;gap:8px}.pledge-live-list header b{font-size:11px;color:#285a72}.pledge-live-list header span{font-size:9px;color:#6c818b}.pledge-live-list p{margin:7px 0 0;padding:8px;border-radius:8px;background:#f5fafc;font-size:10.5px;line-height:1.65;color:#4e6976}
 @media(max-width:390px){.student-page .student-accessibility-bar{align-items:flex-start;flex-direction:column}.student-page .student-zoom-controls{width:100%}.student-page .student-zoom-controls button{flex:1}.student-page .vendor-head,.student-page .vendor-row{grid-template-columns:1.3fr .9fr .8fr 1fr}}
+
+/* =========================================================
+   v8.3 학생 확대 단순화 + Q-Net 정보구조 참고 교사용 리디자인
+   - 학생 확대: 100 / 110 / 120만 사용
+   - 교사용: 공공 자격시험 운영시스템 느낌의 단계형 정보구조
+   ========================================================= */
+
+/* 학생 확대바: 3개 버튼을 균등 배치 */
+.student-page .student-zoom-controls{flex:1;max-width:285px}
+.student-page .student-zoom-controls button{flex:1;min-width:72px}
+
+/* ---------- 교사용 공공서비스형 상단 ---------- */
+.teacher-page{background:#f4f6f8;color:#1f2f3a;word-break:keep-all;overflow-wrap:break-word;line-break:strict}
+.teacher-page *{word-break:keep-all;overflow-wrap:break-word}
+.teacher-qnet-utility{height:36px;background:#f6f7f8;border-bottom:1px solid #e2e6e9;color:#667681}
+.teacher-qnet-utility-inner{max-width:1500px;height:100%;margin:auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600}
+.teacher-page .teacher-qnet-header{position:relative;top:auto;box-shadow:none;border-bottom:1px solid #d9e1e6;background:#fff}
+.teacher-page .teacher-qnet-header .app-top-inner{height:88px;padding:0 24px}
+.teacher-brand-wrap{display:flex;align-items:center;gap:24px;min-width:0}
+.teacher-ci-link{display:flex;align-items:center}
+.teacher-page .teacher-qnet-header .app-logo{width:290px;max-width:36vw}
+.teacher-service-name{position:relative;padding-left:24px;display:flex;flex-direction:column;gap:2px}
+.teacher-service-name:before{content:'';position:absolute;left:0;top:3px;bottom:3px;width:1px;background:#d9e2e7}
+.teacher-service-name b{font-size:25px;line-height:1.2;color:#123f63;letter-spacing:-.045em}
+.teacher-service-name span{font-size:13px;font-weight:700;color:#637683}
+.teacher-header-right{display:flex;align-items:center;gap:10px}
+.teacher-page .mode-label{font-size:12px;padding:7px 10px;border-radius:4px;background:#174f82;letter-spacing:.04em}
+.teacher-page .status-pill{font-size:12px;padding:8px 12px;border-radius:5px;background:#edf6f9;border:1px solid #d6e6ed;color:#315c72}
+.teacher-qnet-nav{background:linear-gradient(90deg,#0a467c,#075b96);border-bottom:3px solid #f1b323;box-shadow:0 3px 10px rgba(16,55,83,.12)}
+.teacher-qnet-nav-inner{max-width:1500px;height:56px;margin:auto;padding:0 24px;display:flex;align-items:center}
+.teacher-qnet-nav a{position:relative;height:56px;display:flex;align-items:center;padding:0 23px;color:#fff;font-size:15px;font-weight:800;border-left:1px solid rgba(255,255,255,.13)}
+.teacher-qnet-nav a:last-of-type{border-right:1px solid rgba(255,255,255,.13)}
+.teacher-qnet-nav a:hover,.teacher-qnet-nav a.active{background:rgba(255,255,255,.12)}
+.teacher-qnet-nav a.active:after{content:'';position:absolute;left:20px;right:20px;bottom:0;height:4px;background:#fff}
+.teacher-nav-spacer{flex:1}
+.teacher-nav-caption{color:#dbeef8;font-size:12px;font-weight:800;letter-spacing:.02em}
+
+/* ---------- 페이지 타이틀 ---------- */
+.teacher-page .teacher-shell{max-width:1500px;padding:28px 24px 60px}
+.teacher-page-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:22px;padding:0 2px}
+.teacher-breadcrumb{display:block;margin-bottom:8px;font-size:12px;color:#768690}
+.teacher-page-heading h1{margin:0;font-size:32px;line-height:1.25;letter-spacing:-.05em;color:#173f5d}
+.teacher-page-heading p{margin:8px 0 0;font-size:14px;line-height:1.65;color:#637682}
+.teacher-page-heading-badge{min-width:180px;padding:12px 16px;border-left:4px solid #0b5c94;background:#fff;border-top:1px solid #dde5ea;border-right:1px solid #dde5ea;border-bottom:1px solid #dde5ea;text-align:left}
+.teacher-page-heading-badge span{display:block;font-size:10px;font-weight:900;letter-spacing:.12em;color:#1b6f9c}
+.teacher-page-heading-badge b{display:block;margin-top:3px;font-size:15px;color:#2d4f63}
+
+/* ---------- 교사용 공통 컴포넌트 ---------- */
+.teacher-page .card{border-radius:8px;border:1px solid #d8e1e6;box-shadow:0 5px 16px rgba(28,58,78,.055)}
+.teacher-page .btn{border-radius:4px;padding:12px 16px;font-size:14px;font-weight:800}
+.teacher-page .btn.large{padding:15px 20px;font-size:16px}
+.teacher-page .btn.primary{background:#0a5b94}
+.teacher-page .btn.primary:hover{background:#084978}
+.teacher-page .btn.outline{border-color:#aebfc9;color:#234f6a}
+.teacher-page .btn.soft{background:#edf6fb;color:#145f86;border:1px solid #c9e0eb}
+.teacher-page label{font-size:14px;font-weight:800;color:#355365;margin-top:13px}
+.teacher-page input,.teacher-page select,.teacher-page textarea{font-size:15px;line-height:1.6;padding:12px 13px;border-radius:4px;border-color:#bfcdd5}
+.teacher-page .eyebrow{font-size:12px;letter-spacing:.1em;margin-bottom:7px;color:#0d6395}
+.teacher-page .helper{font-size:14px;line-height:1.8;color:#5e707a}
+.teacher-page .privacy-note{font-size:13px;line-height:1.75}
+.teacher-card-label{margin:-22px -22px 18px;padding:10px 18px;background:#f5f8fa;border-bottom:1px solid #dce5ea;border-radius:8px 8px 0 0;color:#5c7180;font-size:11px;font-weight:900;letter-spacing:.11em}
+
+/* ---------- 수업방 개설 ---------- */
+.teacher-page .setup-block{border-top:5px solid #0a5b94;padding:28px}
+.teacher-page .setup-grid{gap:34px;align-items:center}
+.teacher-page .setup-block h1{font-size:30px;color:#173f5d;margin:5px 0 12px}
+.teacher-page .setup-visual{background:#f2f8fb;border:1px solid #d7e6ed;border-radius:8px;padding:24px;min-height:330px;display:flex;align-items:center;justify-content:center}
+.teacher-page .setup-visual img{max-height:300px}
+
+/* ---------- 대시보드 레이아웃 ---------- */
+.teacher-page .teacher-layout{grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+.teacher-page .teacher-side{top:18px;height:auto;max-height:calc(100vh - 36px);padding:0 18px 18px;border-top:5px solid #0a5b94;border-radius:8px}
+.teacher-side-title{margin:0 -18px 14px;padding:14px 18px 13px;background:#f5f8fa;border-bottom:1px solid #dce5ea}
+.teacher-side-title span{display:block;font-size:10px;font-weight:900;color:#23759e;letter-spacing:.11em}
+.teacher-side-title b{display:block;margin-top:2px;font-size:17px;color:#284c62}
+.teacher-page .room-panel{border-radius:5px;padding:15px;background:linear-gradient(180deg,#eff8fd,#f9fcfe);border:1px solid #c5ddea}
+.teacher-page .room-panel small{font-size:12px;font-weight:700;color:#577282}
+.teacher-page .room-panel strong{font-size:38px;color:#0b567f;letter-spacing:.11em;margin:5px 0 10px}
+.teacher-page .qr-wrap{min-height:194px;padding:12px}
+.teacher-page .participant-row{padding:13px 2px;font-size:13px}
+.teacher-page .participant-row strong{font-size:25px}
+.teacher-page .participant-row small{font-size:11px;color:#687c87}
+.teacher-side-section-label{margin:15px 0 7px;padding-bottom:7px;border-bottom:2px solid #315f7a;font-size:13px;font-weight:900;color:#284d63}
+.teacher-page .stage-nav{gap:5px;margin:8px 0 16px}
+.teacher-page .stage-btn{position:relative;border-radius:3px;padding:10px 10px;font-size:13px;line-height:1.4;color:#4d606b;border:1px solid transparent;background:#fff}
+.teacher-page .stage-btn span{width:28px;height:28px;margin-right:8px;font-size:10px;background:#eef2f4;color:#637682}
+.teacher-page .stage-btn:hover{border-color:#cad9e1;background:#f8fbfc}
+.teacher-page .stage-btn.active{background:#0a5b94;color:#fff;border-color:#0a5b94;box-shadow:0 3px 9px rgba(10,91,148,.16)}
+.teacher-page .stage-btn.active span{background:#fff;color:#0a5b94}
+.teacher-page .side-actions{gap:8px}
+
+/* ---------- 메인 제어 / Q-Net 단계형 카드 ---------- */
+.teacher-page .teacher-main{gap:20px}
+.teacher-page .control-card,.teacher-page .stats-card,.teacher-page .competency-card,.teacher-page .roster-card{position:relative;border-top:4px solid #0a5b94}
+.teacher-page .control-card{padding:22px 24px 25px;min-height:370px}
+.teacher-page .stats-card,.teacher-page .competency-card,.teacher-page .roster-card{padding:22px 24px;min-height:290px}
+.teacher-page .section-head{align-items:center;gap:18px}
+.teacher-page .section-head h1{font-size:30px;line-height:1.3;color:#183f59}
+.teacher-page .section-head h3{font-size:21px;line-height:1.35;color:#254a60}
+.teacher-page .control-actions{gap:8px}
+.teacher-page .content-box{margin-top:18px;padding:22px 24px;border-radius:5px;background:#f8fafb;border:1px solid #e0e7eb}
+.teacher-page .content-box h2{font-size:25px;line-height:1.5;color:#233f50}
+.teacher-page .content-box h3{font-size:18px;line-height:1.5}
+.teacher-page .context-box{font-size:14px;line-height:1.8;color:#536a77}
+.teacher-page .option-view{border-radius:5px;padding:13px;font-size:13px;line-height:1.65}
+.teacher-page .response-chip{font-size:12px;padding:7px 10px;border-radius:4px}
+.teacher-page .empty{min-height:170px;font-size:13px;line-height:1.7}
+.teacher-page .bar-row{grid-template-columns:34px 1fr 92px;gap:10px;margin:14px 0;font-size:13px}
+.teacher-page .bar-value{font-size:12px}
+.teacher-page .bar-track{height:28px;border-radius:3px}
+.teacher-page .change-box{padding:12px;font-size:13px;line-height:1.65}
+.teacher-page .comp-row{margin:14px 0}
+.teacher-page .comp-meta{font-size:12px;margin-bottom:6px}
+.teacher-page .comp-track{height:10px}
+.teacher-page .result-tile{border-radius:5px;padding:14px}
+.teacher-page .result-tile b{font-size:27px}.teacher-page .result-tile span{font-size:11px}
+.teacher-page .roster-card{margin-top:0}
+.teacher-page .roster-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:14px}
+.teacher-page .roster-item{border-radius:5px;padding:11px}
+.teacher-page .roster-item b{font-size:14px}.teacher-page .roster-item span{font-size:11px;line-height:1.55}
+
+/* ---------- 전공별 모니터링 ---------- */
+.teacher-page .teacher-track-overview,.teacher-page .teacher-track-question-grid,.teacher-page .teacher-track-practical-grid{gap:11px}
+.teacher-page .teacher-track-overview .teacher-track-card,.teacher-page .teacher-track-question,.teacher-page .teacher-track-practical{border-radius:5px;padding:14px 15px;border-color:#d4e0e6}
+.teacher-page .teacher-track-overview .teacher-track-card b,.teacher-page .teacher-track-question>div b,.teacher-page .teacher-track-practical>div b{font-size:15px;color:#215b7a}
+.teacher-page .teacher-track-overview .teacher-track-card>span{font-size:11px;line-height:1.6}
+.teacher-page .teacher-track-overview .teacher-track-card p,.teacher-page .teacher-track-question p,.teacher-page .teacher-track-practical p{font-size:13px;line-height:1.7}
+.teacher-page .teacher-track-question small,.teacher-page .teacher-track-practical small{font-size:11px;line-height:1.65}
+.teacher-page .teacher-track-practical h3{font-size:15px;line-height:1.55}
+.teacher-page .track-chip,.teacher-page .team-track-title{font-size:11px;padding:5px 8px;border-radius:4px}
+.teacher-page .track-stats>div{border-radius:5px;padding:10px}.teacher-page .track-stats b{font-size:13px}.teacher-page .track-stats span{font-size:11px}
+
+/* ---------- 직무상황 종합평가: 교사용 가독성 ---------- */
+.teacher-page .team-teacher-controls{gap:8px}
+.teacher-page .team-teacher-controls .team-step-btn{font-size:14px;padding:12px 14px;min-height:46px;border-radius:4px}
+.teacher-page .team-phase-teacher.prominent{border-radius:5px;padding:15px 17px;grid-template-columns:120px 1fr;border:1px solid #9bc4d7;border-left:5px solid #0a5b94;background:#f2f8fb}
+.teacher-page .team-phase-teacher.prominent b{font-size:13px}.teacher-page .team-phase-teacher.prominent span{font-size:21px}.teacher-page .team-phase-teacher.prominent small{font-size:12px;line-height:1.65}
+.teacher-page .team-group-list{gap:14px}
+.teacher-page .team-group-card{border-radius:6px;border:1px solid #cfdde4;box-shadow:none;padding:16px;background:#fff}
+.teacher-page .team-group-head b{font-size:18px;color:#214e67}.teacher-page .team-group-head span{font-size:12px}.teacher-page .team-group-head strong{font-size:20px}
+.teacher-page .team-members.detailed{gap:8px}
+.teacher-page .team-members.detailed>span{border-radius:5px;padding:11px 12px}
+.teacher-page .team-members.detailed b{font-size:14px}.teacher-page .team-members.detailed small{font-size:11px;line-height:1.6}.teacher-page .team-members.detailed i{font-size:11px;line-height:1.55}.teacher-page .team-members.detailed em{font-size:10px}
+.teacher-page .team-group-foot{font-size:12px;padding:9px 0}
+.teacher-page .teacher-live-board{margin-top:12px;padding:14px;border-radius:5px;border-color:#c4dce7;background:#f5fafc}
+.teacher-page .teacher-live-board>b{font-size:14px;margin-bottom:10px;color:#154f71}
+.teacher-page .teacher-live-member{padding:13px;border-radius:5px;margin-top:9px}
+.teacher-page .teacher-live-member header b{font-size:14px}.teacher-page .teacher-live-member header span{font-size:11px;line-height:1.55}.teacher-page .teacher-live-member header em{font-size:11px;line-height:1.45}
+.teacher-page .teacher-live-member p{font-size:13px;line-height:1.7;padding:9px 10px}.teacher-page .teacher-live-member p b{font-size:11px}
+.teacher-page .teacher-consensus b{font-size:12px}.teacher-page .teacher-consensus span{font-size:11px;padding:5px 8px;border-radius:4px}
+.teacher-page .teacher-team-score span{font-size:12px}
+
+/* ---------- 실천약속 / 실시간응답 ---------- */
+.teacher-page .pledge-live-list{gap:10px}
+.teacher-page .pledge-live-list article{border-radius:5px;padding:13px}
+.teacher-page .pledge-live-list header b{font-size:14px}.teacher-page .pledge-live-list header span{font-size:11px}
+.teacher-page .pledge-live-list p{font-size:13px;line-height:1.75;padding:10px;border-radius:4px}
+
+/* ---------- 태블릿/소형 PC ---------- */
+@media(max-width:1180px){
+  .teacher-page .teacher-qnet-header .app-logo{width:245px}
+  .teacher-service-name b{font-size:22px}.teacher-service-name span{font-size:12px}
+  .teacher-qnet-nav a{padding:0 15px;font-size:14px}
+  .teacher-page .teacher-layout{grid-template-columns:285px minmax(0,1fr)}
+  .teacher-page .roster-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .teacher-qnet-utility{display:none}
+  .teacher-page .teacher-qnet-header .app-top-inner{height:76px}
+  .teacher-service-name{display:none}
+  .teacher-qnet-nav-inner{overflow-x:auto}.teacher-qnet-nav a{white-space:nowrap}
+  .teacher-nav-caption{display:none}
+  .teacher-page-heading{align-items:flex-start}.teacher-page-heading-badge{display:none}
+  .teacher-page .teacher-layout{display:block}
+  .teacher-page .teacher-side{position:relative;top:auto;max-height:none;margin-bottom:18px}
+  .teacher-page .stage-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .teacher-page .teacher-grid{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .teacher-page .teacher-shell{padding:18px 12px 42px}
+  .teacher-page .teacher-qnet-header .app-top-inner{padding:0 12px}.teacher-page .teacher-qnet-header .app-logo{width:225px;max-width:65vw}
+  .teacher-header-right .mode-label{display:none}.teacher-page .status-pill{font-size:10px}
+  .teacher-qnet-nav-inner{padding:0 7px}.teacher-qnet-nav a{padding:0 12px;font-size:13px}
+  .teacher-page-heading h1{font-size:27px}.teacher-page-heading p{font-size:13px}
+  .teacher-page .section-head{align-items:flex-start;flex-direction:column}.teacher-page .control-actions{width:100%}.teacher-page .control-actions .btn{flex:1}
+  .teacher-page .content-box{padding:17px}.teacher-page .control-card,.teacher-page .stats-card,.teacher-page .competency-card,.teacher-page .roster-card{padding:18px}
+  .teacher-card-label{margin:-18px -18px 15px}
+  .teacher-page .roster-list{grid-template-columns:1fr 1fr}
+  .teacher-page .stage-nav{grid-template-columns:1fr}
+  .teacher-page .team-phase-teacher.prominent{grid-template-columns:1fr}.teacher-page .team-phase-teacher.prominent small{grid-column:auto}
+}

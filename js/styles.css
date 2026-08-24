@@ -1,0 +1,534 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap');
+:root{--navy:#00539b;--navy2:#083e6b;--deep:#263a4b;--blue:#159bd7;--sky:#eef8fc;--pale:#f6f9fb;--red:#e71d45;--yellow:#f7b916;--ink:#242b31;--muted:#6d7880;--line:#dbe4e9;--green:#168064;--gold:#aa7610;--white:#fff;--shadow:0 12px 34px rgba(34,65,86,.08)}
+*{box-sizing:border-box}html{font-family:'Noto Sans KR','Malgun Gothic',sans-serif;color:var(--ink);background:#f4f7f9}body{margin:0}button,input,textarea,select{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}.hidden{display:none!important}.skip{position:absolute;left:-9999px}.skip:focus{left:12px;top:8px;background:#fff;border:2px solid var(--navy);padding:10px;z-index:999}
+.utility{height:34px;background:#f5f6f7;border-bottom:1px solid #e6eaed;color:#6e777d;font-size:11px}.utility-inner,.header-inner,.nav-inner,.main-wrap,.footer-inner{max-width:1320px;margin:auto}.utility-inner{height:100%;padding:0 24px;display:flex;align-items:center;justify-content:space-between}.utility-inner a{font-weight:700;color:#3f5f75}
+.site-header{background:#fff}.header-inner{height:92px;padding:0 24px;display:flex;align-items:center;justify-content:space-between}.official-ci{display:block;width:340px;height:auto;max-width:48vw}.service-tag{display:flex;align-items:center;gap:9px}.service-tag strong{font-size:25px;letter-spacing:-.05em;color:#213e55}.service-tag span{font-size:11px;font-weight:700;color:#6b7880;background:#f1f5f7;border:1px solid #e0e7eb;border-radius:999px;padding:7px 10px}
+.main-nav{background:#fff;border-top:1px solid #edf1f3;border-bottom:1px solid #dfe6ea;box-shadow:0 4px 14px rgba(25,56,75,.04)}.nav-inner{height:58px;padding:0 24px;display:flex;align-items:center;gap:38px}.nav-inner a{font-size:14px;font-weight:700;color:#3e4b54;position:relative;height:58px;display:flex;align-items:center}.nav-inner a.active,.nav-inner a:hover{color:var(--navy)}.nav-inner a.active:after{content:'';position:absolute;left:0;right:0;bottom:0;height:3px;background:var(--navy)}.nav-spacer{flex:1}.contest-note{font-size:10px;color:#8a949a}
+.main-wrap{padding:30px 24px 56px}.hero{background:#fff;border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow);display:grid;grid-template-columns:1.05fr .95fr;min-height:410px;overflow:hidden}.hero-copy{padding:52px 48px;display:flex;flex-direction:column;justify-content:center}.eyebrow{font-size:11px;letter-spacing:.11em;color:var(--navy);font-weight:900;margin-bottom:9px}.hero h1{font-size:44px;line-height:1.22;letter-spacing:-.06em;margin:0;color:#1f415a}.hero h1 em{font-style:normal;color:var(--navy)}.hero p{font-size:15px;line-height:1.85;color:#69767e;margin:20px 0}.hero-actions{display:flex;gap:9px;flex-wrap:wrap}.hero-visual{background:#f4fbfe;display:flex;align-items:center;justify-content:center;padding:25px;position:relative}.hero-visual:before{content:'청렴역량 자격에 도전해보세요';position:absolute;top:24px;left:28px;font-size:11px;font-weight:800;color:#527184}.official-character{display:block;width:auto;height:auto;max-width:100%;object-fit:contain;object-position:center}.hero-character{max-width:566px}.character-panel{background:#fff;border:1px solid var(--line);border-radius:16px;display:flex;align-items:center;justify-content:center;padding:12px;overflow:hidden}.character-panel img{display:block;width:auto;height:auto;max-width:100%}.no-edit-note{font-size:9px;color:#8b969d;margin-top:7px;text-align:center}
+.btn{border:0;border-radius:10px;padding:11px 15px;font-weight:800;transition:.15s}.btn.primary{background:var(--navy);color:#fff}.btn.primary:hover{background:#06477e}.btn.outline{background:#fff;color:var(--navy);border:1px solid #b9cbd5}.btn.soft{background:#eaf6fb;color:#135d84}.btn.danger{background:#fff1f3;color:#a91e39;border:1px solid #efcbd2}.btn.gold{background:#9e7219;color:#fff}.btn.full{width:100%}.btn.large{padding:14px 18px;font-size:15px}.btn:disabled{opacity:.42;cursor:not-allowed}
+.section{margin-top:32px}.section-title{display:flex;align-items:end;justify-content:space-between;margin-bottom:15px}.section-title h2{font-size:24px;color:#28485e;letter-spacing:-.045em;margin:0}.section-title p{font-size:11px;color:#7a858c;margin:0}.role-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}.role-card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow);display:grid;grid-template-columns:110px 1fr auto;align-items:center;gap:18px;padding:19px;transition:.17s}.role-card:hover{transform:translateY(-2px);border-color:#b5d1de}.role-character{width:100px;height:auto;max-width:100%}.role-card h3{font-size:20px;color:#24475f;margin:3px 0 6px}.role-card p{font-size:12px;line-height:1.65;color:#6e7b83;margin:0}.arrow{font-size:23px;color:var(--navy)}
+.flow{display:grid;grid-template-columns:repeat(8,1fr);gap:8px}.flow-item{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px 8px;text-align:center;min-height:108px}.flow-item .num{display:grid;place-items:center;width:27px;height:27px;border-radius:50%;background:#e9f5fa;color:var(--navy);font-size:10px;font-weight:900;margin:0 auto 9px}.flow-item b{display:block;font-size:11px;color:#294d64}.flow-item span{display:block;font-size:9px;color:#879298;margin-top:4px}.virtue-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:9px}.virtue-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:15px}.virtue-card small{font-size:9px;color:#1484b3;font-weight:800}.virtue-card b{display:block;color:#2a4b61;margin:2px 0}.virtue-card p{font-size:9px;line-height:1.6;color:#76838b;margin:6px 0 0}.privacy-note{background:#f7fafb;border:1px solid #dfe8ec;border-radius:14px;padding:15px;font-size:10px;line-height:1.7;color:#61727d}
+.site-footer{background:#2d3d48;color:#d9e1e5}.footer-inner{padding:25px 24px;display:flex;justify-content:space-between;gap:30px;font-size:10px;line-height:1.8}.footer-ci{width:255px;height:auto;max-width:45vw;background:#fff}.footer-disclaimer{max-width:660px;color:#b8c2c8}
+/* app header */
+.app-body{min-height:100vh;background:#f3f6f8}.app-top{position:sticky;top:0;z-index:60;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 3px 12px rgba(23,52,70,.04)}.app-top-inner{max-width:1500px;height:76px;margin:auto;padding:0 22px;display:flex;align-items:center;justify-content:space-between}.app-logo{width:285px;height:auto;max-width:48vw}.app-service{display:flex;align-items:center;gap:9px}.app-service b{font-size:19px;color:#27475e}.mode-label{font-size:9px;color:#fff;background:var(--navy);padding:5px 7px;border-radius:5px;font-weight:900}.status-pill{font-size:10px;background:#eef6f9;color:#315c72;padding:7px 10px;border-radius:999px;font-weight:800}.status-pill.online:before{content:'● ';color:#11a277}.status-pill.error{background:#fff0f2;color:#b21f3c}.app-shell{max-width:1500px;margin:auto;padding:24px}.card{background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:var(--shadow)}
+input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;padding:12px 13px;background:#fff;outline:none}input:focus,textarea:focus,select:focus{border-color:#178bc0;box-shadow:0 0 0 3px rgba(21,155,215,.10)}label{display:block;font-size:11px;font-weight:800;color:#4b5962;margin:10px 0 5px}.helper{font-size:10px;color:#7d8b93;line-height:1.7}.field-note{font-size:9px;line-height:1.55;color:#7f8c94;margin-top:5px}.setup-block{max-width:980px;margin:45px auto;padding:30px}.setup-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:26px}.setup-visual{background:#f3fbfe;border-radius:16px;padding:18px;display:flex;align-items:center;justify-content:center}.setup-visual img{max-width:333px}.setup-block h1{color:#24485f;letter-spacing:-.05em;margin:5px 0 11px}.setup-info{background:#f7fafb;border-radius:14px;padding:16px}.setup-info li{font-size:10px;line-height:1.85;color:#617079}.toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;background:#172530;color:#fff;padding:10px 15px;border-radius:10px;font-size:11px;z-index:100;transition:.2s}.toast.show{opacity:1;transform:translate(-50%,0)}
+/* teacher */
+.teacher-layout{display:grid;grid-template-columns:300px 1fr;gap:20px}.teacher-side{padding:17px;position:sticky;top:100px;height:calc(100vh - 124px);overflow:auto}.room-panel{background:#eef8fc;border:1px solid #cfe5ee;border-radius:14px;padding:14px;text-align:center}.room-panel small{font-size:9px;color:#567282}.room-panel strong{display:block;font-size:35px;letter-spacing:.12em;color:#174e70;margin:3px 0 8px}.qr-wrap{display:grid;place-items:center;min-height:185px;padding:10px}.qr-wrap img,.qr-wrap canvas{max-width:170px!important;height:auto!important}.participant-row{display:flex;justify-content:space-between;align-items:center;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:11px 2px;font-size:10px}.participant-row strong{font-size:22px;color:#23526f}.stage-nav{display:grid;gap:4px;margin:13px 0}.stage-btn{border:0;background:transparent;border-radius:9px;padding:8px 9px;text-align:left;color:#66757f;font-size:10px;font-weight:700}.stage-btn span{display:inline-grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#eef3f5;margin-right:7px;font-size:8px}.stage-btn.active{background:#e9f5fa;color:#174f70}.stage-btn.active span{background:#17658e;color:#fff}.side-actions{display:grid;gap:6px}.teacher-main{display:grid;gap:17px}.control-card{padding:22px;min-height:330px}.section-head{display:flex;justify-content:space-between;gap:14px;align-items:start}.section-head h1,.section-head h3{margin:3px 0;color:#284c64;letter-spacing:-.04em}.section-head h1{font-size:26px}.control-actions{display:flex;gap:7px;flex-wrap:wrap}.content-box{background:#f7fafb;border-radius:15px;padding:20px;margin-top:17px}.teacher-content-grid{display:grid;grid-template-columns:1fr 210px;gap:18px;align-items:center}.teacher-char img{max-width:200px}.content-box h2{font-size:22px;line-height:1.5;color:#27343c;margin:7px 0}.context-box{font-size:11px;color:#60717a;line-height:1.75;margin:11px 0}.option-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.option-view{background:#fff;border:1px solid var(--line);border-radius:10px;padding:10px;font-size:10px;line-height:1.55}.option-view b{color:#1c6388}.teacher-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:17px}.stats-card,.competency-card,.roster-card{padding:19px;min-height:280px}.response-chip{font-size:9px;background:#edf6f9;color:#215b79;padding:6px 8px;border-radius:999px;font-weight:900}.bar-row{display:grid;grid-template-columns:26px 1fr 72px;gap:8px;align-items:center;margin:12px 0}.bar-letter{font-weight:900;color:#1c6388}.bar-track{height:24px;background:#edf2f4;border-radius:7px;overflow:hidden}.bar-fill{height:100%;background:#1888b9;transition:.3s}.bar-value{text-align:right;font-size:9px;font-weight:800}.change-box{margin-top:12px;background:#eff8fc;border:1px solid #d1e7f0;border-radius:10px;padding:10px;font-size:10px;color:#355d70}.empty{min-height:170px;display:grid;place-items:center;text-align:center;color:#8a979f;font-size:10px}.comp-row{margin:11px 0}.comp-meta{display:flex;justify-content:space-between;font-size:9px;margin-bottom:4px}.comp-meta b{color:#1a5d80}.comp-track{height:7px;background:#edf2f4;border-radius:99px;overflow:hidden}.comp-track span{display:block;height:100%;background:#167fae;border-radius:99px}.discussion-tools{display:flex;gap:6px;margin-top:11px}.result-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:12px}.result-tile{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px;text-align:center}.result-tile b{font-size:23px;color:#225674;display:block}.result-tile span{font-size:8px;color:#7d8990}.roster-card{margin-top:17px}.roster-list{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-top:12px}.roster-item{border:1px solid var(--line);background:#fbfcfd;border-radius:9px;padding:9px}.roster-item b{display:block;font-size:11px;color:#294e65}.roster-item span{font-size:8px;color:#7e8b93}.roster-item.done{background:#f1f9f6;border-color:#d3e9e1}
+/* student */
+.student-top .app-top-inner{height:64px;padding:0 13px}.student-top .app-logo{width:235px;max-width:70vw}.student-shell{max-width:540px;margin:auto;padding:15px 13px 42px}.student-progress{margin:1px 2px 12px}.progress-meta{display:flex;justify-content:space-between;font-size:9px;color:#75838b;margin-bottom:5px}.progress-track{height:7px;background:#dfe8ec;border-radius:99px;overflow:hidden}.progress-track span{display:block;height:100%;background:#1685b5;transition:.25s}.student-card{padding:20px;min-height:450px}.student-header-grid{display:grid;grid-template-columns:1fr 132px;gap:12px;align-items:center}.student-character{display:flex;align-items:center;justify-content:center}.student-character img{max-width:128px}.student-card h1{font-size:27px;line-height:1.35;color:#244a62;letter-spacing:-.055em;margin:7px 0}.student-card h2{font-size:21px;line-height:1.45;letter-spacing:-.045em;margin:11px 0}.student-card h3{font-size:14px;line-height:1.55}.stage-tag{display:inline-flex;padding:5px 8px;border-radius:999px;background:#e9f5fa;color:#175f84;font-size:8px;font-weight:900}.student-context{background:#f7fafb;border-radius:12px;padding:13px;font-size:11px;line-height:1.75;color:#5e6d76;margin:12px 0}.choices{display:grid;gap:8px;margin-top:13px}.choice{width:100%;border:1px solid #c8d5dc;border-radius:12px;background:#fff;padding:12px;text-align:left;display:grid;grid-template-columns:29px 1fr;gap:8px;color:#293841}.choice-letter{width:26px;height:26px;border-radius:7px;background:#edf4f7;display:grid;place-items:center;color:#1c6388;font-weight:900}.choice.selected{border-color:#176b94;background:#f7fbfd;box-shadow:0 0 0 2px rgba(23,107,148,.07)}.choice:disabled{cursor:default}.student-submit{margin-top:16px}.feedback{margin-top:12px;border-radius:10px;padding:11px;font-size:10px;line-height:1.7}.feedback.info{background:#edf6fb;color:#31576b}.feedback.good{background:#edf8f4;color:#1c6653}.waiting{text-align:center;padding:34px 8px}.waiting img{max-width:250px;margin:auto}.waiting h2{color:#284c64}.waiting p{font-size:10px;color:#73818a;line-height:1.8}.student-virtues{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}.student-virtue{border:1px solid var(--line);border-radius:10px;padding:9px}.student-virtue b{display:block;color:#28506a}.student-virtue span{font-size:9.5px;font-weight:700;color:#526873;line-height:1.7}.student-comp{margin:16px 0}.score-box{background:#f7fafb;border-radius:13px;padding:13px;margin:13px 0}.score-main{display:flex;justify-content:space-between;align-items:end}.score-main strong{font-size:36px;color:#225979}.score-grid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}.score-grid div{background:#fff;border:1px solid var(--line);border-radius:8px;padding:8px}.score-grid span{display:block;font-size:8px;color:#7c8990}.score-grid b{font-size:16px;color:#275873}.certificate{position:relative;overflow:hidden;border:3px double #1e5b7e;padding:19px 13px;text-align:center;background:#fff;margin-top:12px}.certificate img{width:245px;height:auto;max-width:90%}.certificate .cert-type{font-size:8px;color:#77848c;margin-top:11px}.certificate h2{font-size:27px;color:#255b79;margin:7px}.certificate.leader h2{color:#8e6817}.certificate .cert-name{font-size:19px;font-weight:900;margin:10px}.certificate .cert-text{font-size:9px;color:#5f6d75;line-height:1.8}.certificate .cert-date{font-size:9px;font-weight:700;margin-top:11px}.public-result{background:#f1f8fb;border-radius:10px;padding:10px;margin-top:11px;font-size:9px;color:#416173}.pledge-area textarea{min-height:105px;resize:vertical}.name-privacy{background:#fff8e9;border:1px solid #f1dfae;border-radius:10px;padding:9px;font-size:8px;color:#6f6042;line-height:1.6;margin-top:10px}
+.config-alert{max-width:820px;margin:50px auto;padding:30px}.config-alert h1{color:#244a62}.code-line{background:#172530;color:#dce9ef;border-radius:9px;padding:11px;font-family:monospace;font-size:9px;overflow:auto}
+@media(max-width:1100px){.flow{grid-template-columns:repeat(4,1fr)}.virtue-grid{grid-template-columns:repeat(3,1fr)}.teacher-layout{grid-template-columns:260px 1fr}.teacher-grid{grid-template-columns:1fr}.option-grid{grid-template-columns:1fr}.teacher-content-grid{grid-template-columns:1fr}.teacher-char{display:none}.roster-list{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.utility{display:none}.header-inner{height:70px;padding:0 13px}.official-ci{width:260px;max-width:66vw}.service-tag strong{font-size:18px}.service-tag span{display:none}.nav-inner{height:50px;padding:0 13px;gap:22px;overflow:auto}.nav-inner a{height:50px;white-space:nowrap;font-size:12px}.contest-note{display:none}.main-wrap{padding:16px 13px 36px}.hero{grid-template-columns:1fr}.hero-copy{padding:29px 22px}.hero h1{font-size:30px}.hero p{font-size:12px}.hero-visual{padding:18px}.hero-visual:before{display:none}.hero-character{max-width:100%}.role-grid{grid-template-columns:1fr}.role-card{grid-template-columns:80px 1fr auto}.role-character{width:72px}.flow{grid-template-columns:repeat(2,1fr)}.virtue-grid{grid-template-columns:repeat(2,1fr)}.footer-inner{flex-direction:column}.footer-ci{max-width:260px}.setup-grid{grid-template-columns:1fr}.teacher-layout{display:block}.teacher-side{position:static;height:auto;margin-bottom:14px}.teacher-grid{grid-template-columns:1fr}.section-head{flex-direction:column}.roster-list{grid-template-columns:repeat(2,1fr)}.student-header-grid{grid-template-columns:1fr 100px}.student-character img{max-width:98px}}
+@media(max-width:390px){.student-header-grid{grid-template-columns:1fr}.student-character{display:none}.student-virtues{grid-template-columns:1fr}.roster-list{grid-template-columns:1fr}}
+@media print{body *{visibility:hidden}.certificate,.certificate *{visibility:visible}.certificate{position:absolute;left:0;top:0;width:100%;box-shadow:none}}
+
+
+/* v4 - 6대 청렴역량 조합 기반 청렴유형 */
+.integrity-type-card{
+  margin:16px 0;
+  padding:16px;
+  border:1px solid #cfe2ea;
+  border-radius:16px;
+  background:linear-gradient(135deg,#f8fcfe,#eef8fc);
+  display:grid;
+  grid-template-columns:72px 1fr;
+  gap:14px;
+  align-items:start
+}
+.integrity-type-card.compact{grid-template-columns:56px 1fr;padding:12px}
+.integrity-type-symbol{
+  width:68px;height:68px;border-radius:50%;
+  display:grid;place-items:center;
+  background:#fff;border:1px solid #d8e7ed;
+  font-size:34px;box-shadow:0 7px 18px rgba(30,92,120,.08)
+}
+.integrity-type-kicker{
+  display:block;font-size:8px;font-weight:900;letter-spacing:.08em;
+  color:#1676a2;margin-bottom:3px
+}
+.integrity-type-card h3{
+  margin:0 0 5px!important;font-size:18px!important;color:#234e68!important
+}
+.integrity-type-figure{
+  font-size:10px;color:#5f737f;margin-bottom:8px
+}
+.integrity-type-figure b{color:#245d7b}
+.integrity-type-top{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.integrity-type-top span{
+  padding:5px 8px;border-radius:999px;background:#fff;
+  border:1px solid #d7e5eb;font-size:9px;font-weight:800;color:#245b76
+}
+.integrity-type-card p{
+  margin:0 0 9px;font-size:10px;line-height:1.7;color:#536873
+}
+.integrity-mission{
+  padding:9px 10px;border-radius:10px;background:#fff9e8;
+  border:1px solid #f0dfac;font-size:9px;line-height:1.65;color:#675939
+}
+.integrity-type-card small{
+  display:block;margin-top:7px;font-size:7.5px;line-height:1.5;color:#829097
+}
+.cert-integrity-type{
+  display:inline-block;margin:1px 0 10px;padding:5px 9px;border-radius:999px;
+  background:#eef7fb;color:#245d7b;font-size:8px;font-weight:900
+}
+.type-distribution{
+  margin-top:12px;padding:12px;border:1px solid #d7e5eb;border-radius:12px;background:#f8fbfc
+}
+.type-distribution>b{display:block;font-size:10px;color:#2b566f;margin-bottom:8px}
+.type-distribution-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.type-distribution-grid span{
+  display:flex;justify-content:space-between;gap:8px;
+  border:1px solid #e0e9ed;border-radius:8px;background:#fff;padding:7px;
+  font-size:8px;color:#64757e
+}
+.type-distribution-grid strong{color:#285c78}
+.type-distribution small{display:block;margin-top:7px;font-size:7.5px;color:#839097}
+@media(max-width:520px){
+  .integrity-type-card{grid-template-columns:1fr;text-align:left}
+  .integrity-type-symbol{width:58px;height:58px;font-size:29px}
+  .type-distribution-grid{grid-template-columns:1fr 1fr}
+}
+
+
+/* v5.0 작업형 실기시험 고도화 */
+.work-exam-head{display:flex;justify-content:space-between;gap:14px;align-items:flex-start;margin-bottom:12px}.work-exam-head h2{margin:5px 0 6px!important}.work-exam-head p{font-size:10px;line-height:1.65;color:#61727c;margin:0}.work-code{min-width:72px;padding:9px 10px;border-radius:12px;background:#063b5c;color:#fff;text-align:center}.work-code small{display:block;font-size:7px;opacity:.72}.work-code b{display:block;font-size:13px;letter-spacing:.06em;margin-top:2px}
+.work-timer{display:grid;grid-template-columns:auto auto;justify-content:space-between;gap:8px;align-items:center;border:1px solid #bcdbe8;background:#edf8fc;border-radius:14px;padding:10px 12px;margin:12px 0}.work-timer span{font-size:8px;font-weight:900;color:#39728e}.work-timer b{display:block;font-size:24px;color:#064c72;line-height:1}.work-timer small{grid-column:1/-1;font-size:7.5px;color:#70828a}.work-timer.idle b{font-size:16px}.work-timer.expired{background:#fff3f3;border-color:#efc1c1}.work-timer.expired b{color:#b03b3b}
+.work-notice{display:flex;gap:10px;align-items:flex-start;padding:10px 11px;border-radius:12px;background:#fff9e8;border:1px solid #efdfad;margin-bottom:12px}.work-notice b{font-size:9px;color:#765d19;white-space:nowrap}.work-notice span{font-size:8px;line-height:1.55;color:#796b45}.work-context{padding:13px;border-radius:12px;background:#f5f8fa;border-left:4px solid #1676a2;font-size:10px;line-height:1.7;color:#4d626d;margin-bottom:14px}
+.work-section{border:1px solid #d8e5eb;border-radius:16px;padding:13px;margin:12px 0;background:#fff}.work-section-title{display:flex;gap:9px;align-items:center;margin-bottom:11px}.work-section-title>span{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#0b719d;color:#fff;font-size:9px;font-weight:900}.work-section-title b{display:block;font-size:11px;color:#214f68}.work-section-title small{display:block;font-size:7.5px;color:#7f9098;margin-top:2px}
+.work-docs{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.work-doc{border:1px solid #d9e5ea;border-radius:11px;background:#f9fbfc;padding:9px;text-align:left;display:grid;grid-template-columns:26px 1fr;gap:2px 7px;align-items:center}.work-doc>span{grid-row:1/3;font-size:20px}.work-doc b{font-size:8px;color:#395d6d}.work-doc small{font-size:7px;color:#8a989e}.work-doc.opened{border-color:#6eb0ce;background:#edf8fc}.work-document{margin-top:8px;padding:11px;border-radius:11px;background:#f7fafb;border:1px dashed #b9d1dc}.work-document b{font-size:9px;color:#245d77}.work-document p{font-size:8.5px;line-height:1.7;color:#5d7079;margin:5px 0 0}.work-document.muted{font-size:8px;color:#8b989e}
+.mini-choice-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}.mini-choice{border:1px solid #d4e1e7;background:#fff;border-radius:10px;padding:10px 7px;font-size:9px;font-weight:800;color:#496873}.mini-choice.selected{background:#087ca9;color:#fff;border-color:#087ca9;box-shadow:0 5px 14px rgba(8,124,169,.15)}.criteria-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;margin-bottom:10px}.criteria-chip{display:block}.criteria-chip input{display:none}.criteria-chip span{display:block;text-align:center;padding:9px;border:1px solid #d6e2e7;border-radius:10px;font-size:8.5px;font-weight:800;color:#5e737d;background:#fff}.criteria-chip.selected span{background:#e8f6fb;border-color:#63aeca;color:#17698d}
+.vendor-table{border:1px solid #dbe5e9;border-radius:11px;overflow:hidden;margin-top:8px}.vendor-head,.vendor-row{display:grid;grid-template-columns:1.35fr 1fr .7fr 1fr;gap:4px;align-items:center;padding:8px}.vendor-head{background:#eef4f7;font-size:7px;font-weight:900;color:#6d8089}.vendor-row{border-top:1px solid #edf1f3;font-size:7.5px;color:#6c7e86}.vendor-row b{color:#355d70}.work-label{display:block;font-size:8px;font-weight:900;color:#4a6673;margin:10px 0 6px}.work-check{display:flex;gap:8px;align-items:flex-start;padding:10px;border:1px solid #d8e5e9;border-radius:10px;margin-top:9px;background:#f9fbfc}.work-check span{font-size:8px;line-height:1.55;color:#60737c}.work-textarea{width:100%;min-height:92px;resize:vertical;border:1px solid #cfdce2;border-radius:11px;padding:10px;font:inherit;font-size:9px;line-height:1.65;box-sizing:border-box}.work-textarea:focus{outline:2px solid #b9e0f0;border-color:#5caac9}
+.ledger-table{border:1px solid #dbe5e9;border-radius:11px;overflow:hidden}.ledger-row{display:grid;grid-template-columns:1.2fr 1fr 1fr;gap:6px;padding:9px;border-top:1px solid #edf1f3;font-size:8px}.ledger-row:first-child{border-top:0}.ledger-row b{color:#365f71}.ledger-row.missing{background:#fff4f1}.ledger-row.missing span:last-child{color:#ad4e3f;font-weight:800}.sequence-selected{display:grid;gap:6px;margin-bottom:10px}.sequence-empty{padding:16px;border:1px dashed #c8d9e0;border-radius:10px;text-align:center;font-size:8px;color:#87959b}.sequence-slot{display:grid;grid-template-columns:28px 1fr auto;gap:8px;align-items:center;border:1px solid #82bfd8;background:#edf9fd;border-radius:10px;padding:8px;text-align:left;font-size:8px;color:#345e70}.sequence-slot>span{display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:#0a7aa7;color:#fff;font-weight:900}.sequence-slot small{font-size:6.5px;color:#84949b}.action-bank{display:grid;gap:6px}.action-card{display:flex;gap:8px;align-items:center;text-align:left;border:1px solid #d7e2e7;border-radius:10px;background:#fff;padding:9px;font-size:8px;line-height:1.45;color:#556c76}.action-card span{font-size:15px;color:#0c7ba8}.action-card.used{opacity:.42}
+.rubric-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.rubric-strip span{padding:8px 5px;text-align:center;border-radius:9px;background:#f1f6f8;font-size:7px;color:#70828a}.rubric-strip b{display:block;font-size:8px;color:#3f6272;margin-bottom:2px}.candidate-list{display:grid;gap:9px}.candidate-card{border:1px solid #d8e4e8;border-radius:12px;padding:11px;background:#fbfcfd}.candidate-head{display:flex;justify-content:space-between;align-items:center}.candidate-head b{font-size:10px;color:#285b72}.candidate-head strong{font-size:13px;color:#0b7ca9}.candidate-card p{font-size:7.8px;line-height:1.6;color:#65777f}.candidate-sliders{display:grid;gap:7px}.candidate-sliders label>span{display:flex;justify-content:space-between;font-size:7.5px;color:#657a84}.candidate-sliders label>span b{color:#087aa7}.candidate-sliders input[type=range]{width:100%;accent-color:#087ba8}.work-alert{display:flex;gap:9px;align-items:flex-start;margin-top:10px;padding:11px;border-radius:11px;background:#fff4e7;border:1px solid #efca93}.work-alert b{font-size:9px;color:#a16012}.work-alert span{font-size:8px;line-height:1.6;color:#745f44}.locked-result{padding:10px;border-radius:10px;background:#eef8fc;color:#466873;font-size:8px;margin-bottom:9px}.locked-result b{color:#08769f;font-size:11px}.locked-result small{display:block;margin-top:3px;color:#82939a}.response-list{display:grid;gap:7px}.response-card{display:grid;grid-template-columns:25px 1fr;gap:8px;align-items:center;text-align:left;border:1px solid #d7e2e7;border-radius:10px;background:#fff;padding:9px;font-size:8px;line-height:1.5;color:#566c75}.response-card>span{display:grid;place-items:center;width:23px;height:23px;border-radius:7px;background:#eef4f7;color:#4a6c7b;font-weight:900}.response-card.selected{border-color:#5eabc9;background:#ecf8fc;color:#245e77}.response-card.selected>span{background:#0a7ba7;color:#fff}
+.work-submit-sticky{position:sticky;bottom:8px;z-index:5;margin-top:14px;padding:10px;border-radius:14px;background:rgba(255,255,255,.96);border:1px solid #ccdde5;box-shadow:0 10px 26px rgba(23,71,93,.13);display:flex;justify-content:space-between;gap:10px;align-items:center}.work-submit-sticky b{display:block;font-size:9px;color:#335e72}.work-submit-sticky small{display:block;font-size:7px;color:#819098;margin-top:2px}.work-score-preview{padding:18px;border-radius:14px;background:linear-gradient(135deg,#eff9fd,#f9fcfd);border:1px solid #cde4ed;text-align:center}.work-score-preview span{display:block;font-size:8px;color:#607985}.work-score-preview b{display:block;font-size:32px;color:#0877a1;margin:3px 0}.work-score-preview small{font-size:7.5px;color:#829198}.practical-breakdown{margin:12px 0;padding:12px;border:1px solid #d6e3e8;border-radius:12px;background:#f8fbfc}.practical-breakdown>b{display:block;font-size:9px;color:#315d71;margin-bottom:7px}.practical-breakdown>div{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid #e7eef1;font-size:8px}.practical-breakdown>div:first-of-type{border-top:0}.practical-breakdown strong{font-size:11px;color:#0877a1}.practical-breakdown small{font-size:7px;color:#89979d}
+.teacher-timer{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:12px;border:1px solid #cfe0e7;background:#f1f8fb;border-radius:13px;margin:12px 0}.teacher-timer span{font-size:7px;color:#66808b}.teacher-timer b{display:block;font-size:22px;color:#0a739a}.teacher-timer small{display:block;font-size:7px;color:#819097}.teacher-timer-actions{display:flex;gap:7px}.teacher-timer.expired{background:#fff4f4;border-color:#edc5c5}.teacher-timer.expired b{color:#b64a4a}.teacher-work-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.teacher-work-card{padding:11px;border:1px solid #dce6ea;border-radius:11px;background:#fafcfd}.teacher-work-card b{font-size:9px;color:#355f72}.teacher-work-card p,.teacher-work-card li{font-size:7.8px;line-height:1.6;color:#697b83}.teacher-work-card ol{padding-left:18px;margin:6px 0}.rubric-teacher{margin-top:8px;padding:10px;border-radius:11px;background:#f7fafb;border:1px solid #dfe8ec}.rubric-teacher>b{display:block;font-size:8px;color:#426575;margin-bottom:6px}.rubric-teacher>div{display:flex;gap:5px;flex-wrap:wrap}.rubric-teacher span{font-size:7px;padding:5px 7px;border-radius:999px;background:#fff;border:1px solid #d8e3e8;color:#607681}.work-live-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.work-live-summary>div{padding:12px;border:1px solid #dce6ea;border-radius:11px;background:#fafcfd;text-align:center}.work-live-summary span{display:block;font-size:7px;color:#75878f}.work-live-summary b{display:block;font-size:22px;color:#0b789f;margin:3px}.work-live-summary small{font-size:6.5px;color:#8a989d}
+@media(max-width:620px){.work-docs,.mini-choice-grid,.criteria-grid{grid-template-columns:1fr 1fr}.vendor-head,.vendor-row{grid-template-columns:1.35fr 1fr .7fr 1fr;font-size:6.5px}.rubric-strip{grid-template-columns:1fr 1fr}.work-submit-sticky{align-items:stretch;flex-direction:column}.work-submit-sticky .btn{width:100%}.teacher-work-grid,.work-live-summary{grid-template-columns:1fr}.teacher-timer{align-items:stretch;flex-direction:column}.teacher-timer-actions .btn{flex:1}}
+
+
+/* v6.0 종합 팀 작업형 + 작업결과 채점표 */
+.work-result-card,.team-score-card{margin:14px 0;border:1px solid #cbe0e9;border-radius:16px;background:linear-gradient(135deg,#f5fbfe,#fff);padding:14px}.work-result-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;padding-bottom:10px;border-bottom:1px solid #e2ecef}.work-result-head span{font-size:8px;color:#66808b;font-weight:900}.work-result-head h3{font-size:13px!important;margin:3px 0 0!important;color:#285b72!important}.work-result-head>strong{font-size:30px;color:#0877a1;line-height:1}.work-result-head>strong small{font-size:9px;color:#78909a}.scorecard-rows{display:grid;gap:0;margin-top:8px}.scorecard-row{display:flex;justify-content:space-between;gap:10px;padding:8px 2px;border-top:1px solid #edf2f4;font-size:8.5px;color:#5d727c}.scorecard-row:first-child{border-top:0}.scorecard-row b{color:#176d91}.work-result-feedback{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:9px}.work-result-feedback p{margin:0;padding:9px;border-radius:10px;background:#f6f9fa;font-size:8px;line-height:1.55;color:#637780}.work-result-feedback b{display:block;color:#245f7a;margin-bottom:3px}.teacher-score-list{margin-top:10px}.teacher-score-list>b{display:block;font-size:8px;color:#3c6273;margin-bottom:6px}.teacher-score-detail{border:1px solid #dce6ea;border-radius:9px;background:#fff;margin:5px 0;overflow:hidden}.teacher-score-detail summary{display:flex;justify-content:space-between;cursor:pointer;padding:8px;font-size:8px;color:#4c6874}.teacher-score-detail summary strong{color:#0878a2}.teacher-score-detail>div{display:grid;grid-template-columns:repeat(2,1fr);gap:5px;padding:8px;background:#f8fbfc}.teacher-score-detail>div span{display:flex;justify-content:space-between;padding:5px;border-radius:7px;background:#fff;font-size:7px;color:#687b84}
+.team-phase-banner{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;margin:10px 0;padding:10px 12px;border-radius:12px;background:#063b5c;color:#fff}.team-phase-banner b{font-size:12px}.team-phase-banner span{font-size:9px;font-weight:900}.team-phase-banner small{font-size:7px;opacity:.8}.team-role-card,.team-report{border:1px solid #d6e5eb;border-radius:16px;padding:13px;background:#fff;margin:12px 0}.team-role-head{display:flex;gap:10px;align-items:center;margin-bottom:10px}.team-role-head>span{display:grid;place-items:center;width:46px;height:46px;border-radius:13px;background:#eef8fc;font-size:25px}.team-role-head small{display:block;font-size:7px;color:#7b8c94}.team-role-head h3{margin:2px 0!important;font-size:14px!important;color:#285d76!important}.team-secret{padding:12px;border-radius:12px;background:#f1f8fb;border:1px dashed #78b6cf}.team-secret b{font-size:8px;color:#176c91}.team-secret p{font-size:9px;line-height:1.7;color:#526b76;margin:6px 0 0}.team-supplement{margin-top:8px;padding:10px;border-radius:10px;background:#fff8e8;border:1px solid #ecdba7}.team-supplement b{font-size:8px;color:#765d19}.team-supplement p{font-size:7.5px;line-height:1.55;color:#766a48;margin:5px 0}.team-role-result{margin-top:9px;padding:10px;border-radius:11px;background:#f8fbfc;border:1px solid #dce8ec}.team-role-result>b{font-size:9px;color:#27617a}.team-twist{margin:12px 0}.team-wait-report{padding:18px;text-align:center;border:1px dashed #bdd6df;border-radius:14px;background:#f9fcfd}.team-wait-report img{max-width:90px}.team-wait-report h3{font-size:12px!important;color:#285e76!important}.team-wait-report p{font-size:8.5px;line-height:1.7;color:#647780}.team-vendor-table{display:grid;gap:6px;margin:10px 0}.team-vendor-table>div{display:grid;grid-template-columns:1.2fr .8fr .7fr 1fr;gap:5px;padding:8px;border:1px solid #dee8ec;border-radius:9px;font-size:7px;color:#687b83}.team-vendor-table b{color:#346174}.team-score-formula{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:10px 0}.team-score-formula span{padding:9px;border-radius:9px;background:#f3f8fa;text-align:center;font-size:7px;color:#6b7d85}.team-score-formula b{display:block;font-size:13px;color:#0878a2;margin-top:2px}.team-teacher-controls{display:flex;gap:6px;flex-wrap:wrap;margin:12px 0}.team-phase-teacher{display:flex;gap:8px;align-items:center;padding:9px 10px;border-radius:10px;background:#eef7fa;margin-bottom:9px}.team-phase-teacher b{font-size:8px;color:#55717d}.team-phase-teacher span{font-size:10px;font-weight:900;color:#176c90}.team-group-list{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-top:10px}.team-group-card{border:1px solid #dbe6ea;border-radius:12px;padding:10px;background:#fafcfd}.team-group-head{display:flex;gap:7px;align-items:center}.team-group-head b{font-size:11px;color:#285f78}.team-group-head span{font-size:7px;color:#819099}.team-group-head strong{margin-left:auto;font-size:14px;color:#0878a1}.team-members{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:8px 0}.team-members>span{padding:6px;border-radius:8px;background:#fff;border:1px solid #e2eaed}.team-members b{display:block;font-size:7.5px;color:#4d6874}.team-members small{font-size:6.5px;color:#85939a}.team-group-foot{font-size:7px;color:#6f828b;padding-top:6px;border-top:1px solid #e7edef}.teacher-team-score{display:grid;grid-template-columns:repeat(2,1fr);gap:4px;margin-top:7px}.teacher-team-score span{display:flex;justify-content:space-between;padding:5px;border-radius:7px;background:#fff;font-size:6.5px;color:#6a7d85}.teacher-team-score b{color:#176e92}
+@media(max-width:620px){.work-result-feedback,.team-group-list{grid-template-columns:1fr}.team-score-formula{grid-template-columns:1fr 1fr 1fr}.team-vendor-table>div{grid-template-columns:1fr 1fr}.teacher-score-detail>div,.team-members{grid-template-columns:1fr}.team-phase-banner{grid-template-columns:auto 1fr}.team-phase-banner small{grid-column:1/-1}.team-teacher-controls .btn{flex:1 1 45%}}
+
+
+/* v6.1 - 학생 사용성 개선 */
+.required-note{
+  margin:7px 0 8px;
+  padding:7px 9px;
+  border-radius:9px;
+  background:#fff0f0;
+  border:1px solid #efb9b9;
+  color:#bd2929;
+  font-size:8.8px;
+  font-weight:800;
+  line-height:1.55
+}
+.required-note b{font-weight:950;color:#a91818}
+.required-note span{display:inline-block;margin-left:4px;font-weight:900}
+.required-note.ok{
+  background:#eef8f3;
+  border-color:#b9dfcc;
+  color:#267354
+}
+.required-note.ok b{color:#1d6b4c}
+
+.candidate-profile{
+  margin-top:8px;
+  padding:9px 10px;
+  border-radius:10px;
+  background:#f5f8fa;
+  border:1px solid #e1e9ec
+}
+.candidate-profile>b{
+  display:block;
+  margin-bottom:4px;
+  font-size:7.5px;
+  color:#607681
+}
+.candidate-profile p{
+  margin:0!important;
+  font-size:8.5px!important;
+  font-weight:650;
+  line-height:1.65!important;
+  color:#526a75!important
+}
+.candidate-speech{
+  position:relative;
+  margin:13px 5px 14px;
+  padding:12px 13px;
+  border-radius:14px;
+  background:#eef8fd;
+  border:1px solid #bcddea
+}
+.candidate-speech:after{
+  content:"";
+  position:absolute;
+  left:22px;
+  bottom:-8px;
+  width:14px;
+  height:14px;
+  background:#eef8fd;
+  border-right:1px solid #bcddea;
+  border-bottom:1px solid #bcddea;
+  transform:rotate(45deg)
+}
+.candidate-speech>span{
+  display:block;
+  margin-bottom:5px;
+  font-size:8px;
+  font-weight:950;
+  color:#0878a2
+}
+.candidate-speech p{
+  position:relative;
+  z-index:1;
+  margin:0!important;
+  font-size:9.4px!important;
+  font-weight:750;
+  line-height:1.75!important;
+  color:#355d70!important
+}
+.presentation-eval{
+  margin-top:10px;
+  padding:10px;
+  border-radius:11px;
+  background:#fffaf0;
+  border:1px solid #ead9ab
+}
+.presentation-eval-head{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  align-items:flex-start;
+  margin-bottom:8px;
+  font-size:7.7px;
+  color:#6d644d
+}
+.presentation-eval-head span b{color:#624f1f}
+.presentation-eval-head strong{
+  white-space:nowrap;
+  color:#805d12;
+  font-size:9px
+}
+.presentation-score-grid{
+  display:grid;
+  grid-template-columns:repeat(10,1fr);
+  gap:4px
+}
+.presentation-score-btn{
+  min-width:0;
+  padding:6px 0;
+  border:1px solid #dacb9f;
+  border-radius:7px;
+  background:#fff;
+  color:#725e2c;
+  font-size:8px;
+  font-weight:900
+}
+.presentation-score-btn.selected{
+  background:#8a6819;
+  color:#fff;
+  border-color:#8a6819;
+  box-shadow:0 0 0 2px rgba(138,104,25,.10)
+}
+.presentation-score-btn:disabled{opacity:.7}
+
+@media(max-width:390px){
+  .presentation-score-grid{grid-template-columns:repeat(5,1fr)}
+}
+
+
+/* v7.0 특성화고 직업윤리 · 팀 식별 UX */
+.team-roster-card{margin:14px 0 16px;padding:16px;border:2px solid #2f78a7;border-radius:18px;background:linear-gradient(180deg,#f6fbff,#fff);box-shadow:0 10px 24px rgba(28,83,118,.08)}
+.team-roster-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+.team-roster-head small{display:block;color:#5e7f94;font-weight:800;margin-bottom:2px}.team-roster-head h3{margin:0;color:#174d70;font-size:22px}
+.team-recorder-badge{min-width:105px;padding:9px 11px;border-radius:12px;background:#fff4d8;border:1px solid #e9cd85;text-align:center}.team-recorder-badge span{display:block;font-size:10px;font-weight:900;color:#87651a}.team-recorder-badge b{display:block;margin-top:2px;font-size:15px;color:#6b4e0f}
+.team-roster-members{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.team-member-chip{position:relative;padding:10px 11px;border:1px solid #d7e5ed;border-radius:12px;background:#fff}.team-member-chip b{display:block;font-size:14px;color:#244d63}.team-member-chip span{display:block;margin-top:3px;font-size:10px;color:#728995}.team-member-chip.recorder{border-color:#dfbf66;background:#fffaf0}.team-member-chip em{position:absolute;right:8px;top:8px;padding:3px 6px;border-radius:999px;background:#8b6819;color:white;font-size:9px;font-style:normal;font-weight:900}
+.team-roster-guide{margin:11px 0 0;padding:10px 11px;border-radius:10px;background:#eaf6fc;color:#345f76;font-size:11px;line-height:1.6}
+.team-shared-screen{padding:13px 14px;margin-bottom:14px;border-radius:13px;background:#eef7fb;border:1px solid #c5dfea}.team-shared-screen>span{font-size:10px;font-weight:900;color:#17739c}.team-shared-screen h3{margin:5px 0 6px;color:#214e67}.team-shared-screen p{margin:0;font-size:11px;line-height:1.65;color:#4e6d7e}
+.viewer-checklist{display:grid;gap:7px;margin:8px 0 16px}.viewer-checklist span{padding:9px 10px;border:1px solid #d9e5eb;border-radius:10px;background:white;font-size:11px;color:#466373}.team-recorder-callout{margin-top:10px;padding:12px 13px;border-radius:11px;background:#fff7e5;border:1px solid #ecd092;color:#745716;font-size:12px;line-height:1.55}.team-recorder-callout span{font-size:10px;color:#796b48}
+@media(max-width:520px){.team-roster-members{grid-template-columns:1fr}.team-roster-head{align-items:stretch}.team-recorder-badge{min-width:96px}.team-roster-head h3{font-size:20px}}
+
+/* v8.0 5대 전공분야 수험등록 */
+.track-picker{display:grid;grid-template-columns:1fr;gap:8px;margin:7px 0 4px}.track-option{display:block;margin:0;cursor:pointer}.track-option input{position:absolute;opacity:0;pointer-events:none}.track-option span{display:block;border:1px solid #d5e2e8;border-radius:12px;padding:11px 12px;background:#fff;transition:.16s}.track-option b{display:block;font-size:13px;color:#244f66;margin-bottom:3px}.track-option small{display:block;font-size:10px;line-height:1.55;color:#6d8089}.track-option input:checked+span{border-color:#2d87ad;background:#eef8fc;box-shadow:0 0 0 2px rgba(45,135,173,.08)}.track-source-note{font-size:9.5px;line-height:1.55;color:#6d8089;margin:5px 0 10px}.my-track-banner{display:flex;flex-direction:column;gap:4px;padding:10px 12px;margin-bottom:12px;border:1px solid #cfe2ea;background:#f2f9fc;border-radius:12px}.my-track-banner b{font-size:13px;color:#135f80}.my-track-banner span{font-size:10px;color:#627984;line-height:1.5}.cert-track{font-size:10px;font-weight:800;color:#537080;margin:4px 0 8px}.teacher-track-grid{display:grid;grid-template-columns:1fr;gap:8px;margin-top:12px}.teacher-track-card{border:1px solid #d9e6eb;border-radius:12px;padding:10px 12px;background:#fff}.teacher-track-card b{display:block;color:#245d78;font-size:12px;margin-bottom:4px}.teacher-track-card p{font-size:10.5px;line-height:1.55;margin:0;color:#506b78}.teacher-track-card small{font-size:9px;color:#7b8d95}.track-chip{display:inline-flex;align-items:center;border-radius:999px;background:#eef7fb;color:#276a86;padding:3px 7px;font-size:9px;font-weight:900;margin-right:4px}.team-track-title{font-size:9px;color:#5d7480;background:#eef6fa;border-radius:999px;padding:4px 7px;display:inline-block}.track-stats{display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin-top:8px}.track-stats>div{border:1px solid #dce7ec;border-radius:10px;padding:8px;background:#fff}.track-stats b{display:block;font-size:11px;color:#285d76}.track-stats span{font-size:9px;color:#71848e}@media(max-width:760px){.track-stats{grid-template-columns:1fr 1fr}.teacher-track-grid{grid-template-columns:1fr}}
+
+/* v8.0 teacher 5-track monitoring */
+.teacher-track-overview,.teacher-track-question-grid,.teacher-track-practical-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:12px}
+.teacher-track-overview .teacher-track-card,.teacher-track-question,.teacher-track-practical{border:1px solid #d9e6eb;border-radius:13px;padding:11px 12px;background:#fff}
+.teacher-track-overview .teacher-track-card b,.teacher-track-question>div b,.teacher-track-practical>div b{color:#245d78;font-size:12px}
+.teacher-track-overview .teacher-track-card>span{display:block;font-size:9px;line-height:1.5;color:#7a8d96;margin:4px 0}
+.teacher-track-overview .teacher-track-card p,.teacher-track-question p,.teacher-track-practical p{font-size:10.5px;line-height:1.6;color:#506b78;margin:6px 0}
+.teacher-track-question>div,.teacher-track-practical>div{display:flex;align-items:center;gap:6px}
+.teacher-track-question small,.teacher-track-practical small{display:block;font-size:9px;line-height:1.55;color:#6d818b}
+.teacher-track-question small strong{color:#16749b}
+.teacher-track-practical h3{font-size:12px;line-height:1.45;margin:6px 0;color:#284f63}
+@media(max-width:900px){.teacher-track-overview,.teacher-track-question-grid,.teacher-track-practical-grid{grid-template-columns:1fr}}
+
+/* v8.1 무이동 디지털 직무회의 */
+.team-roster-card.no-move{border-color:#207a9d;background:linear-gradient(180deg,#f0faff,#fff)}
+.team-member-chip small{display:block;margin-top:4px;font-size:9px;line-height:1.35;color:#456979}
+.team-role-head p{margin:3px 0 0;font-size:10px;color:#627b86}
+.team-supplement>p{font-size:9.5px!important;line-height:1.55!important}.team-supplement article{margin-top:8px;padding:9px;border-radius:9px;background:#fff;border:1px solid #ebdcaf}.team-supplement article strong{display:block;font-size:10px;color:#745916}.team-supplement article span{display:block;margin-top:2px;font-size:8px;color:#8b7b50}.team-supplement article p{font-size:9px!important;color:#645e4f!important}
+.work-textarea.compact{min-height:76px}.risk-grid{grid-template-columns:repeat(3,1fr)}
+.role-submission-summary{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:10px}.role-submission-summary>span,.role-submission-summary>p{margin:0;padding:9px;border:1px solid #dce7eb;border-radius:10px;background:#f9fcfd;font-size:9.5px;line-height:1.55;color:#526d79}.role-submission-summary>p{grid-column:1/-1}.role-submission-summary b{display:block;font-size:8px;color:#2b6984;margin-bottom:2px}
+.team-live-board{margin:14px 0;padding:14px;border:2px solid #1c759b;border-radius:17px;background:#f7fcff;box-shadow:0 10px 24px rgba(28,117,155,.08)}
+.team-board-head{display:flex;align-items:center;justify-content:space-between;gap:10px}.team-board-head span{display:block;font-size:8px;font-weight:900;color:#17789f;letter-spacing:.07em}.team-board-head h3{margin:3px 0 0!important;font-size:15px!important;color:#1f526b!important}.team-board-head>strong{min-width:62px;text-align:center;font-size:20px;color:#12789f}.team-board-head>strong small{display:block;font-size:7px;color:#6c838e}
+.team-board-progress{height:7px;border-radius:999px;background:#dfeef4;overflow:hidden;margin:10px 0}.team-board-progress span{display:block;height:100%;background:#2388b2;transition:width .2s}.team-board-guide{font-size:10px;line-height:1.65;color:#4e6d7d;margin:0 0 10px}
+.team-board-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.team-board-member{border:1px solid #d7e6ec;border-radius:12px;padding:10px;background:#fff}.team-board-member.mine{border-color:#6eb0ca;box-shadow:inset 0 0 0 1px #b8dce9}.team-board-member.waiting{opacity:.72}.team-board-member header{display:flex;align-items:flex-start;justify-content:space-between;gap:6px;padding-bottom:7px;border-bottom:1px solid #e6eef1}.team-board-member header b{display:block;font-size:11px;color:#244f64}.team-board-member header span{display:block;margin-top:2px;font-size:8.5px;color:#6c828d}.team-board-member header em{font-style:normal;font-size:7px;font-weight:900;padding:3px 6px;border-radius:999px;background:#eaf6fb;color:#20779a}.team-board-metrics{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin:8px 0}.team-board-metrics span{padding:7px;border-radius:8px;background:#f3f8fa}.team-board-metrics small{display:block;font-size:7px;color:#7a8c94}.team-board-metrics b{display:block;margin-top:2px;font-size:9px;color:#315f74}.team-board-member p{margin:6px 0;padding:7px;border-radius:8px;background:#f8fbfc;font-size:8.5px;line-height:1.55;color:#526c78}.team-board-member p b{display:block;color:#2b6680;font-size:7.5px;margin-bottom:2px}.team-board-member .board-question{background:#fff8e9;border:1px solid #f0dfb4}.extra-duty{display:block;font-size:7.5px;color:#8b6a1d;margin-top:6px}.board-waiting{padding:18px 8px;text-align:center;font-size:8.5px;color:#7b8b93}.team-board-member footer{margin-top:7px;padding-top:6px;border-top:1px dashed #dce7eb;font-size:7.5px;font-weight:800;color:#607985}.team-final-progress{margin-top:9px;padding:8px 10px;border-radius:9px;background:#eaf6fb;font-size:9px;color:#34657b}.team-final-progress b{color:#0d789f}
+.team-decision-card{margin:14px 0;padding:14px;border:1px solid #d4e4ea;border-radius:16px;background:#fff}.influence-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin:8px 0 14px}.influence-card{border:1px solid #d6e3e8;border-radius:11px;padding:9px;text-align:left;background:#fff;color:#476570}.influence-card b{display:block;font-size:10px;color:#295d75}.influence-card span{display:block;font-size:8.5px;margin-top:2px}.influence-card small{display:block;font-size:7.5px;color:#7b8d95;margin-top:3px}.influence-card.selected{border-color:#2d8ab0;background:#edf8fc;box-shadow:0 0 0 2px rgba(45,138,176,.08)}
+.consensus-result{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px;padding:10px;border-radius:10px;background:#f4f9fb}.consensus-result>b{width:100%;font-size:9px;color:#315f74}.consensus-result span{padding:5px 8px;border-radius:999px;background:white;border:1px solid #d9e6eb;font-size:8px}.consensus-result strong{color:#14789e}
+.team-teacher-controls.five-step .btn{flex:1 1 145px}.team-members.detailed>span{display:block}.team-members.detailed em,.team-members.detailed i{display:block;margin-top:3px;font-size:7px;font-style:normal;line-height:1.35}.team-members.detailed em{color:#87671e}.team-members.detailed i{color:#18779c}.teacher-consensus{display:flex;gap:5px;align-items:center;flex-wrap:wrap;margin-top:7px;padding:7px;border-radius:8px;background:#eef7fa}.teacher-consensus b{font-size:7px;color:#52727f}.teacher-consensus span{font-size:7px;padding:3px 6px;border-radius:999px;background:#fff;color:#2e6177}
+@media(max-width:640px){.team-board-grid,.influence-grid{grid-template-columns:1fr}.team-board-head{align-items:flex-start}.role-submission-summary{grid-template-columns:1fr}.role-submission-summary>p{grid-column:auto}.team-vendor-table>div{grid-template-columns:1.2fr .9fr 1fr 1.1fr}.team-roster-guide{font-size:10px}}
+
+
+/* v8.2 학생 가독성 · 확대 · 교사용 실시간 상황판 개선 */
+:root{--student-zoom:1}
+.student-page{overflow-x:hidden}
+.student-page .student-accessibility-bar{max-width:540px;margin:9px auto 0;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;word-break:keep-all}
+.student-page .student-accessibility-bar>span{font-size:12px;font-weight:900;color:#355d70;white-space:nowrap}
+.student-page .student-zoom-controls{display:flex;gap:5px;overflow-x:auto;padding:2px 0}
+.student-page .student-zoom-controls button{border:1px solid #bfd3dd;background:#fff;color:#315f74;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:900;white-space:nowrap}
+.student-page .student-zoom-controls button.active{background:#075d8b;color:#fff;border-color:#075d8b;box-shadow:0 3px 10px rgba(7,93,139,.18)}
+.student-page .student-shell{zoom:var(--student-zoom);width:calc(100% / var(--student-zoom));max-width:calc(540px / var(--student-zoom));word-break:keep-all;overflow-wrap:break-word;line-break:strict}
+.student-page .student-card,.student-page .student-card *{word-break:keep-all;overflow-wrap:break-word;line-break:strict}
+.student-page .progress-meta{font-size:11px}
+.student-page .student-card{padding:21px}
+.student-page .student-card h1{font-size:29px;line-height:1.42}
+.student-page .student-card h2{font-size:23px;line-height:1.5}
+.student-page .student-card h3{font-size:16px;line-height:1.6}
+.student-page label{font-size:13px}
+.student-page input,.student-page textarea,.student-page select{font-size:14px;line-height:1.6}
+.student-page .helper{font-size:12px;line-height:1.8}
+.student-page .field-note,.student-page .name-privacy,.student-page .track-source-note{font-size:11px;line-height:1.7}
+.student-page .track-choice-guide{margin:6px 0 10px;padding:10px 11px;border-radius:11px;background:#eef8fc;border:1px solid #cfe4ed}
+.student-page .track-choice-guide b{display:block;font-size:13px;color:#145f80}
+.student-page .track-choice-guide span{display:block;margin-top:4px;font-size:11px;line-height:1.65;color:#59717d}
+.student-page .track-option b{font-size:14px}.student-page .track-option small{font-size:11.5px;line-height:1.65}
+.student-page .stage-tag{font-size:10px}.student-page .student-context{font-size:13px;line-height:1.8}
+.student-page .choice{font-size:13px;line-height:1.65;padding:13px}
+.student-page .feedback{font-size:12px;line-height:1.75}
+.student-page .waiting p{font-size:12px}.student-page .student-virtue span{font-size:11.5px}.student-page .student-virtue b{font-size:13px}
+.student-page .score-grid span,.student-page .public-result,.student-page .certificate .cert-text,.student-page .certificate .cert-date,.student-page .certificate .cert-type{font-size:10.5px}
+.student-page .work-exam-head p{font-size:12.5px;line-height:1.75}.student-page .work-code small{font-size:9px}.student-page .work-code b{font-size:15px}
+.student-page .work-timer span{font-size:10.5px}.student-page .work-timer small{font-size:10px;line-height:1.55}
+.student-page .work-notice b{font-size:11px}.student-page .work-notice span{font-size:11px;line-height:1.7}
+.student-page .work-context{font-size:12.5px;line-height:1.8}
+.student-page .work-section-title>span{font-size:11px}.student-page .work-section-title b{font-size:13px}.student-page .work-section-title small{font-size:10.5px;line-height:1.55}
+.student-page .work-doc b{font-size:11px}.student-page .work-doc small{font-size:9.5px}.student-page .work-document b{font-size:11.5px}.student-page .work-document p,.student-page .work-document.muted{font-size:11px;line-height:1.75}
+.student-page .mini-choice{font-size:11.5px;line-height:1.5}.student-page .criteria-chip span{font-size:11px;line-height:1.5}
+.student-page .vendor-head{font-size:9.5px}.student-page .vendor-row{font-size:10px;line-height:1.5}
+.student-page .work-label{font-size:11.5px}.student-page .work-check span{font-size:11px;line-height:1.7}.student-page .work-textarea{font-size:12.5px;line-height:1.75}
+.student-page .ledger-row{font-size:10.5px;line-height:1.55}.student-page .sequence-empty,.student-page .sequence-slot,.student-page .action-card{font-size:11px;line-height:1.6}.student-page .sequence-slot small{font-size:9px}
+.student-page .rubric-strip span{font-size:9.5px}.student-page .rubric-strip b{font-size:10.5px}.student-page .candidate-head b{font-size:12.5px}.student-page .candidate-card p{font-size:11px;line-height:1.7}.student-page .candidate-sliders label>span{font-size:10.5px}
+.student-page .work-alert b{font-size:11px}.student-page .work-alert span{font-size:11px;line-height:1.7}.student-page .locked-result{font-size:10.5px}.student-page .locked-result small{font-size:9.5px}
+.student-page .response-card{font-size:11.5px;line-height:1.65}.student-page .work-submit-sticky b{font-size:11px}.student-page .work-submit-sticky small{font-size:9.5px;line-height:1.5}
+.student-page .required-note{font-size:11px;line-height:1.65;padding:9px 10px}.student-page .required-note span{white-space:nowrap}
+.student-page .team-phase-banner span{font-size:11px}.student-page .team-phase-banner small{font-size:9.5px}.student-page .team-role-head small{font-size:9.5px}.student-page .team-role-head h3{font-size:16px!important}.student-page .team-role-head p{font-size:11.5px}
+.student-page .team-secret b{font-size:10.5px}.student-page .team-secret p{font-size:11.5px;line-height:1.75}.student-page .team-supplement b{font-size:10.5px}.student-page .team-supplement p{font-size:10.5px!important}.student-page .team-supplement article strong{font-size:11.5px}.student-page .team-supplement article span{font-size:9.5px}.student-page .team-supplement article p{font-size:10.5px!important}
+.student-page .role-submission-summary>span,.student-page .role-submission-summary>p{font-size:11px}.student-page .role-submission-summary b{font-size:9.5px}
+.student-page .team-board-head span{font-size:10px}.student-page .team-board-head h3{font-size:17px!important}.student-page .team-board-head>strong small{font-size:9px}.student-page .team-board-guide{font-size:11.5px;line-height:1.75}
+.student-page .team-board-member header b{font-size:12.5px}.student-page .team-board-member header span{font-size:10px}.student-page .team-board-member header em{font-size:9px}.student-page .team-board-metrics small{font-size:9px}.student-page .team-board-metrics b{font-size:11px}.student-page .team-board-member p{font-size:11px;line-height:1.7}.student-page .team-board-member p b{font-size:9.5px}.student-page .board-waiting,.student-page .team-board-member footer{font-size:10px}.student-page .team-final-progress{font-size:10.5px}
+.student-page .influence-card b{font-size:12px}.student-page .influence-card span{font-size:10.5px}.student-page .influence-card small{font-size:9.5px}.student-page .team-vendor-table>div{font-size:10px;line-height:1.55}
+.student-page .scorecard-row{font-size:10.5px}.student-page .work-result-feedback p{font-size:10.5px}.student-page .team-score-formula span{font-size:9.5px}.student-page .consensus-result span{font-size:10px}
+
+/* 교사용 직무회의 진행상태 */
+.team-teacher-controls .team-step-btn.completed{background:#e8f6ef!important;border:1px solid #9ccfb8!important;color:#17634a!important}
+.team-teacher-controls .team-step-btn.current{background:#075d8b!important;border-color:#075d8b!important;color:#fff!important;box-shadow:0 0 0 3px rgba(7,93,139,.13)}
+.team-phase-teacher.prominent{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;padding:13px 15px;border:2px solid #78b2ca;background:#eef9fd}
+.team-phase-teacher.prominent b{font-size:11px;color:#496c7c}.team-phase-teacher.prominent span{font-size:16px;font-weight:950;color:#075f88}.team-phase-teacher.prominent small{grid-column:1/-1;font-size:10px;line-height:1.55;color:#68808b}
+.teacher-live-board{margin-top:10px;padding:10px;border-radius:11px;background:#f2f9fc;border:1px solid #cfe2ea}.teacher-live-board>b{display:block;font-size:11px;color:#175f80;margin-bottom:8px}
+.teacher-live-member{margin-top:7px;padding:10px;border-radius:10px;background:#fff;border:1px solid #dce8ed}.teacher-live-member.waiting{opacity:.7}.teacher-live-member header{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;border-bottom:1px solid #e8eff2;padding-bottom:6px}.teacher-live-member header b{font-size:11px;color:#274f64}.teacher-live-member header span{display:block;font-size:9px;color:#6d818b;margin-top:2px}.teacher-live-member header em{font-style:normal;font-size:9px;color:#186f93;font-weight:800}.teacher-live-member p{margin:7px 0 0;padding:7px 8px;border-radius:8px;background:#f8fbfc;font-size:10px;line-height:1.6;color:#516b77}.teacher-live-member p b{display:block;font-size:9px;color:#286680;margin-bottom:2px}.teacher-live-member .teacher-question{background:#fff8e9;border:1px solid #f0dfb5}
+.pledge-live-list{display:grid;gap:8px}.pledge-live-list article{border:1px solid #d8e6ec;border-radius:11px;padding:10px;background:#fff}.pledge-live-list header{display:flex;justify-content:space-between;gap:8px}.pledge-live-list header b{font-size:11px;color:#285a72}.pledge-live-list header span{font-size:9px;color:#6c818b}.pledge-live-list p{margin:7px 0 0;padding:8px;border-radius:8px;background:#f5fafc;font-size:10.5px;line-height:1.65;color:#4e6976}
+@media(max-width:390px){.student-page .student-accessibility-bar{align-items:flex-start;flex-direction:column}.student-page .student-zoom-controls{width:100%}.student-page .student-zoom-controls button{flex:1}.student-page .vendor-head,.student-page .vendor-row{grid-template-columns:1.3fr .9fr .8fr 1fr}}
+
+/* =========================================================
+   v8.3 학생 확대 단순화 + Q-Net 정보구조 참고 교사용 리디자인
+   - 학생 확대: 100 / 110 / 120만 사용
+   - 교사용: 공공 자격시험 운영시스템 느낌의 단계형 정보구조
+   ========================================================= */
+
+/* 학생 확대바: 3개 버튼을 균등 배치 */
+.student-page .student-zoom-controls{flex:1;max-width:285px}
+.student-page .student-zoom-controls button{flex:1;min-width:72px}
+
+/* ---------- 교사용 공공서비스형 상단 ---------- */
+.teacher-page{background:#f4f6f8;color:#1f2f3a;word-break:keep-all;overflow-wrap:break-word;line-break:strict}
+.teacher-page *{word-break:keep-all;overflow-wrap:break-word}
+.teacher-qnet-utility{height:36px;background:#f6f7f8;border-bottom:1px solid #e2e6e9;color:#667681}
+.teacher-qnet-utility-inner{max-width:1500px;height:100%;margin:auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:600}
+.teacher-page .teacher-qnet-header{position:relative;top:auto;box-shadow:none;border-bottom:1px solid #d9e1e6;background:#fff}
+.teacher-page .teacher-qnet-header .app-top-inner{height:88px;padding:0 24px}
+.teacher-brand-wrap{display:flex;align-items:center;gap:24px;min-width:0}
+.teacher-ci-link{display:flex;align-items:center}
+.teacher-page .teacher-qnet-header .app-logo{width:290px;max-width:36vw}
+.teacher-service-name{position:relative;padding-left:24px;display:flex;flex-direction:column;gap:2px}
+.teacher-service-name:before{content:'';position:absolute;left:0;top:3px;bottom:3px;width:1px;background:#d9e2e7}
+.teacher-service-name b{font-size:25px;line-height:1.2;color:#123f63;letter-spacing:-.045em}
+.teacher-service-name span{font-size:13px;font-weight:700;color:#637683}
+.teacher-header-right{display:flex;align-items:center;gap:10px}
+.teacher-page .mode-label{font-size:12px;padding:7px 10px;border-radius:4px;background:#174f82;letter-spacing:.04em}
+.teacher-page .status-pill{font-size:12px;padding:8px 12px;border-radius:5px;background:#edf6f9;border:1px solid #d6e6ed;color:#315c72}
+.teacher-qnet-nav{background:linear-gradient(90deg,#0a467c,#075b96);border-bottom:3px solid #f1b323;box-shadow:0 3px 10px rgba(16,55,83,.12)}
+.teacher-qnet-nav-inner{max-width:1500px;height:56px;margin:auto;padding:0 24px;display:flex;align-items:center}
+.teacher-qnet-nav a{position:relative;height:56px;display:flex;align-items:center;padding:0 23px;color:#fff;font-size:15px;font-weight:800;border-left:1px solid rgba(255,255,255,.13)}
+.teacher-qnet-nav a:last-of-type{border-right:1px solid rgba(255,255,255,.13)}
+.teacher-qnet-nav a:hover,.teacher-qnet-nav a.active{background:rgba(255,255,255,.12)}
+.teacher-qnet-nav a.active:after{content:'';position:absolute;left:20px;right:20px;bottom:0;height:4px;background:#fff}
+.teacher-nav-spacer{flex:1}
+.teacher-nav-caption{color:#dbeef8;font-size:12px;font-weight:800;letter-spacing:.02em}
+
+/* ---------- 페이지 타이틀 ---------- */
+.teacher-page .teacher-shell{max-width:1500px;padding:28px 24px 60px}
+.teacher-page-heading{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;margin-bottom:22px;padding:0 2px}
+.teacher-breadcrumb{display:block;margin-bottom:8px;font-size:12px;color:#768690}
+.teacher-page-heading h1{margin:0;font-size:32px;line-height:1.25;letter-spacing:-.05em;color:#173f5d}
+.teacher-page-heading p{margin:8px 0 0;font-size:14px;line-height:1.65;color:#637682}
+.teacher-page-heading-badge{min-width:180px;padding:12px 16px;border-left:4px solid #0b5c94;background:#fff;border-top:1px solid #dde5ea;border-right:1px solid #dde5ea;border-bottom:1px solid #dde5ea;text-align:left}
+.teacher-page-heading-badge span{display:block;font-size:10px;font-weight:900;letter-spacing:.12em;color:#1b6f9c}
+.teacher-page-heading-badge b{display:block;margin-top:3px;font-size:15px;color:#2d4f63}
+
+/* ---------- 교사용 공통 컴포넌트 ---------- */
+.teacher-page .card{border-radius:8px;border:1px solid #d8e1e6;box-shadow:0 5px 16px rgba(28,58,78,.055)}
+.teacher-page .btn{border-radius:4px;padding:12px 16px;font-size:14px;font-weight:800}
+.teacher-page .btn.large{padding:15px 20px;font-size:16px}
+.teacher-page .btn.primary{background:#0a5b94}
+.teacher-page .btn.primary:hover{background:#084978}
+.teacher-page .btn.outline{border-color:#aebfc9;color:#234f6a}
+.teacher-page .btn.soft{background:#edf6fb;color:#145f86;border:1px solid #c9e0eb}
+.teacher-page label{font-size:14px;font-weight:800;color:#355365;margin-top:13px}
+.teacher-page input,.teacher-page select,.teacher-page textarea{font-size:15px;line-height:1.6;padding:12px 13px;border-radius:4px;border-color:#bfcdd5}
+.teacher-page .eyebrow{font-size:12px;letter-spacing:.1em;margin-bottom:7px;color:#0d6395}
+.teacher-page .helper{font-size:14px;line-height:1.8;color:#5e707a}
+.teacher-page .privacy-note{font-size:13px;line-height:1.75}
+.teacher-card-label{margin:-22px -22px 18px;padding:10px 18px;background:#f5f8fa;border-bottom:1px solid #dce5ea;border-radius:8px 8px 0 0;color:#5c7180;font-size:11px;font-weight:900;letter-spacing:.11em}
+
+/* ---------- 수업방 개설 ---------- */
+.teacher-page .setup-block{border-top:5px solid #0a5b94;padding:28px}
+.teacher-page .setup-grid{gap:34px;align-items:center}
+.teacher-page .setup-block h1{font-size:30px;color:#173f5d;margin:5px 0 12px}
+.teacher-page .setup-visual{background:#f2f8fb;border:1px solid #d7e6ed;border-radius:8px;padding:24px;min-height:330px;display:flex;align-items:center;justify-content:center}
+.teacher-page .setup-visual img{max-height:300px}
+
+/* ---------- 대시보드 레이아웃 ---------- */
+.teacher-page .teacher-layout{grid-template-columns:320px minmax(0,1fr);gap:20px;align-items:start}
+.teacher-page .teacher-side{top:18px;height:auto;max-height:calc(100vh - 36px);padding:0 18px 18px;border-top:5px solid #0a5b94;border-radius:8px}
+.teacher-side-title{margin:0 -18px 14px;padding:14px 18px 13px;background:#f5f8fa;border-bottom:1px solid #dce5ea}
+.teacher-side-title span{display:block;font-size:10px;font-weight:900;color:#23759e;letter-spacing:.11em}
+.teacher-side-title b{display:block;margin-top:2px;font-size:17px;color:#284c62}
+.teacher-page .room-panel{border-radius:5px;padding:15px;background:linear-gradient(180deg,#eff8fd,#f9fcfe);border:1px solid #c5ddea}
+.teacher-page .room-panel small{font-size:12px;font-weight:700;color:#577282}
+.teacher-page .room-panel strong{font-size:38px;color:#0b567f;letter-spacing:.11em;margin:5px 0 10px}
+.teacher-page .qr-wrap{min-height:194px;padding:12px}
+.teacher-page .participant-row{padding:13px 2px;font-size:13px}
+.teacher-page .participant-row strong{font-size:25px}
+.teacher-page .participant-row small{font-size:11px;color:#687c87}
+.teacher-side-section-label{margin:15px 0 7px;padding-bottom:7px;border-bottom:2px solid #315f7a;font-size:13px;font-weight:900;color:#284d63}
+.teacher-page .stage-nav{gap:5px;margin:8px 0 16px}
+.teacher-page .stage-btn{position:relative;border-radius:3px;padding:10px 10px;font-size:13px;line-height:1.4;color:#4d606b;border:1px solid transparent;background:#fff}
+.teacher-page .stage-btn span{width:28px;height:28px;margin-right:8px;font-size:10px;background:#eef2f4;color:#637682}
+.teacher-page .stage-btn:hover{border-color:#cad9e1;background:#f8fbfc}
+.teacher-page .stage-btn.active{background:#0a5b94;color:#fff;border-color:#0a5b94;box-shadow:0 3px 9px rgba(10,91,148,.16)}
+.teacher-page .stage-btn.active span{background:#fff;color:#0a5b94}
+.teacher-page .side-actions{gap:8px}
+
+/* ---------- 메인 제어 / Q-Net 단계형 카드 ---------- */
+.teacher-page .teacher-main{gap:20px}
+.teacher-page .control-card,.teacher-page .stats-card,.teacher-page .competency-card,.teacher-page .roster-card{position:relative;border-top:4px solid #0a5b94}
+.teacher-page .control-card{padding:22px 24px 25px;min-height:370px}
+.teacher-page .stats-card,.teacher-page .competency-card,.teacher-page .roster-card{padding:22px 24px;min-height:290px}
+.teacher-page .section-head{align-items:center;gap:18px}
+.teacher-page .section-head h1{font-size:30px;line-height:1.3;color:#183f59}
+.teacher-page .section-head h3{font-size:21px;line-height:1.35;color:#254a60}
+.teacher-page .control-actions{gap:8px}
+.teacher-page .content-box{margin-top:18px;padding:22px 24px;border-radius:5px;background:#f8fafb;border:1px solid #e0e7eb}
+.teacher-page .content-box h2{font-size:25px;line-height:1.5;color:#233f50}
+.teacher-page .content-box h3{font-size:18px;line-height:1.5}
+.teacher-page .context-box{font-size:14px;line-height:1.8;color:#536a77}
+.teacher-page .option-view{border-radius:5px;padding:13px;font-size:13px;line-height:1.65}
+.teacher-page .response-chip{font-size:12px;padding:7px 10px;border-radius:4px}
+.teacher-page .empty{min-height:170px;font-size:13px;line-height:1.7}
+.teacher-page .bar-row{grid-template-columns:34px 1fr 92px;gap:10px;margin:14px 0;font-size:13px}
+.teacher-page .bar-value{font-size:12px}
+.teacher-page .bar-track{height:28px;border-radius:3px}
+.teacher-page .change-box{padding:12px;font-size:13px;line-height:1.65}
+.teacher-page .comp-row{margin:14px 0}
+.teacher-page .comp-meta{font-size:12px;margin-bottom:6px}
+.teacher-page .comp-track{height:10px}
+.teacher-page .result-tile{border-radius:5px;padding:14px}
+.teacher-page .result-tile b{font-size:27px}.teacher-page .result-tile span{font-size:11px}
+.teacher-page .roster-card{margin-top:0}
+.teacher-page .roster-list{grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;margin-top:14px}
+.teacher-page .roster-item{border-radius:5px;padding:11px}
+.teacher-page .roster-item b{font-size:14px}.teacher-page .roster-item span{font-size:11px;line-height:1.55}
+
+/* ---------- 전공별 모니터링 ---------- */
+.teacher-page .teacher-track-overview,.teacher-page .teacher-track-question-grid,.teacher-page .teacher-track-practical-grid{gap:11px}
+.teacher-page .teacher-track-overview .teacher-track-card,.teacher-page .teacher-track-question,.teacher-page .teacher-track-practical{border-radius:5px;padding:14px 15px;border-color:#d4e0e6}
+.teacher-page .teacher-track-overview .teacher-track-card b,.teacher-page .teacher-track-question>div b,.teacher-page .teacher-track-practical>div b{font-size:15px;color:#215b7a}
+.teacher-page .teacher-track-overview .teacher-track-card>span{font-size:11px;line-height:1.6}
+.teacher-page .teacher-track-overview .teacher-track-card p,.teacher-page .teacher-track-question p,.teacher-page .teacher-track-practical p{font-size:13px;line-height:1.7}
+.teacher-page .teacher-track-question small,.teacher-page .teacher-track-practical small{font-size:11px;line-height:1.65}
+.teacher-page .teacher-track-practical h3{font-size:15px;line-height:1.55}
+.teacher-page .track-chip,.teacher-page .team-track-title{font-size:11px;padding:5px 8px;border-radius:4px}
+.teacher-page .track-stats>div{border-radius:5px;padding:10px}.teacher-page .track-stats b{font-size:13px}.teacher-page .track-stats span{font-size:11px}
+
+/* ---------- 직무상황 종합평가: 교사용 가독성 ---------- */
+.teacher-page .team-teacher-controls{gap:8px}
+.teacher-page .team-teacher-controls .team-step-btn{font-size:14px;padding:12px 14px;min-height:46px;border-radius:4px}
+.teacher-page .team-phase-teacher.prominent{border-radius:5px;padding:15px 17px;grid-template-columns:120px 1fr;border:1px solid #9bc4d7;border-left:5px solid #0a5b94;background:#f2f8fb}
+.teacher-page .team-phase-teacher.prominent b{font-size:13px}.teacher-page .team-phase-teacher.prominent span{font-size:21px}.teacher-page .team-phase-teacher.prominent small{font-size:12px;line-height:1.65}
+.teacher-page .team-group-list{gap:14px}
+.teacher-page .team-group-card{border-radius:6px;border:1px solid #cfdde4;box-shadow:none;padding:16px;background:#fff}
+.teacher-page .team-group-head b{font-size:18px;color:#214e67}.teacher-page .team-group-head span{font-size:12px}.teacher-page .team-group-head strong{font-size:20px}
+.teacher-page .team-members.detailed{gap:8px}
+.teacher-page .team-members.detailed>span{border-radius:5px;padding:11px 12px}
+.teacher-page .team-members.detailed b{font-size:14px}.teacher-page .team-members.detailed small{font-size:11px;line-height:1.6}.teacher-page .team-members.detailed i{font-size:11px;line-height:1.55}.teacher-page .team-members.detailed em{font-size:10px}
+.teacher-page .team-group-foot{font-size:12px;padding:9px 0}
+.teacher-page .teacher-live-board{margin-top:12px;padding:14px;border-radius:5px;border-color:#c4dce7;background:#f5fafc}
+.teacher-page .teacher-live-board>b{font-size:14px;margin-bottom:10px;color:#154f71}
+.teacher-page .teacher-live-member{padding:13px;border-radius:5px;margin-top:9px}
+.teacher-page .teacher-live-member header b{font-size:14px}.teacher-page .teacher-live-member header span{font-size:11px;line-height:1.55}.teacher-page .teacher-live-member header em{font-size:11px;line-height:1.45}
+.teacher-page .teacher-live-member p{font-size:13px;line-height:1.7;padding:9px 10px}.teacher-page .teacher-live-member p b{font-size:11px}
+.teacher-page .teacher-consensus b{font-size:12px}.teacher-page .teacher-consensus span{font-size:11px;padding:5px 8px;border-radius:4px}
+.teacher-page .teacher-team-score span{font-size:12px}
+
+/* ---------- 실천약속 / 실시간응답 ---------- */
+.teacher-page .pledge-live-list{gap:10px}
+.teacher-page .pledge-live-list article{border-radius:5px;padding:13px}
+.teacher-page .pledge-live-list header b{font-size:14px}.teacher-page .pledge-live-list header span{font-size:11px}
+.teacher-page .pledge-live-list p{font-size:13px;line-height:1.75;padding:10px;border-radius:4px}
+
+/* ---------- 태블릿/소형 PC ---------- */
+@media(max-width:1180px){
+  .teacher-page .teacher-qnet-header .app-logo{width:245px}
+  .teacher-service-name b{font-size:22px}.teacher-service-name span{font-size:12px}
+  .teacher-qnet-nav a{padding:0 15px;font-size:14px}
+  .teacher-page .teacher-layout{grid-template-columns:285px minmax(0,1fr)}
+  .teacher-page .roster-list{grid-template-columns:repeat(3,minmax(0,1fr))}
+}
+@media(max-width:900px){
+  .teacher-qnet-utility{display:none}
+  .teacher-page .teacher-qnet-header .app-top-inner{height:76px}
+  .teacher-service-name{display:none}
+  .teacher-qnet-nav-inner{overflow-x:auto}.teacher-qnet-nav a{white-space:nowrap}
+  .teacher-nav-caption{display:none}
+  .teacher-page-heading{align-items:flex-start}.teacher-page-heading-badge{display:none}
+  .teacher-page .teacher-layout{display:block}
+  .teacher-page .teacher-side{position:relative;top:auto;max-height:none;margin-bottom:18px}
+  .teacher-page .stage-nav{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .teacher-page .teacher-grid{grid-template-columns:1fr}
+}
+@media(max-width:620px){
+  .teacher-page .teacher-shell{padding:18px 12px 42px}
+  .teacher-page .teacher-qnet-header .app-top-inner{padding:0 12px}.teacher-page .teacher-qnet-header .app-logo{width:225px;max-width:65vw}
+  .teacher-header-right .mode-label{display:none}.teacher-page .status-pill{font-size:10px}
+  .teacher-qnet-nav-inner{padding:0 7px}.teacher-qnet-nav a{padding:0 12px;font-size:13px}
+  .teacher-page-heading h1{font-size:27px}.teacher-page-heading p{font-size:13px}
+  .teacher-page .section-head{align-items:flex-start;flex-direction:column}.teacher-page .control-actions{width:100%}.teacher-page .control-actions .btn{flex:1}
+  .teacher-page .content-box{padding:17px}.teacher-page .control-card,.teacher-page .stats-card,.teacher-page .competency-card,.teacher-page .roster-card{padding:18px}
+  .teacher-card-label{margin:-18px -18px 15px}
+  .teacher-page .roster-list{grid-template-columns:1fr 1fr}
+  .teacher-page .stage-nav{grid-template-columns:1fr}
+  .teacher-page .team-phase-teacher.prominent{grid-template-columns:1fr}.teacher-page .team-phase-teacher.prominent small{grid-column:auto}
+}

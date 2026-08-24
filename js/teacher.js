@@ -652,7 +652,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = '실시간 서버 연결 · v8.2 가독성·실시간상황판';
+    $('#serverStatus').textContent = '실시간 서버 연결 · v8.3 Q-Net형 교사UI';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);

@@ -17,10 +17,10 @@ let teamRoleDraft = {choice:null,riskLevel:'',preliminaryVendor:null,note:'',que
 let teamReportDraft = {issues:[],criteria:[],conflictResponse:null,twistResponse:null,vendor:null,influenceUid:null,reason:''};
 let timerTicker = null;
 
-// v8.2 학생 가독성 · 화면확대
+// v8.3 학생 가독성 · 100/110/120 화면확대
 const STUDENT_ZOOM_KEY = 'cheongryeomStudentZoom';
 function applyStudentZoom(value){
-  const z = ['1','1.1','1.2','1.5'].includes(String(value)) ? String(value) : '1';
+  const z = ['1','1.1','1.2'].includes(String(value)) ? String(value) : '1';
   document.documentElement.style.setProperty('--student-zoom', z);
   localStorage.setItem(STUDENT_ZOOM_KEY, z);
   document.querySelectorAll('[data-student-zoom]').forEach(b=>b.classList.toggle('active', b.dataset.studentZoom===z));
@@ -854,7 +854,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v8.2 가독성·실시간상황판';
+    $('#studentStatus').textContent = '실시간 연결 · v8.3 가독성·교사UI';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

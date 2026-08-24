@@ -558,3 +558,22 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 .team-compact-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:5px;margin:0 0 12px}.team-compact-flow span{padding:8px 5px;border:1px solid #d2e0e7;background:#f5f8fa;text-align:center;font-size:10px;font-weight:900;color:#617986}.team-compact-flow span.active{background:#0b6fa4;border-color:#0b6fa4;color:#fff}
 .teacher-team-how{margin:16px 0 18px;border:1px solid #bfd5e1;border-top:5px solid #0a6290;background:#fff}.teacher-team-how header{padding:17px 18px 14px;background:#f2f8fb}.teacher-team-how header>span{font-size:12px;font-weight:900;color:#0b6fa4}.teacher-team-how h3{font-size:21px;margin:4px 0 5px;color:#173f55}.teacher-team-how p{font-size:14px;line-height:1.65;margin:0;color:#526d79}.teacher-team-how-grid{display:grid;grid-template-columns:repeat(5,1fr)}.teacher-team-how-grid>span{padding:14px 12px;border-right:1px solid #dde7ec;font-size:12px;line-height:1.55;color:#536c78}.teacher-team-how-grid>span:last-child{border-right:0}.teacher-team-how-grid b{display:block;font-size:13px;color:#164f6a;margin-bottom:4px}.teacher-practical-task-mini{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:0 0 7px}.teacher-practical-task-mini span{display:grid;grid-template-columns:auto 1fr;gap:0 7px;align-items:center;padding:7px 8px;border:1px solid #dde7eb;background:#f7fafb}.teacher-practical-task-mini i{grid-row:1/3;font-style:normal;font-size:11px;font-weight:900;color:#56717e}.teacher-practical-task-mini b{font-size:17px!important;color:#174f6a!important}.teacher-practical-task-mini small{font-size:9px;color:#778991}
 @media(max-width:640px){.practical-feedback-hero{grid-template-columns:1fr}.practical-result-ring{margin:0 auto}.practical-feedback-tasks{grid-template-columns:1fr}.feedback-section-label{display:block}.feedback-section-label span{display:block;margin-top:3px;text-align:left}.team-how-grid article{grid-template-columns:1fr;gap:3px}.team-no-move-notice{grid-template-columns:1fr}.team-compact-flow{grid-template-columns:repeat(5,minmax(58px,1fr));overflow-x:auto}.teacher-team-how-grid{grid-template-columns:1fr}.teacher-team-how-grid>span{border-right:0;border-bottom:1px solid #dde7ec}}
+
+
+/* =========================================================
+   v8.6 교사용 좌측 패널 이중 스크롤 제거
+   - QR/진행단계 패널 내부 스크롤 제거
+   - 결과 CSV 저장 / 수업방 종료·삭제까지 한 패널에 자연스럽게 노출
+   - 브라우저 전체 페이지 스크롤만 사용
+   ========================================================= */
+.teacher-page .teacher-layout{align-items:start;}
+.teacher-page .teacher-side{
+  position:relative !important;
+  top:auto !important;
+  height:auto !important;
+  max-height:none !important;
+  overflow:visible !important;
+  align-self:start;
+}
+.teacher-page .teacher-side::-webkit-scrollbar{display:none;}
+.teacher-page .side-actions{margin-top:12px;}

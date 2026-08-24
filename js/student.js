@@ -52,7 +52,9 @@ const stageCharacter = {
   waiting: 'character-listen.png',
   intro: 'character-explain.png',
   written: 'character-warning.png',
+  writtenFeedback: 'character-best.png',
   practical: 'character-tablet.png',
+  practicalFeedback: 'character-best.png',
   team: 'character-together.png',
   diagnosis: 'character-best.png',
   pledge: 'character-love.png',
@@ -116,6 +118,83 @@ function bindChoices() {
       if (s) s.disabled = false;
     };
   });
+}
+
+function writtenComp() {
+  const sums = Object.fromEntries(C.virtues.map(v => [v.key, { s: 0, n: 0 }]));
+  C.written.forEach(q => {
+    const a = mine('written', q.id);
+    if (!a) return;
+    Object.entries(q.impact || {}).forEach(([k, v]) => {
+      if (!sums[k]) return;
+      sums[k].s += (a.choice === q.correct ? v : Math.round(v * 0.3));
+      sums[k].n++;
+    });
+  });
+  return Object.fromEntries(Object.entries(sums).map(([k, v]) => [k, v.n ? Math.round(v.s / v.n) : 0]));
+}
+
+const writtenCoaching = {
+  honesty: '실기에서는 실제 수치·기록·사실을 바꾸지 않고 그대로 확인·보고하는 데 집중해보세요.',
+  promise: '실기에서는 시간이 촉박해도 정해진 절차·기한·안전기준을 먼저 확인해보세요.',
+  care: '실기에서는 내 선택이 동료·고객·사용자·생명·환경에 어떤 영향을 주는지도 함께 살펴보세요.',
+  responsibility: '실기에서는 문제를 발견하는 데서 끝내지 말고 보고·조치·기록까지 완성해보세요.',
+  restraint: '실기에서는 친분·선물·개인 편의와 같은 사적 요소를 직무판단에서 분리해보세요.',
+  fairness: '실기에서는 누구에게나 설명할 수 있는 공개된 기준을 먼저 세우고 같은 방식으로 적용해보세요.'
+};
+function writtenFeedbackModel() {
+  const values = writtenComp();
+  const ranked = C.virtues.map(v=>({...v,score:Number(values[v.key]||0)})).sort((a,b)=>b.score-a.score || a.name.localeCompare(b.name,'ko'));
+  const answered=C.written.filter(q=>mine('written',q.id)).length;
+  const correct=C.written.filter(q=>mine('written',q.id)?.choice===q.correct).length;
+  return {values,ranked,answered,correct,strengths:ranked.slice(0,2),growth:ranked[ranked.length-1]};
+}
+
+const practicalCoaching = {
+  honesty: '종합평가에서는 다른 사람의 정보와 새 조건이 생겨도 사실·수치·기록을 정확히 구분해 판단해보세요.',
+  promise: '종합평가에서는 팀 의견보다 먼저 납기·안전·보안·위생처럼 반드시 지켜야 할 기준을 찾아보세요.',
+  care: '종합평가에서는 내 직무뿐 아니라 다른 부서·고객·사용자에게 미칠 영향까지 함께 비교해보세요.',
+  responsibility: '종합평가에서는 문제를 발견한 뒤 질문하고, 새 정보를 반영하고, 최종 근거까지 남기는 흐름을 완성해보세요.',
+  restraint: '종합평가에서는 친분·상급자 선호·개인 편의가 팀 판단에 섞이지 않도록 공개된 기준과 분리해보세요.',
+  fairness: '종합평가에서는 조원 의견이 달라도 공개된 기준을 동일하게 적용하고, 왜 판단을 바꿨는지 설명해보세요.'
+};
+function preTeamComp() {
+  const sums = Object.fromEntries(C.virtues.map(v => [v.key, { s: 0, n: 0 }]));
+  C.written.forEach(q => {
+    const a=mine('written',q.id); if(!a)return;
+    Object.entries(q.impact||{}).forEach(([k,v])=>{if(!sums[k])return;sums[k].s+=(a.choice===q.correct?v:Math.round(v*.3));sums[k].n++;});
+  });
+  C.practical.forEach(q => {
+    const a=mine('practical',q.id); if(!a)return;
+    const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);
+    Object.entries(ev.impact||{}).forEach(([k,v])=>{if(!sums[k])return;sums[k].s+=Number(v||0);sums[k].n++;});
+  });
+  return Object.fromEntries(Object.entries(sums).map(([k,v])=>[k,v.n?Math.round(v.s/v.n):0]));
+}
+function practicalFeedbackModel(){
+  const tasks=C.practical.map((q,i)=>{const a=mine('practical',q.id);const ev=a?CHEONGRYEOM_EVALUATE_PRACTICAL(q,a):{score:0,details:[]};return {index:i+1,q,answered:!!a,score:a?ev.score:0,details:ev.details||[]};});
+  const complete=tasks.filter(x=>x.answered).length;
+  const average=Math.round(tasks.reduce((a,b)=>a+b.score,0)/Math.max(1,C.practical.length));
+  const values=preTeamComp();
+  const ranked=C.virtues.map(v=>({...v,score:Number(values[v.key]||0)})).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'ko'));
+  let bestElement=null, growthElement=null;
+  const elems=[];
+  tasks.forEach(t=>t.details.forEach(d=>{const max=Number(d[2]||0),got=Number(d[1]||0);if(max>0)elems.push({label:d[0],ratio:got/max,got,max,task:t.index});}));
+  if(elems.length){bestElement=[...elems].sort((a,b)=>b.ratio-a.ratio||b.got-a.got)[0];growthElement=[...elems].sort((a,b)=>a.ratio-b.ratio||a.got-b.got)[0];}
+  return {tasks,complete,average,values,ranked,strengths:ranked.slice(0,2),growth:ranked[ranked.length-1],bestElement,growthElement};
+}
+function teamHowToHTML(){
+  return `<section class="team-transition-explainer">
+    <div class="team-transition-title"><span>다음 평가</span><h3>전공맞춤 직무상황 종합평가</h3><p>이번에는 혼자 정답을 찾는 문제가 아닙니다. <b>각자 다른 직무정보를 분석하고, 디지털 상황판에서 서로의 판단을 합쳐 최종 결정을 만드는 평가</b>입니다.</p></div>
+    <div class="team-how-grid">
+      <article><b>① 팀·역할 확인</b><span>같은 전공 3~5명 중심 랜덤팀 · 부족 역할은 겸임자료 자동배정</span></article>
+      <article><b>② 내 직무 분석</b><span>핵심정보 · 위험도 · 1차추천 · 근거 · 다른 담당자에게 할 질문 제출</span></article>
+      <article><b>③ 팀 상황판 교차검증</b><span>자리 이동 없이 조원의 근거와 질문이 내 휴대폰에 자동으로 모임</span></article>
+      <article><b>④ 돌발상황 재판단</b><span>새 조건이 공개되면 처음 생각을 고집하지 말고 근거를 다시 검토</span></article>
+      <article><b>⑤ 전원 최종의견</b><span>서기만 제출하지 않고 모든 조원이 직접 최종판단과 근거를 제출</span></article>
+    </div>
+    <div class="team-no-move-notice"><b>📱 자리 이동은 필요 없습니다.</b><span>교사가 단계별로 화면을 열면 각 자리에서 같은 팀의 정보가 자동 공유됩니다. 화면에 표시되는 조원 이름과 역할을 먼저 확인하세요.</span></div>
+  </section>`;
 }
 
 function comp() {
@@ -356,29 +435,30 @@ function panelScoresComplete(q,d) {
 
 function renderPanel(q, d) {
   const scores = d.lockedScores || d.scores;
-  const totals = q.candidates.map(c=>({id:c.id,total:candidateTotal(q,d,c.id)})).sort((a,b)=>b.total-a.total);
+  const L=q.panelLabels||{};
+  const totals = q.candidates.map(c=>({id:c.id,name:c.name,total:candidateTotal(q,d,c.id)})).sort((a,b)=>b.total-a.total);
   return `${practicalHeader(q, mine('practical', q.id))}
     <div class="work-context">${q.context}</div>
-    <section class="work-section"><div class="work-section-title"><span>01</span><div><b>평가기준 확인</b><small>모든 지원자에게 같은 배점을 적용합니다.</small></div></div>
+    <section class="work-section"><div class="work-section-title"><span>01</span><div><b>${L.criterionTitle||'평가기준 확인'}</b><small>${L.criterionHint||'모든 대상에 같은 배점을 적용합니다.'}</small></div></div>
       <div class="rubric-strip">${q.rubricFields.map(f=>`<span><b>${f.label}</b>${f.max}점</span>`).join('')}</div>
     </section>
-    <section class="work-section"><div class="work-section-title"><span>02</span><div><b>지원자료 채점</b><small>${d.revealed?'1차 채점이 확정되었습니다.':'지원자료만 보고 각 항목의 점수를 입력하세요.'}</small></div></div>
+    <section class="work-section"><div class="work-section-title"><span>02</span><div><b>${L.materialTitle||'평가자료 채점'}</b><small>${d.revealed?'1차 평가가 확정되었습니다.':(L.materialHint||'자료와 발표내용을 보고 각 항목의 점수를 입력하세요.')}</small></div></div>
       <div class="candidate-list">${q.candidates.map(c=>`<article class="candidate-card"><div class="candidate-head"><b>${c.name}</b><strong>${candidateTotal(q,d,c.id)}점</strong></div>
-        <div class="candidate-profile"><b>지원자료</b><p>${c.profile}</p></div>
-        <div class="candidate-speech"><span>🎤 실제 발표</span><p>“${c.speech}”</p></div>
+        <div class="candidate-profile"><b>${L.materialLabel||'평가자료'}</b><p>${c.profile}</p></div>
+        <div class="candidate-speech"><span>🎤 ${L.speechLabel||'현장 발표'}</span><p>“${c.speech}”</p></div>
         <div class="candidate-sliders">${q.rubricFields.map(f=>{const val=Number(scores?.[c.id]?.[f.key]||0);
           if(f.key==='presentation'){
-            return `<div class="presentation-eval"><div class="presentation-eval-head"><span><b>발표내용</b> · 위 발표 멘트를 읽고 직접 채점하세요.</span><strong><b data-score-label="${c.id}:${f.key}">${val}</b> / ${f.max}점</strong></div><div class="presentation-score-grid">${Array.from({length:f.max},(_,i)=>i+1).map(n=>`<button type="button" class="presentation-score-btn ${val===n?'selected':''}" data-presentation-score="${n}" data-candidate="${c.id}" data-field="${f.key}" ${d.revealed?'disabled':''}>${n}</button>`).join('')}</div></div>`;
+            return `<div class="presentation-eval"><div class="presentation-eval-head"><span><b>${L.presentationLabel||f.label}</b> · 위 발표 멘트를 읽고 직접 채점하세요.</span><strong><b data-score-label="${c.id}:${f.key}">${val}</b> / ${f.max}점</strong></div><div class="presentation-score-grid">${Array.from({length:f.max},(_,i)=>i+1).map(n=>`<button type="button" class="presentation-score-btn ${val===n?'selected':''}" data-presentation-score="${n}" data-candidate="${c.id}" data-field="${f.key}" ${d.revealed?'disabled':''}>${n}</button>`).join('')}</div></div>`;
           }
           return `<label><span>${f.label}<b data-score-label="${c.id}:${f.key}">${val}</b> / ${f.max}</span><input type="range" min="0" max="${f.max}" step="1" value="${val}" data-candidate="${c.id}" data-field="${f.key}" ${d.revealed?'disabled':''}></label>`}).join('')}</div></article>`).join('')}</div>
-      ${!d.revealed?`<button id="revealRelationBtn" class="btn soft large full" ${panelScoresComplete(q,d)?'':'disabled'}>1차 채점 확정 → 추가정보 확인</button>`:`<div class="work-alert"><b>⚠️ 추가정보</b><span>${q.extraInfo}</span></div>`}
+      ${!d.revealed?`<button id="revealRelationBtn" class="btn soft large full" ${panelScoresComplete(q,d)?'':'disabled'}>${L.revealButton||'1차 평가 확정 → 추가정보 확인'}</button>`:`<div class="work-alert"><b>${L.extraTitle||'⚠️ 추가정보'}</b><span>${q.extraInfo}</span></div>`}
     </section>
-    ${d.revealed?`<section class="work-section"><div class="work-section-title"><span>03</span><div><b>이해관계 상황 처리</b><small>1차 점수는 잠겼습니다. 이제 처리방식을 결정하세요.</small></div></div>
-      <div class="locked-result">현재 1위 <b>지원자 ${totals[0]?.id}</b> · ${totals[0]?.total||0}점 <small>동점이면 교사의 추가 절차에 따릅니다.</small></div>
+    ${d.revealed?`<section class="work-section"><div class="work-section-title"><span>03</span><div><b>${L.decisionTitle||'추가정보 반영 원칙'}</b><small>${L.decisionHint||'1차 점수는 잠겼습니다. 기존 기준을 유지할지 판단하세요.'}</small></div></div>
+      <div class="locked-result">${L.leaderLabel||'현재 1위'} <b>${totals[0]?.name || ((L.leaderNoun||'대안')+' '+(totals[0]?.id||''))}</b> · ${totals[0]?.total||0}점 <small>동점이면 교사의 추가 절차에 따릅니다.</small></div>
       <div class="response-list">${q.responses.map((x,i)=>`<button type="button" class="response-card ${d.response!==null&&Number(d.response)===i?'selected':''}" data-response="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div>
-      <label class="work-label" for="panelReason">최종 판단근거</label>
-      <div class="required-note ${String(d.reason||'').trim().length>=10?'ok':''}">※ 필수 · 최종 판단근거를 <b>10글자 이상</b> 작성해야 제출할 수 있습니다. <span>현재 ${String(d.reason||'').trim().length}/10자</span></div>
-      <textarea id="panelReason" class="work-textarea" maxlength="300" placeholder="친분 관계와 평가기준을 어떻게 다뤘는지 근거를 적어보세요.">${escapeHTML(d.reason)}</textarea>
+      <label class="work-label" for="panelReason">${L.reasonLabel||'최종 판단근거'}</label>
+      <div class="required-note ${String(d.reason||'').trim().length>=10?'ok':''}">※ 필수 · ${L.reasonLabel||'최종 판단근거'}를 <b>10글자 이상</b> 작성해야 제출할 수 있습니다. <span>현재 ${String(d.reason||'').trim().length}/10자</span></div>
+      <textarea id="panelReason" class="work-textarea" maxlength="300" placeholder="${L.reasonPlaceholder||'추가정보와 기존 평가기준을 어떻게 반영했는지 적어보세요.'}">${escapeHTML(d.reason)}</textarea>
     </section>`:''}`;
 }
 
@@ -505,7 +585,7 @@ function teamScorecardHTML(){
   return `<section class="team-score-card"><div class="work-result-head"><div><span>${me?.teamLabel||'우리 팀'} 종합작업 결과</span><h3>팀 종합판단 80% + 개인 직무기여 20%</h3></div><strong>${composite}<small>/100</small></strong></div><div class="team-score-formula"><span>팀 종합판단 <b>${pub.teamScore}</b></span><span>개인 직무기여 <b>${memberEv.score}</b></span><span>개인 반영점수 <b>${composite}</b></span></div>${scoreRowsHTML(pub.details||[])}${pub.consensus?`<div class="consensus-result"><b>팀 최종의견 분포</b>${Object.entries(pub.consensus).map(([k,v])=>`<span>${escapeHTML(vendorName(k))} <strong>${v}명</strong></span>`).join('')}</div>`:''}<div class="feedback info"><b>종합평가의 의미</b><br>역할별 직무분석, 디지털 상황판을 통한 교차검증, 돌발상황 이후 각자의 최종판단과 팀 합의도를 함께 평가했습니다.</div></section>`;
 }
 function renderTeam(){
-  if(!me?.teamId) return waiting('팀 편성 대기','교사가 직무상황 종합평가용 팀을 편성하고 있습니다. 팀은 전공분야 안에서 무작위로 편성됩니다.');
+  if(!me?.teamId) return `<span class="stage-tag">직무상황 종합평가 시작</span><h2>이번 평가는 이렇게 진행합니다.</h2>${teamHowToHTML()}${waiting('팀 편성 대기','교사가 전공분야 안에서 랜덤팀을 편성하면 조원 이름과 나의 직무가 자동으로 표시됩니다.')}`;
   const phase=control?.teamPhase||'briefing';
   const phaseLabel={briefing:'① 개인 직무분석',board:'② 디지털 상황판',twist:'③ 돌발상황',decision:'④ 전원 최종판단',scored:'⑤ 결과공개'}[phase]||'팀 실기';
   let body='';
@@ -514,7 +594,7 @@ function renderTeam(){
   if(phase==='twist') body=`${teamBoardHTML()}<div class="work-alert team-twist"><b>⚠️ 돌발상황 공개</b><span>${C.team.twist}</span></div><div class="feedback info"><b>지금 할 일</b><br>처음 내가 선택한 1차 추천과 달라져도 괜찮습니다. 팀 상황판의 다른 직무정보와 새 조건이 내 판단을 어떻게 바꾸는지 검토하세요.</div>`;
   if(phase==='decision') body=`${teamBoardHTML()}<div class="work-alert team-twist"><b>⚠️ 돌발상황</b><span>${C.team.twist}</span></div>${teamDecisionHTML()}`;
   if(phase==='scored') body=`${teamBoardHTML()}${teamScorecardHTML()}`;
-  return `<div class="work-exam-head"><div><span class="stage-tag">직무상황 종합평가 · 무이동 디지털 협업</span><h2>${C.team.title}</h2><p>${C.team.objective}</p></div><div class="work-code"><small>과제번호</small><b>${C.team.code}</b></div></div>${teamRosterHTML()}<div class="team-phase-banner"><b>${me.teamLabel||me.teamId}</b><span>${phaseLabel}</span><small>${me.teamRoleName||''}</small></div><div class="work-context">${C.team.context}</div>${body}`;
+  return `<div class="work-exam-head"><div><span class="stage-tag">직무상황 종합평가 · 무이동 디지털 협업</span><h2>${C.team.title}</h2><p>${C.team.objective}</p></div><div class="work-code"><small>과제번호</small><b>${C.team.code}</b></div></div><div class="team-compact-flow"><span class="${phase==='briefing'?'active':''}">① 내 직무</span><span class="${phase==='board'?'active':''}">② 상황판</span><span class="${phase==='twist'?'active':''}">③ 돌발상황</span><span class="${phase==='decision'?'active':''}">④ 최종판단</span><span class="${phase==='scored'?'active':''}">⑤ 결과</span></div>${teamRosterHTML()}<div class="team-phase-banner"><b>${me.teamLabel||me.teamId}</b><span>${phaseLabel}</span><small>${me.teamRoleName||''}</small></div><div class="work-context">${C.team.context}</div>${body}`;
 }
 function bindTeam(){
   document.querySelectorAll('[data-team-role-choice]').forEach(b=>b.onclick=()=>{teamRoleDraft.choice=Number(b.dataset.teamRoleChoice);render();});
@@ -593,9 +673,37 @@ function render() {
         : ''}`;
   }
 
+  if (stage === 'writtenFeedback') {
+    const f=writtenFeedbackModel();
+    const growth=f.growth;
+    h = `<span class="stage-tag">필기평가 완료 · 1차 피드백</span>
+      <div class="written-feedback-hero">
+        <div><span>WRITTEN → PRACTICAL</span><h2>필기는 끝났습니다.<br>이제 <em>직접 처리하는 실기</em>로 넘어갑니다.</h2><p>필기에서 드러난 6대 청렴역량을 잠깐 확인하고, 다음 작업에서 무엇을 의식할지 정리해보세요.</p></div>
+        <div class="written-result-ring"><b>${f.correct}</b><span>/ ${C.written.length} 정답</span></div>
+      </div>
+      <div class="written-feedback-bars">${C.virtues.map(v=>{const x=f.values[v.key]||0;return `<div class="written-feedback-row"><div><b>${v.name}</b><span>${v.tag}</span></div><div class="written-feedback-track"><i style="width:${x}%"></i></div><strong>${x}</strong></div>`}).join('')}</div>
+      <div class="written-feedback-cards">
+        <article class="written-strength"><span>✓ 잘하고 있어요</span><h3>${f.strengths.map(x=>`${x.name} ${x.score}`).join(' · ')}</h3><p>${f.strengths[0]?.desc||'필기에서 강점이 확인되었습니다.'}</p></article>
+        <article class="written-growth"><span>→ 실기에서 더 연습해볼 점</span><h3>${growth?.name||'청렴역량'} ${growth?.score||0}</h3><p>${writtenCoaching[growth?.key]||'다음 실기에서는 판단근거와 기록을 더 구체적으로 남겨보세요.'}</p></article>
+      </div>
+      <div class="written-to-practical"><b>화면 전환 안내</b><div><span><strong>필기</strong> 상황을 읽고 보기에서 판단</span><em>→</em><span><strong>실기</strong> 지급자료 확인 → 기준 설정 → 실제 처리 → 기록 제출</span></div><small>교사가 작업형 실기를 시작하면 화면이 자동으로 전환됩니다.</small></div>`;
+  }
+
   if (stage === 'practical') {
     const ex = mine('practical', q.id);
     h = renderPractical(q, ex);
+  }
+
+  if (stage === 'practicalFeedback') {
+    const f=practicalFeedbackModel(), growth=f.growth;
+    h = `<span class="stage-tag">작업형 실기 완료 · 2차 피드백</span>
+      <div class="practical-feedback-hero"><div><span>PRACTICAL → TEAM PRACTICAL</span><h2>개인 실기는 끝났습니다.<br>이제 <em>함께 판단하는 종합평가</em>로 넘어갑니다.</h2><p>세 작업에서 어떤 수행이 강했고, 다음 팀 의사결정에서 무엇을 더 의식하면 좋을지 확인해보세요.</p></div><div class="practical-result-ring"><b>${f.average}</b><span>실기 평균</span><small>${f.complete}/${C.practical.length} 제출</small></div></div>
+      <div class="practical-feedback-tasks">${f.tasks.map(x=>`<article class="${x.answered?'done':'missing'}"><span>P-0${x.index}</span><b>${x.answered?x.score:0}</b><small>${x.answered?'100점 기준':'미제출 · 0점'}</small></article>`).join('')}</div>
+      <div class="feedback-section-label"><b>필기 + 개인실기 반영 · 2차 청렴역량</b><span>최종 점수는 종합평가까지 마친 뒤 다시 산출됩니다.</span></div>
+      <div class="written-feedback-bars">${C.virtues.map(v=>{const x=f.values[v.key]||0;return `<div class="written-feedback-row"><div><b>${v.name}</b><span>${v.tag}</span></div><div class="written-feedback-track"><i style="width:${x}%"></i></div><strong>${x}</strong></div>`}).join('')}</div>
+      <div class="written-feedback-cards"><article class="written-strength"><span>✓ 실기에서 잘하고 있어요</span><h3>${f.strengths.map(x=>`${x.name} ${x.score}`).join(' · ')}</h3><p>${f.bestElement?`특히 P-0${f.bestElement.task}의 ‘${f.bestElement.label}’ 수행이 안정적이었습니다.`:'제출한 작업을 기준에 따라 끝까지 수행했습니다.'}</p></article><article class="written-growth"><span>→ 종합평가에서 더 해볼 점</span><h3>${growth?.name||'청렴역량'} ${growth?.score||0}</h3><p>${practicalCoaching[growth?.key]||'다른 직무의 정보를 확인하고 새 조건을 반영해 판단근거를 더 구체적으로 남겨보세요.'}</p></article></div>
+      ${teamHowToHTML()}
+      <div class="transition-wait"><b>교사의 안내를 기다려주세요.</b><span>교사가 ‘전공맞춤 직무상황 종합평가’를 시작하면 화면이 자동으로 전환됩니다.</span></div>`;
   }
 
   if (stage === 'team') { h = renderTeam(); }
@@ -854,7 +962,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v8.3 가독성·교사UI';
+    $('#studentStatus').textContent = '실시간 연결 · v8.5 실기피드백·종합평가전환';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

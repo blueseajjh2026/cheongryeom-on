@@ -35,7 +35,9 @@ const stageCharacter = {
   waiting: 'character-greeting.png',
   intro: 'character-explain.png',
   written: 'character-warning.png',
+  writtenFeedback: 'character-best.png',
   practical: 'character-tablet.png',
+  practicalFeedback: 'character-best.png',
   team: 'character-together.png',
   diagnosis: 'character-best.png',
   pledge: 'character-love.png',
@@ -143,6 +145,62 @@ function bars(labels, list) {
   }).join('');
 }
 
+const teacherWrittenCoaching = {
+  honesty:'사실·수치·기록을 그대로 확인하고 보고하는 연습',
+  promise:'시간 압박 속에서도 절차·기한·안전기준을 지키는 연습',
+  care:'결정이 동료·고객·사용자·생명·환경에 미치는 영향까지 보는 연습',
+  responsibility:'발견 → 보고 → 조치 → 기록까지 끝까지 완성하는 연습',
+  restraint:'친분·선물·개인 편의를 직무판단에서 분리하는 연습',
+  fairness:'공개된 기준을 세우고 누구에게나 동일하게 적용하는 연습'
+};
+function writtenCompForUser(uid){
+  const sums=Object.fromEntries(C.virtues.map(v=>[v.key,{s:0,n:0}]));
+  const tr=trackForUid(uid);
+  tr.written.forEach(q=>{const a=answers?.written?.[q.id]?.[uid];if(!a)return;Object.entries(q.impact||{}).forEach(([k,v])=>{if(!sums[k])return;sums[k].s+=(a.choice===q.correct?v:Math.round(v*.3));sums[k].n++;});});
+  return Object.fromEntries(Object.entries(sums).map(([k,v])=>[k,v.n?Math.round(v.s/v.n):0]));
+}
+function writtenFeedbackForUser(uid){
+  const tr=trackForUid(uid), values=writtenCompForUser(uid);
+  let answered=0,correct=0;tr.written.forEach(q=>{const a=answers?.written?.[q.id]?.[uid];if(a)answered++;if(a?.choice===q.correct)correct++;});
+  const ranked=C.virtues.map(v=>({...v,score:Number(values[v.key]||0)})).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'ko'));
+  return {values,answered,correct,strengths:ranked.slice(0,2),growth:ranked[ranked.length-1]};
+}
+function writtenClassValues(){
+  const ids=Object.keys(participants||{}), out=Object.fromEntries(C.virtues.map(v=>[v.key,0]));
+  ids.forEach(uid=>{const c=writtenCompForUser(uid);C.virtues.forEach(v=>out[v.key]+=c[v.key]||0);});
+  C.virtues.forEach(v=>out[v.key]=ids.length?Math.round(out[v.key]/ids.length):0);return out;
+}
+
+const teacherPracticalCoaching = {
+  honesty:'종합평가에서 사실·수치·기록을 다른 의견과 구분해 정확히 활용하도록 안내',
+  promise:'납기·안전·보안·위생 등 반드시 지켜야 할 기준을 먼저 찾도록 안내',
+  care:'다른 부서·고객·사용자에게 미치는 영향까지 함께 비교하도록 안내',
+  responsibility:'문제발견 → 질문 → 새정보 반영 → 최종근거 기록까지 완성하도록 안내',
+  restraint:'친분·상급자 선호·개인 편의를 공개된 직무기준과 분리하도록 안내',
+  fairness:'조원 의견이 달라도 같은 기준을 적용하고 판단변경 이유를 설명하도록 안내'
+};
+function preTeamCompForUser(uid){
+  const sums=Object.fromEntries(C.virtues.map(v=>[v.key,{s:0,n:0}])); const tr=trackForUid(uid);
+  tr.written.forEach(q=>{const a=answers?.written?.[q.id]?.[uid];if(!a)return;Object.entries(q.impact||{}).forEach(([k,v])=>{if(!sums[k])return;sums[k].s+=(a.choice===q.correct?v:Math.round(v*.3));sums[k].n++;});});
+  tr.practical.forEach(q=>{const a=answers?.practical?.[q.id]?.[uid];if(!a)return;const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);Object.entries(ev.impact||{}).forEach(([k,v])=>{if(!sums[k])return;sums[k].s+=Number(v||0);sums[k].n++;});});
+  return Object.fromEntries(Object.entries(sums).map(([k,v])=>[k,v.n?Math.round(v.s/v.n):0]));
+}
+function practicalFeedbackForUser(uid){
+  const tr=trackForUid(uid); const values=preTeamCompForUser(uid);
+  const tasks=tr.practical.map((q,i)=>{const a=answers?.practical?.[q.id]?.[uid];const ev=a?CHEONGRYEOM_EVALUATE_PRACTICAL(q,a):{score:0,details:[]};return {index:i+1,answered:!!a,score:a?ev.score:0,details:ev.details||[]};});
+  const average=Math.round(tasks.reduce((a,b)=>a+b.score,0)/Math.max(1,tr.practical.length));
+  const ranked=C.virtues.map(v=>({...v,score:Number(values[v.key]||0)})).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'ko'));
+  return {tasks,average,complete:tasks.filter(x=>x.answered).length,values,strengths:ranked.slice(0,2),growth:ranked[ranked.length-1]};
+}
+function practicalClassValues(){
+  const ids=Object.keys(participants||{}), out=Object.fromEntries(C.virtues.map(v=>[v.key,0]));
+  ids.forEach(uid=>{const c=preTeamCompForUser(uid);C.virtues.forEach(v=>out[v.key]+=c[v.key]||0);});
+  C.virtues.forEach(v=>out[v.key]=ids.length?Math.round(out[v.key]/ids.length):0);return out;
+}
+function teacherTeamHowToHTML(){
+  return `<div class="teacher-team-how"><header><span>다음 평가 운영방법</span><h3>전공맞춤 직무상황 종합평가 · 무이동 디지털 직무회의</h3><p>학생은 자리를 옮겨 한 명에게 의견을 몰아주는 방식이 아니라, 각자 다른 직무정보를 분석해 제출하고 시스템이 같은 팀의 판단을 자동으로 결합합니다.</p></header><div class="teacher-team-how-grid"><span><b>① 랜덤 팀 편성</b>같은 전공 3~5명 중심 · 부족 역할 겸임</span><span><b>② 개인분석 → 상황판</b>근거·위험도·1차추천·확인질문 자동 취합</span><span><b>③ 돌발상황</b>새 조건을 전원에게 동시 공개</span><span><b>④ 전원 최종판단</b>다른 조원의 정보를 실제로 활용해 각자 제출</span><span><b>⑤ 채점·피드백</b>팀 판단 80% + 개인 직무기여 20%</span></div></div>`;
+}
+
 function compForUser(uid) {
   const sums=Object.fromEntries(C.virtues.map(v=>[v.key,{s:0,n:0}]));
   const tr=trackForUid(uid);
@@ -188,7 +246,7 @@ function renderClassComp() {
   const vals = Object.fromEntries(C.virtues.map(v => [v.key, 0]));
 
   ids.forEach(id => {
-    const c = compForUser(id);
+    const c = control.stage==='writtenFeedback' ? writtenCompForUser(id) : control.stage==='practicalFeedback' ? preTeamCompForUser(id) : compForUser(id);
     C.virtues.forEach(v => vals[v.key] += c[v.key] || 0);
   });
 
@@ -373,6 +431,17 @@ function renderContent() {
       <div class="teacher-track-question-grid">${C.trackList.map(tl=>{const q=trackForKey(tl.key).written[idx];return `<article class="teacher-track-question"><div><span>${tl.icon}</span><b>${tl.short}</b></div><p>${q.q}</p>${control.reveal?`<small><strong>정답 ${String.fromCharCode(65+q.correct)}</strong> · ${q.ex}</small>`:''}</article>`}).join('')}</div>`;
   }
 
+  if (control.stage === 'writtenFeedback') {
+    const cv=writtenClassValues();
+    const ranked=C.virtues.map(v=>({...v,score:cv[v.key]||0})).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'ko'));
+    const complete=Object.keys(participants||{}).filter(uid=>writtenFeedbackForUser(uid).answered===trackForUid(uid).written.length).length;
+    h = `<span class="eyebrow">WRITTEN RESULT · TRANSITION FEEDBACK</span>
+      <h2>필기 종료 · 실기 전환 피드백</h2>
+      <p class="context-box"><b>주의환기 단계</b>입니다. 학생 화면에는 필기에서 확인된 6대 청렴역량 수치, 강점 2개, 실기에서 더 연습할 역량 1개가 표시됩니다. 다음 단계부터는 보기 선택이 아니라 <b>지급자료 확인 → 기준 설정 → 실제 처리 → 기록 제출</b> 방식으로 전환됩니다.</p>
+      <div class="teacher-feedback-summary"><div><span>필기 완료</span><b>${complete}/${Object.keys(participants||{}).length}명</b></div><div><span>학급 강점</span><b>${ranked[0]?.name||'-'} ${ranked[0]?.score||0}</b></div><div><span>성장 포인트</span><b>${ranked[ranked.length-1]?.name||'-'} ${ranked[ranked.length-1]?.score||0}</b></div></div>
+      <div class="teacher-transition-guide"><b>다음 단계</b><strong>전공맞춤 작업형 실기 P-01 시작</strong><span>학생들이 피드백을 확인한 뒤 ‘다음 단계 →’를 눌러주세요.</span></div>`;
+  }
+
   if (control.stage === 'practical') {
     const q0=trackForKey('business').practical[idx];
     h = `<span class="eyebrow">5-TRACK WORK-BASED PRACTICAL · P-0${idx+1}</span>
@@ -382,8 +451,21 @@ function renderContent() {
       <div class="teacher-track-practical-grid">${C.trackList.map(tl=>{const q=trackForKey(tl.key).practical[idx];return `<article class="teacher-track-practical"><div><span>${tl.icon}</span><b>${tl.short}</b></div><h3>${q.title}</h3><p>${q.context}</p><small>${q.rubric.join(' · ')}</small></article>`}).join('')}</div>`;
   }
 
+  if (control.stage === 'practicalFeedback') {
+    const ids=Object.keys(participants||{}), rows=ids.map(uid=>({uid,f:practicalFeedbackForUser(uid)}));
+    const complete=rows.filter(x=>x.f.complete===trackForUid(x.uid).practical.length).length;
+    const avg=rows.length?Math.round(rows.reduce((a,b)=>a+b.f.average,0)/rows.length):0;
+    const cv=practicalClassValues(), ranked=C.virtues.map(v=>({...v,score:cv[v.key]||0})).sort((a,b)=>b.score-a.score||a.name.localeCompare(b.name,'ko'));
+    h = `<span class="eyebrow">PRACTICAL RESULT · TEAM TRANSITION</span>
+      <h2>개인 작업형 실기 종료 · 종합평가 전환 피드백</h2>
+      <p class="context-box"><b>두 번째 주의환기 단계</b>입니다. 학생 화면에는 P-01~P-03 점수, 필기+개인실기까지 반영한 6대 청렴역량, 잘한 점과 다음 종합평가에서 더 연습할 점이 표시됩니다.</p>
+      <div class="teacher-feedback-summary"><div><span>실기 3과제 완료</span><b>${complete}/${ids.length}명</b></div><div><span>학급 실기평균</span><b>${avg}점</b></div><div><span>종합평가 성장 포인트</span><b>${ranked[ranked.length-1]?.name||'-'} ${ranked[ranked.length-1]?.score||0}</b></div></div>
+      ${teacherTeamHowToHTML()}
+      <div class="teacher-transition-guide"><b>다음 단계</b><strong>전공맞춤 직무상황 종합평가 시작</strong><span>학생들이 피드백과 진행방법을 확인한 뒤 ‘다음 단계 →’를 눌러주세요.</span></div>`;
+  }
+
   if (control.stage === 'team') {
-    h = teamTeacherHTML();
+    h = `${teacherTeamHowToHTML()}${teamTeacherHTML()}`;
   }
 
   if (control.stage === 'diagnosis') {
@@ -446,6 +528,24 @@ function renderStats() {
     $('#responseChip').textContent=`${answered}/${ids.length}명 응답`;
     $('#statsArea').className='';
     $('#statsArea').innerHTML=`<div class="work-live-summary"><div><span>응답</span><b>${answered}</b><small>미응답 ${Math.max(0,ids.length-answered)}명</small></div><div><span>정답</span><b>${correct}</b><small>응답자 기준 ${answered?Math.round(correct/answered*100):0}%</small></div><div><span>전공분야</span><b>${Object.keys(byTrack).length}</b><small>맞춤문항 동시 진행</small></div></div><div class="track-stats">${C.trackList.map(tl=>{const x=byTrack[tl.key]||{n:0,a:0,c:0};return `<div><b>${tl.icon} ${tl.short}</b><span>${x.a}/${x.n} 응답 · 정답 ${x.c}</span></div>`}).join('')}</div>`;
+    return;
+  }
+
+  if (control.stage === 'writtenFeedback') {
+    const rows=ids.map(uid=>({uid,f:writtenFeedbackForUser(uid)}));
+    const complete=rows.filter(x=>x.f.answered===trackForUid(x.uid).written.length).length;
+    $('#responseChip').textContent=`${complete}/${ids.length}명 필기 완료`;
+    $('#statsArea').className='';
+    $('#statsArea').innerHTML=rows.length?`<div class="teacher-written-feedback-list">${rows.sort((a,b)=>String(participants[a.uid]?.studentName||'').localeCompare(String(participants[b.uid]?.studentName||''),'ko')).map(({uid,f})=>{const p=participants?.[uid]||{},g=f.growth;return `<article class="teacher-written-feedback-card"><header><div><b>${escapeHTML(p.studentName||'학생')}</b><span class="track-chip">${escapeHTML(p.trackName||'')}</span></div><strong>${f.correct}/${trackForUid(uid).written.length} 정답</strong></header><div class="teacher-mini-virtues">${C.virtues.map(v=>`<span><i>${v.name}</i><b>${f.values[v.key]||0}</b></span>`).join('')}</div><p class="feedback-strength"><b>잘하고 있어요</b> ${f.strengths.map(x=>`${x.name} ${x.score}`).join(' · ')}</p><p class="feedback-growth"><b>실기 성장 포인트</b> ${g?.name||'-'} ${g?.score||0} · ${escapeHTML(teacherWrittenCoaching[g?.key]||'판단근거를 구체적으로 기록하는 연습')}</p></article>`}).join('')}</div>`:'<div class="empty">등록한 학생이 없습니다.</div>';
+    return;
+  }
+
+  if (control.stage === 'practicalFeedback') {
+    const rows=ids.map(uid=>({uid,f:practicalFeedbackForUser(uid)}));
+    const complete=rows.filter(x=>x.f.complete===trackForUid(x.uid).practical.length).length;
+    $('#responseChip').textContent=`${complete}/${ids.length}명 실기 완료`;
+    $('#statsArea').className='';
+    $('#statsArea').innerHTML=rows.length?`<div class="teacher-written-feedback-list practical-feedback-list">${rows.sort((a,b)=>String(participants[a.uid]?.studentName||'').localeCompare(String(participants[b.uid]?.studentName||''),'ko')).map(({uid,f})=>{const p=participants?.[uid]||{},g=f.growth;return `<article class="teacher-written-feedback-card practical-student-feedback"><header><div><b>${escapeHTML(p.studentName||'학생')}</b><span class="track-chip">${escapeHTML(p.trackName||'')}</span></div><strong>실기 평균 ${f.average}점</strong></header><div class="teacher-practical-task-mini">${f.tasks.map(x=>`<span><i>P-0${x.index}</i><b>${x.score}</b><small>${x.answered?'제출':'미제출'}</small></span>`).join('')}</div><div class="teacher-mini-virtues">${C.virtues.map(v=>`<span><i>${v.name}</i><b>${f.values[v.key]||0}</b></span>`).join('')}</div><p class="feedback-strength"><b>잘하고 있어요</b> ${f.strengths.map(x=>`${x.name} ${x.score}`).join(' · ')}</p><p class="feedback-growth"><b>종합평가 포인트</b> ${g?.name||'-'} ${g?.score||0} · ${escapeHTML(teacherPracticalCoaching[g?.key]||'다른 직무정보를 활용해 최종근거를 설명하도록 안내')}</p></article>`}).join('')}</div>`:'<div class="empty">등록한 학생이 없습니다.</div>';
     return;
   }
 
@@ -652,7 +752,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = '실시간 서버 연결 · v8.3 Q-Net형 교사UI';
+    $('#serverStatus').textContent = '실시간 서버 연결 · v8.5 실기피드백·종합평가전환';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);

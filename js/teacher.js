@@ -49,10 +49,11 @@ function charBox(stage) {
 }
 
 function responseProgress(uid) {
-  let answered=0; const total=C.written.length+C.practical.length+1;
+  let answered=0; const total=C.written.length+C.practical.length+2;
   C.written.forEach(q=>{if(answers?.written?.[q.id]?.[uid])answered++;});
   C.practical.forEach(q=>{if(answers?.practical?.[q.id]?.[uid])answered++;});
   if(answers?.team?.role?.[uid])answered++;
+  if(answers?.team?.report?.[uid])answered++;
   return {answered,total};
 }
 
@@ -146,7 +147,7 @@ function compForUser(uid) {
   const tr=trackForUid(uid);
   tr.written.forEach(q=>{const a=answers?.written?.[q.id]?.[uid];if(!a)return;Object.entries(q.impact||{}).forEach(([k,v])=>{sums[k].s+=(a.choice===q.correct?v:Math.round(v*.3));sums[k].n++;});});
   tr.practical.forEach(q=>{const a=answers?.practical?.[q.id]?.[uid];if(!a)return;const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);Object.entries(ev.impact||{}).forEach(([k,v])=>{if(sums[k]){sums[k].s+=Number(v||0);sums[k].n++;}});});
-  const roleEv=CHEONGRYEOM_EVALUATE_TEAM_ROLE(tr.team,answers?.team?.role?.[uid]);
+  const roleEv=CHEONGRYEOM_EVALUATE_TEAM_MEMBER(tr.team,answers?.team?.role?.[uid],answers?.team?.report?.[uid]);
   Object.entries(roleEv.impact||{}).forEach(([k,v])=>{if(sums[k]){sums[k].s+=Number(v||0);sums[k].n++;}});
   const p=participants?.[uid]; const pub=p?.teamId?control?.teamScores?.[p.teamId]:null;
   Object.entries(pub?.impact||{}).forEach(([k,v])=>{if(sums[k]){sums[k].s+=Number(v||0);sums[k].n++;}});
@@ -204,10 +205,10 @@ function calcStudent(uid) {
   tr.written.forEach(q=>{const a=answers?.written?.[q.id]?.[uid];if(a)wa++;if(a?.choice===q.correct)wc++;});
   const w=Math.round(wc/tr.written.length*100); let ps=0,pa=0;const practicalTaskScores=[];
   tr.practical.forEach(q=>{const a=answers?.practical?.[q.id]?.[uid];const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);if(a)pa++;ps+=a?ev.score:0;practicalTaskScores.push(a?ev.score:0);});
-  const p=Math.round(ps/tr.practical.length);const roleEv=CHEONGRYEOM_EVALUATE_TEAM_ROLE(tr.team,answers?.team?.role?.[uid]);
+  const p=Math.round(ps/tr.practical.length);const roleEv=CHEONGRYEOM_EVALUATE_TEAM_MEMBER(tr.team,answers?.team?.role?.[uid],answers?.team?.report?.[uid]);
   const part=participants?.[uid]||{};const pub=part.teamId?control?.teamScores?.[part.teamId]:null;const teamBase=Number(pub?.teamScore||0);const teamScore=pub?Math.round(teamBase*.8+roleEv.score*.2):0;const pl=pledges?.[uid]?.text?100:0;
   const total=Math.round(w*S.writtenWeight/100+p*S.practicalWeight/100+teamScore*S.teamWeight/100+pl*S.pledgeWeight/100);const qualification=total>=S.leaderTotal&&p>=S.leaderPractical&&teamScore>=S.leaderTeam?'청렴 리더':'청렴 서포터';
-  const missingQuestions=(tr.written.length-wa)+(tr.practical.length-pa)+(answers?.team?.role?.[uid]?0:1);
+  const missingQuestions=(tr.written.length-wa)+(tr.practical.length-pa)+(answers?.team?.role?.[uid]?0:1)+(answers?.team?.report?.[uid]?0:1);
   return {uid,w,p,team:teamScore,teamBase,roleScore:roleEv.score,teamComplete:!!pub,pl,total,qualification,practicalTaskScores,missingQuestions};
 }
 
@@ -254,44 +255,75 @@ function updateTeacherTimer(){
 }
 
 
+function roleDuty(key){
+  return ({records:'규정·이해관계·기록 검증',finance:'예산·비용 타당성',purchase:'대안·거래조건 비교',operations:'현장기한·운영조건 판단',verify:'품질·안전·사적요소 검증'})[key]||'직무정보 분석';
+}
 function teamGroups(){
   const groups={}; Object.entries(participants||{}).forEach(([uid,p])=>{if(!p.teamId)return;(groups[p.teamId] ||= {id:p.teamId,label:p.teamLabel||p.teamId,trackKey:p.trackKey||'business',trackName:p.trackName||trackForKey(p.trackKey).name,members:[]}).members.push({uid,...p});});
   return Object.values(groups).sort((a,b)=>a.id.localeCompare(b.id,undefined,{numeric:true}));
 }
+function shuffled(arr){const a=[...arr];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+function preferredTeamSizes(n){
+  if(n<=5)return [n]; let best=null;
+  for(let k=Math.ceil(n/5);k<=Math.floor(n/3);k++){
+    const base=Math.floor(n/k),rem=n%k,sizes=Array.from({length:k},(_,i)=>base+(i<rem?1:0));
+    if(sizes.some(x=>x<3||x>5))continue;
+    const score=sizes.reduce((a,x)=>a+Math.abs(x-4),0);
+    if(!best||score<best.score||(score===best.score&&k<best.k))best={sizes,score,k};
+  }
+  return best?.sizes||[n];
+}
 async function assignTeams(){
   const entries=Object.entries(participants||{});if(!entries.length)return toast('먼저 학생이 입장해야 합니다.');
+  if(Object.keys(answers?.team?.role||{}).length) return toast('개인 직무분석 제출이 시작된 뒤에는 팀을 재편성할 수 없습니다.');
   const buckets={};entries.forEach(([uid,p])=>{const k=p.trackKey||'business';(buckets[k] ||= []).push(uid);});
   const teamRosters={};let teamNo=0;
-  for(const tl of C.trackList){const ids=(buckets[tl.key]||[]).sort((a,b)=>Number(participants[a]?.joinedAt||0)-Number(participants[b]?.joinedAt||0));if(!ids.length)continue;
-    const teamCount=Math.max(1,Math.round(ids.length/4)),base=Math.floor(ids.length/teamCount),rem=ids.length%teamCount;let pos=0;const teamDef=trackForKey(tl.key).team;
-    for(let ti=0;ti<teamCount;ti++){teamNo++;const size=base+(ti<rem?1:0);const teamId=`${tl.key}-T${ti+1}`,teamLabel=`${tl.short} ${ti+1}팀`;teamRosters[teamId]={teamId,teamLabel,trackKey:tl.key,trackName:tl.name,members:[]};
-      for(let j=0;j<size;j++){const uid=ids[pos++],rk=teamDef.roleOrder[Math.min(j,teamDef.roleOrder.length-1)],role=teamDef.roles[rk],studentName=participants[uid]?.studentName||'학생';
-        await DB.db.ref(`rooms/${code}/participants/${uid}`).update({teamId,teamLabel,teamSize:size,teamRoleKey:rk,teamRoleName:role.name});
-        teamRosters[teamId].members.push({uid,studentName,trackKey:tl.key,roleKey:rk,roleName:role.name,isRecorder:rk==='records'});
-      }
+  for(const tl of C.trackList){const ids=shuffled(buckets[tl.key]||[]);if(!ids.length)continue;const sizes=preferredTeamSizes(ids.length);let pos=0;const teamDef=trackForKey(tl.key).team;
+    for(let ti=0;ti<sizes.length;ti++){teamNo++;const size=sizes[ti],teamId=`${tl.key}-T${ti+1}`,teamLabel=`${tl.short} ${ti+1}팀`,members=[];
+      for(let j=0;j<size;j++){const uid=ids[pos++],rk=teamDef.roleOrder[Math.min(j,teamDef.roleOrder.length-1)],role=teamDef.roles[rk],studentName=participants[uid]?.studentName||'학생';members.push({uid,studentName,trackKey:tl.key,roleKey:rk,roleName:role.name,isRecorder:rk==='records',extraRoleKeys:[]});}
+      const assigned=new Set(members.map(x=>x.roleKey)); const missing=teamDef.roleOrder.filter(k=>!assigned.has(k));
+      missing.forEach((rk,i)=>{if(members.length)members[i%members.length].extraRoleKeys.push(rk);});
+      teamRosters[teamId]={teamId,teamLabel,trackKey:tl.key,trackName:tl.name,members};
+      for(const m of members){await DB.db.ref(`rooms/${code}/participants/${m.uid}`).update({teamId,teamLabel,teamSize:size,teamRoleKey:m.roleKey,teamRoleName:m.roleName,teamExtraRoleKeys:m.extraRoleKeys});}
     }
   }
-  await DB.setControl(code,{teamPhase:'briefing',teamScores:null,teamRosters});toast(`${teamNo}개 팀을 전공분야별로 편성했습니다. 학생 화면에 조원·역할·서기가 표시됩니다.`);
+  await DB.setControl(code,{teamPhase:'briefing',teamScores:null,teamBoards:null,teamRosters});toast(`${teamNo}개 팀을 무작위 편성했습니다. 학생은 자리 이동 없이 화면으로 협업합니다.`);
 }
-function teamReportAnswer(group){const recorder=group.members.find(m=>m.teamRoleKey==='records')||group.members[0];return recorder?answers?.team?.report?.[recorder.uid]:null;}
-function teamEval(group){
-  const members=group.members.map(m=>({roleKey:m.teamRoleKey,answer:answers?.team?.role?.[m.uid]}));
-  const report=teamReportAnswer(group); const teamDef=trackTeamForGroup(group); return CHEONGRYEOM_EVALUATE_TEAM_REPORT(teamDef,report,members);
+function teamRoleAnswer(uid){return answers?.team?.role?.[uid]||null;}
+function teamFinalAnswer(uid){return answers?.team?.report?.[uid]||null;}
+function buildTeamBoards(){
+  const boards={};
+  teamGroups().forEach(g=>{const teamDef=trackTeamForGroup(g);boards[g.id]={teamId:g.id,teamLabel:g.label,trackKey:g.trackKey,trackName:g.trackName,updatedAt:Date.now(),members:g.members.map(m=>{const a=teamRoleAnswer(m.uid),w=a?.work||{},role=teamDef.roles?.[m.teamRoleKey];return {uid:m.uid,studentName:m.studentName,roleKey:m.teamRoleKey,roleName:m.teamRoleName,roleSubmitted:!!a,reportSubmitted:!!teamFinalAnswer(m.uid),coreJudgment:a&&role?role.options?.[Number(a.choice)]||'':'',riskLevel:w.riskLevel||'',preliminaryVendor:w.preliminaryVendor||'',note:w.note||'',question:w.question||'',extraRoleNames:(m.teamExtraRoleKeys||[]).map(k=>teamDef.roles?.[k]?.name).filter(Boolean)};})};});
+  return boards;
 }
-async function setTeamPhase(phase){if(!teamGroups().length)return toast('먼저 팀을 편성해주세요.');await DB.setControl(code,{teamPhase:phase});}
+let lastTeamBoardHash='',teamBoardSyncing=false;
+async function syncTeamBoards(force=false){
+  if(teamBoardSyncing||!teamGroups().length)return; const phase=control?.teamPhase||'briefing'; if(!force&&!['board','twist','decision'].includes(phase))return;
+  const boards=buildTeamBoards();const stable=JSON.stringify(boards,(k,v)=>k==='updatedAt'?0:v);if(!force&&stable===lastTeamBoardHash)return;lastTeamBoardHash=stable;teamBoardSyncing=true;
+  try{await DB.setControl(code,{teamBoards:boards});}finally{teamBoardSyncing=false;}
+}
+function teamMemberPackets(group){return group.members.map(m=>({uid:m.uid,roleKey:m.teamRoleKey,answer:teamRoleAnswer(m.uid)}));}
+function teamReportPackets(group){return group.members.map(m=>({uid:m.uid,answer:teamFinalAnswer(m.uid)}));}
+function teamEval(group){const teamDef=trackTeamForGroup(group);return CHEONGRYEOM_EVALUATE_TEAM_REPORT(teamDef,teamReportPackets(group),teamMemberPackets(group));}
+async function setTeamPhase(phase){
+  if(!teamGroups().length)return toast('먼저 팀을 편성해주세요.');
+  if(phase==='board'&&Object.keys(answers?.team?.role||{}).length===0)return toast('아직 제출된 개인 직무분석이 없습니다.');
+  const update={teamPhase:phase}; if(['board','twist','decision'].includes(phase))update.teamBoards=buildTeamBoards(); await DB.setControl(code,update);
+}
 async function publishTeamScores(){
   const groups=teamGroups(); if(!groups.length)return toast('먼저 팀을 편성해주세요.');
-  const scores={}; groups.forEach(g=>{const ev=teamEval(g);scores[g.id]={teamLabel:g.label,trackKey:g.trackKey,trackName:g.trackName,teamScore:ev.score,details:ev.details,impact:ev.impact,reportSubmitted:!!teamReportAnswer(g),publishedAt:Date.now()};});
-  await DB.setControl(code,{teamPhase:'scored',teamScores:scores}); toast('팀 작업결과를 채점·공개했습니다.');
+  const scores={};groups.forEach(g=>{const ev=teamEval(g);scores[g.id]={teamLabel:g.label,trackKey:g.trackKey,trackName:g.trackName,teamScore:ev.score,details:ev.details,impact:ev.impact,consensus:ev.consensus||{},submitted:ev.submitted||0,memberCount:g.members.length,publishedAt:Date.now()};});
+  await DB.setControl(code,{teamPhase:'scored',teamScores:scores,teamBoards:buildTeamBoards()});toast('전원 최종의견과 팀 합의도를 종합해 결과를 공개했습니다.');
 }
 function teamTeacherHTML(){
- const groups=teamGroups(),phase=control?.teamPhase||'briefing';const phaseNames={briefing:'분산정보 공유',twist:'돌발상황 공개',report:'최종보고서 작성',scored:'채점·결과공개'};
- return `<span class="eyebrow">5-TRACK VOCATIONAL TEAM PRACTICAL</span><h2>전공맞춤 직무상황 종합평가</h2><p class="context-box">학생의 전공분야를 기준으로 같은 분야끼리 우선 팀을 편성합니다. 각 팀은 해당 전공의 실제 직무상황에서 역할별 분산정보를 공유하고 돌발상황에 대응합니다.</p><div class="team-teacher-controls"><button id="assignTeamsBtn" class="btn soft">${groups.length?'전공별 팀 재편성':'① 전공별 팀 자동편성'}</button><button id="teamTwistBtn" class="btn outline" ${!groups.length?'disabled':''}>② 돌발상황 공개</button><button id="teamReportBtn" class="btn outline" ${!groups.length?'disabled':''}>③ 최종보고서 작성</button><button id="teamScoreBtn" class="btn primary" ${!groups.length?'disabled':''}>④ 팀 채점·결과공개</button></div><div class="team-phase-teacher"><b>현재 단계</b><span>${phaseNames[phase]||phase}</span></div>${groups.length?`<div class="team-group-list">${groups.map(g=>{const teamDef=trackTeamForGroup(g),roles=g.members.filter(m=>answers?.team?.role?.[m.uid]).length,report=!!teamReportAnswer(g),pub=control?.teamScores?.[g.id];return `<article class="team-group-card"><div class="team-group-head"><div><span class="team-track-title">${g.trackName}</span><b>${g.label}</b></div><span>${g.members.length}명</span>${pub?`<strong>${pub.teamScore}점</strong>`:''}</div><p class="context-box" style="margin:8px 0">${teamDef.title}<br><small>${teamDef.context}</small></p><div class="team-members">${g.members.map(m=>`<span><b>${m.studentName}</b><small>${m.teamRoleName}${answers?.team?.role?.[m.uid]?' · ✓공유':''}</small></span>`).join('')}</div><div class="team-group-foot">역할정보 공유 ${roles}/${g.members.length} · 최종보고서 ${report?'제출':'미제출'}</div>${pub?`<div class="teacher-team-score">${pub.details.map(d=>`<span>${d[0]} <b>${d[1]}/${d[2]}</b></span>`).join('')}</div>`:''}</article>`}).join('')}</div>`:`<div class="empty">학생이 전공분야를 선택해 입장한 뒤 ‘전공별 팀 자동편성’을 눌러주세요.</div>`}`;
+ const groups=teamGroups(),phase=control?.teamPhase||'briefing';const phaseNames={briefing:'개인 직무분석',board:'디지털 팀 상황판',twist:'돌발상황 공개',decision:'전원 최종판단',scored:'채점·결과공개'};
+ return `<span class="eyebrow">5-TRACK VOCATIONAL DIGITAL COMMITTEE</span><h2>전공맞춤 직무상황 종합평가</h2><p class="context-box"><b>무이동 디지털 직무회의 방식</b>입니다. 같은 전공 학생을 무작위로 3~5명 중심으로 편성하고, 인원이 맞지 않으면 누락 역할을 기존 조원에게 ‘겸임 직무자료’로 자동 배정합니다. 학생은 자기 자리에서 분석을 제출하고, 모든 의견은 팀 상황판으로 자동 취합됩니다.</p><div class="team-teacher-controls five-step"><button id="assignTeamsBtn" class="btn soft">① 랜덤 팀 편성</button><button id="teamBoardBtn" class="btn outline" ${!groups.length?'disabled':''}>② 팀 상황판 공개</button><button id="teamTwistBtn" class="btn outline" ${!groups.length?'disabled':''}>③ 돌발상황 공개</button><button id="teamDecisionBtn" class="btn outline" ${!groups.length?'disabled':''}>④ 전원 최종판단</button><button id="teamScoreBtn" class="btn primary" ${!groups.length?'disabled':''}>⑤ 채점·결과공개</button></div><div class="team-phase-teacher"><b>현재 단계</b><span>${phaseNames[phase]||phase}</span></div>${groups.length?`<div class="team-group-list">${groups.map(g=>{const teamDef=trackTeamForGroup(g),roleDone=g.members.filter(m=>teamRoleAnswer(m.uid)).length,finalDone=g.members.filter(m=>teamFinalAnswer(m.uid)).length,pub=control?.teamScores?.[g.id],dist={};g.members.forEach(m=>{const v=teamFinalAnswer(m.uid)?.work?.vendor;if(v)dist[v]=(dist[v]||0)+1;});return `<article class="team-group-card"><div class="team-group-head"><div><span class="team-track-title">${g.trackName}</span><b>${g.label}</b></div><span>${g.members.length}명</span>${pub?`<strong>${pub.teamScore}점</strong>`:''}</div><p class="context-box" style="margin:8px 0">${teamDef.title}<br><small>${teamDef.context}</small></p><div class="team-members detailed">${g.members.map(m=>{const ra=teamRoleAnswer(m.uid),w=ra?.work||{};return `<span><b>${m.studentName}</b><small>${m.teamRoleName} · ${roleDuty(m.teamRoleKey)}</small>${m.teamExtraRoleKeys?.length?`<em>겸임 ${m.teamExtraRoleKeys.map(k=>teamDef.roles?.[k]?.name).filter(Boolean).join(' · ')}</em>`:''}<i>${ra?`✓ 분석 · 1차 ${w.preliminaryVendor||'보류'}`:'분석 대기'}${teamFinalAnswer(m.uid)?' · ✓ 최종':''}</i></span>`}).join('')}</div><div class="team-group-foot">개인 직무분석 <b>${roleDone}/${g.members.length}</b> · 최종위원 의견 <b>${finalDone}/${g.members.length}</b></div>${Object.keys(dist).length?`<div class="teacher-consensus"><b>현재 최종의견</b>${Object.entries(dist).map(([k,v])=>`<span>${k}안 ${v}명</span>`).join('')}</div>`:''}${pub?`<div class="teacher-team-score">${pub.details.map(d=>`<span>${d[0]} <b>${d[1]}/${d[2]}</b></span>`).join('')}</div>`:''}</article>`}).join('')}</div>`:`<div class="empty">학생이 전공분야를 선택해 입장한 뒤 ‘랜덤 팀 편성’을 눌러주세요.</div>`}`;
 }
 function bindTeacherTeam(){
   const a=$('#assignTeamsBtn');if(a)a.onclick=assignTeams;
+  const b=$('#teamBoardBtn');if(b)b.onclick=()=>setTeamPhase('board');
   const t=$('#teamTwistBtn');if(t)t.onclick=()=>setTeamPhase('twist');
-  const r=$('#teamReportBtn');if(r)r.onclick=()=>setTeamPhase('report');
+  const d=$('#teamDecisionBtn');if(d)d.onclick=()=>setTeamPhase('decision');
   const s=$('#teamScoreBtn');if(s)s.onclick=publishTeamScores;
 }
 
@@ -513,6 +545,7 @@ function subscribe() {
     DB.on('answers', code, v => {
       answers = v || {};
       renderContent();
+      if(['board','twist','decision'].includes(control?.teamPhase)) void syncTeamBoards(false);
     }),
     DB.on('pledges', code, v => {
       pledges = v || {};
@@ -607,7 +640,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = '실시간 서버 연결 · v8.0 5대 전공맞춤형';
+    $('#serverStatus').textContent = '실시간 서버 연결 · v8.1 무이동 디지털 협업';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);

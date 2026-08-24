@@ -17,6 +17,28 @@ let teamRoleDraft = {choice:null,riskLevel:'',preliminaryVendor:null,note:'',que
 let teamReportDraft = {issues:[],criteria:[],conflictResponse:null,twistResponse:null,vendor:null,influenceUid:null,reason:''};
 let timerTicker = null;
 
+// v8.2 학생 가독성 · 화면확대
+const STUDENT_ZOOM_KEY = 'cheongryeomStudentZoom';
+function applyStudentZoom(value){
+  const z = ['1','1.1','1.2','1.5'].includes(String(value)) ? String(value) : '1';
+  document.documentElement.style.setProperty('--student-zoom', z);
+  localStorage.setItem(STUDENT_ZOOM_KEY, z);
+  document.querySelectorAll('[data-student-zoom]').forEach(b=>b.classList.toggle('active', b.dataset.studentZoom===z));
+}
+function bindStudentZoom(){
+  applyStudentZoom(localStorage.getItem(STUDENT_ZOOM_KEY)||'1');
+  document.querySelectorAll('[data-student-zoom]').forEach(b=>b.onclick=()=>applyStudentZoom(b.dataset.studentZoom));
+}
+function syncRequiredCounter(textarea, min){
+  if(!textarea) return;
+  const note = textarea.previousElementSibling;
+  if(!note?.classList?.contains('required-note')) return;
+  const n = textarea.value.trim().length;
+  note.classList.toggle('ok', n >= min);
+  const span = note.querySelector('span');
+  if(span) span.textContent = `현재 ${n}/${min}자`;
+}
+
 function activeTrackKey(){ return me?.trackKey || localStorage.getItem('cheongryeomTrack') || 'business'; }
 function activateTrack(key){
   const t = CHEONGRYEOM_TRACK(key);
@@ -385,15 +407,15 @@ function bindPractical(q, ex) {
   document.querySelectorAll('[data-criteria]').forEach(x=>x.onchange=()=>{const k=x.dataset.criteria;d.criteria=x.checked?[...new Set([...d.criteria,k])]:d.criteria.filter(v=>v!==k);render();});
   document.querySelectorAll('[data-vendor]').forEach(b=>b.onclick=()=>{d.selectedVendor=Number(b.dataset.vendor);render();});
   const dc=$('#disclosureCheck'); if(dc) dc.onchange=()=>{d.disclosure=dc.checked;};
-  const pr=$('#practicalReason'); if(pr) pr.oninput=()=>{d.reason=pr.value;const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
+  const pr=$('#practicalReason'); if(pr) pr.oninput=()=>{d.reason=pr.value;syncRequiredCounter(pr,10);const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
   document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{if(d.order.length<4&&!d.order.includes(b.dataset.action)){d.order.push(b.dataset.action);render();}});
   document.querySelectorAll('[data-remove-action]').forEach(b=>b.onclick=()=>{d.order=d.order.filter(x=>x!==b.dataset.removeAction);render();});
-  const sn=$('#sequenceNote'); if(sn) sn.oninput=()=>{d.note=sn.value;const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
+  const sn=$('#sequenceNote'); if(sn) sn.oninput=()=>{d.note=sn.value;syncRequiredCounter(sn,10);const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
   document.querySelectorAll('input[data-candidate]').forEach(x=>x.oninput=()=>{const cid=x.dataset.candidate,f=x.dataset.field;d.scores[cid][f]=Number(x.value);const l=document.querySelector(`[data-score-label="${cid}:${f}"]`);if(l)l.textContent=x.value;const card=x.closest('.candidate-card');if(card){const t=card.querySelector('.candidate-head strong');if(t)t.textContent=candidateTotal(q,d,cid)+'점';}const rb=$('#revealRelationBtn');if(rb)rb.disabled=!panelScoresComplete(q,d);});
   document.querySelectorAll('[data-presentation-score]').forEach(b=>b.onclick=()=>{const cid=b.dataset.candidate,f=b.dataset.field;d.scores[cid][f]=Number(b.dataset.presentationScore);const card=b.closest('.candidate-card');card?.querySelectorAll(`[data-presentation-score][data-candidate="${cid}"]`).forEach(x=>x.classList.toggle('selected',x===b));const l=document.querySelector(`[data-score-label="${cid}:${f}"]`);if(l)l.textContent=b.dataset.presentationScore;const t=card?.querySelector('.candidate-head strong');if(t)t.textContent=candidateTotal(q,d,cid)+'점';const rb=$('#revealRelationBtn');if(rb)rb.disabled=!panelScoresComplete(q,d);});
   const rr=$('#revealRelationBtn'); if(rr) rr.onclick=()=>{if(!panelScoresComplete(q,d))return;d.lockedScores=JSON.parse(JSON.stringify(d.scores));d.revealed=true;render();};
   document.querySelectorAll('[data-response]').forEach(b=>b.onclick=()=>{d.response=Number(b.dataset.response);render();});
-  const pa=$('#panelReason'); if(pa) pa.oninput=()=>{d.reason=pa.value;const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
+  const pa=$('#panelReason'); if(pa) pa.oninput=()=>{d.reason=pa.value;syncRequiredCounter(pa,10);const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
   const sb=$('#submitPracticalBtn'); if(sb) sb.onclick=()=>submitPractical(q);
 }
 
@@ -498,8 +520,8 @@ function bindTeam(){
   document.querySelectorAll('[data-team-role-choice]').forEach(b=>b.onclick=()=>{teamRoleDraft.choice=Number(b.dataset.teamRoleChoice);render();});
   document.querySelectorAll('[data-team-risk]').forEach(b=>b.onclick=()=>{teamRoleDraft.riskLevel=b.dataset.teamRisk;render();});
   document.querySelectorAll('[data-team-pre-vendor]').forEach(b=>b.onclick=()=>{teamRoleDraft.preliminaryVendor=b.dataset.teamPreVendor;render();});
-  const rn=$('#teamRoleNote'); if(rn) rn.oninput=()=>{teamRoleDraft.note=rn.value;const b=$('#submitTeamRoleBtn');if(b)b.disabled=!teamRoleReady();};
-  const rq=$('#teamRoleQuestion'); if(rq) rq.oninput=()=>{teamRoleDraft.question=rq.value;const b=$('#submitTeamRoleBtn');if(b)b.disabled=!teamRoleReady();};
+  const rn=$('#teamRoleNote'); if(rn) rn.oninput=()=>{teamRoleDraft.note=rn.value;syncRequiredCounter(rn,15);const b=$('#submitTeamRoleBtn');if(b)b.disabled=!teamRoleReady();};
+  const rq=$('#teamRoleQuestion'); if(rq) rq.oninput=()=>{teamRoleDraft.question=rq.value;syncRequiredCounter(rq,8);const b=$('#submitTeamRoleBtn');if(b)b.disabled=!teamRoleReady();};
   const rb=$('#submitTeamRoleBtn'); if(rb) rb.onclick=submitTeamRole;
   document.querySelectorAll('[data-team-issue]').forEach(x=>x.onchange=()=>{const k=x.dataset.teamIssue;teamReportDraft.issues=x.checked?[...new Set([...teamReportDraft.issues,k])]:teamReportDraft.issues.filter(v=>v!==k);render();});
   document.querySelectorAll('[data-team-criterion]').forEach(x=>x.onchange=()=>{const k=x.dataset.teamCriterion;teamReportDraft.criteria=x.checked?[...new Set([...teamReportDraft.criteria,k])]:teamReportDraft.criteria.filter(v=>v!==k);render();});
@@ -507,7 +529,7 @@ function bindTeam(){
   document.querySelectorAll('[data-team-twist]').forEach(b=>b.onclick=()=>{teamReportDraft.twistResponse=Number(b.dataset.teamTwist);render();});
   document.querySelectorAll('[data-team-influence]').forEach(b=>b.onclick=()=>{teamReportDraft.influenceUid=b.dataset.teamInfluence;render();});
   document.querySelectorAll('[data-team-vendor]').forEach(b=>b.onclick=()=>{teamReportDraft.vendor=b.dataset.teamVendor;render();});
-  const tr=$('#teamReportReason'); if(tr) tr.oninput=()=>{teamReportDraft.reason=tr.value;const b=$('#submitTeamReportBtn');if(b)b.disabled=!teamReportReady();};
+  const tr=$('#teamReportReason'); if(tr) tr.oninput=()=>{teamReportDraft.reason=tr.value;syncRequiredCounter(tr,20);const b=$('#submitTeamReportBtn');if(b)b.disabled=!teamReportReady();};
   const sr=$('#submitTeamReportBtn'); if(sr) sr.onclick=submitTeamReport;
 }
 async function submitTeamRole(){
@@ -819,6 +841,7 @@ async function join() {
 }
 
 (async () => {
+  bindStudentZoom();
   const p = new URLSearchParams(location.search).get('room');
   if (p) $('#joinCode').value = p;
 
@@ -831,7 +854,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v8.1 무이동 디지털 협업';
+    $('#studentStatus').textContent = '실시간 연결 · v8.2 가독성·실시간상황판';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

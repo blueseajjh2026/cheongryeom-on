@@ -1157,7 +1157,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = 'v8.8.0';
+    $('#studentStatus').textContent = 'v8.8.1';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

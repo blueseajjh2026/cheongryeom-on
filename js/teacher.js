@@ -773,7 +773,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = 'v8.8.0';
+    $('#serverStatus').textContent = 'v8.8.1';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);

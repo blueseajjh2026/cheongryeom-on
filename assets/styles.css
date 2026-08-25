@@ -286,51 +286,51 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 :root{--student-zoom:1}
 .student-page{overflow-x:hidden}
 .student-page .student-accessibility-bar{max-width:540px;margin:9px auto 0;padding:0 13px;display:flex;align-items:center;justify-content:space-between;gap:10px;word-break:keep-all}
-.student-page .student-accessibility-bar>span{font-size:12px;font-weight:900;color:#355d70;white-space:nowrap}
+.student-page .student-accessibility-bar>span{font-size:calc(12px * var(--student-zoom));font-weight:900;color:#355d70;white-space:nowrap}
 .student-page .student-zoom-controls{display:flex;gap:5px;overflow-x:auto;padding:2px 0}
-.student-page .student-zoom-controls button{border:1px solid #bfd3dd;background:#fff;color:#315f74;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:900;white-space:nowrap}
+.student-page .student-zoom-controls button{border:1px solid #bfd3dd;background:#fff;color:#315f74;border-radius:8px;padding:7px 9px;font-size:calc(11px * var(--student-zoom));font-weight:900;white-space:nowrap}
 .student-page .student-zoom-controls button.active{background:#075d8b;color:#fff;border-color:#075d8b;box-shadow:0 3px 10px rgba(7,93,139,.18)}
-.student-page .student-shell{zoom:var(--student-zoom);width:calc(100% / var(--student-zoom));max-width:calc(540px / var(--student-zoom));word-break:keep-all;overflow-wrap:break-word;line-break:strict}
+.student-page .student-shell{zoom:1!important;width:100%;max-width:540px;word-break:keep-all;overflow-wrap:break-word;line-break:strict}
 .student-page .student-card,.student-page .student-card *{word-break:keep-all;overflow-wrap:break-word;line-break:strict}
-.student-page .progress-meta{font-size:11px}
+.student-page .progress-meta{font-size:calc(11px * var(--student-zoom))}
 .student-page .student-card{padding:21px}
-.student-page .student-card h1{font-size:29px;line-height:1.42}
-.student-page .student-card h2{font-size:23px;line-height:1.5}
-.student-page .student-card h3{font-size:16px;line-height:1.6}
-.student-page label{font-size:13px}
-.student-page input,.student-page textarea,.student-page select{font-size:14px;line-height:1.6}
-.student-page .helper{font-size:12px;line-height:1.8}
-.student-page .field-note,.student-page .name-privacy,.student-page .track-source-note{font-size:11px;line-height:1.7}
+.student-page .student-card h1{font-size:calc(29px * var(--student-zoom));line-height:1.42}
+.student-page .student-card h2{font-size:calc(23px * var(--student-zoom));line-height:1.5}
+.student-page .student-card h3{font-size:calc(16px * var(--student-zoom));line-height:1.6}
+.student-page label{font-size:calc(13px * var(--student-zoom))}
+.student-page input,.student-page textarea,.student-page select{font-size:calc(14px * var(--student-zoom));line-height:1.6}
+.student-page .helper{font-size:calc(12px * var(--student-zoom));line-height:1.8}
+.student-page .field-note,.student-page .name-privacy,.student-page .track-source-note{font-size:calc(11px * var(--student-zoom));line-height:1.7}
 .student-page .track-choice-guide{margin:6px 0 10px;padding:10px 11px;border-radius:11px;background:#eef8fc;border:1px solid #cfe4ed}
-.student-page .track-choice-guide b{display:block;font-size:13px;color:#145f80}
-.student-page .track-choice-guide span{display:block;margin-top:4px;font-size:11px;line-height:1.65;color:#59717d}
-.student-page .track-option b{font-size:14px}.student-page .track-option small{font-size:11.5px;line-height:1.65}
-.student-page .stage-tag{font-size:10px}.student-page .student-context{font-size:13px;line-height:1.8}
-.student-page .choice{font-size:13px;line-height:1.65;padding:13px}
-.student-page .feedback{font-size:12px;line-height:1.75}
-.student-page .waiting p{font-size:12px}.student-page .student-virtue span{font-size:11.5px}.student-page .student-virtue b{font-size:13px}
-.student-page .score-grid span,.student-page .public-result,.student-page .certificate .cert-text,.student-page .certificate .cert-date,.student-page .certificate .cert-type{font-size:10.5px}
-.student-page .work-exam-head p{font-size:12.5px;line-height:1.75}.student-page .work-code small{font-size:9px}.student-page .work-code b{font-size:15px}
-.student-page .work-timer span{font-size:10.5px}.student-page .work-timer small{font-size:10px;line-height:1.55}
-.student-page .work-notice b{font-size:11px}.student-page .work-notice span{font-size:11px;line-height:1.7}
-.student-page .work-context{font-size:12.5px;line-height:1.8}
-.student-page .work-section-title>span{font-size:11px}.student-page .work-section-title b{font-size:13px}.student-page .work-section-title small{font-size:10.5px;line-height:1.55}
-.student-page .work-doc b{font-size:11px}.student-page .work-doc small{font-size:9.5px}.student-page .work-document b{font-size:11.5px}.student-page .work-document p,.student-page .work-document.muted{font-size:11px;line-height:1.75}
-.student-page .mini-choice{font-size:11.5px;line-height:1.5}.student-page .criteria-chip span{font-size:11px;line-height:1.5}
-.student-page .vendor-head{font-size:9.5px}.student-page .vendor-row{font-size:10px;line-height:1.5}
-.student-page .work-label{font-size:11.5px}.student-page .work-check span{font-size:11px;line-height:1.7}.student-page .work-textarea{font-size:12.5px;line-height:1.75}
-.student-page .ledger-row{font-size:10.5px;line-height:1.55}.student-page .sequence-empty,.student-page .sequence-slot,.student-page .action-card{font-size:11px;line-height:1.6}.student-page .sequence-slot small{font-size:9px}
-.student-page .rubric-strip span{font-size:9.5px}.student-page .rubric-strip b{font-size:10.5px}.student-page .candidate-head b{font-size:12.5px}.student-page .candidate-card p{font-size:11px;line-height:1.7}.student-page .candidate-sliders label>span{font-size:10.5px}
-.student-page .work-alert b{font-size:11px}.student-page .work-alert span{font-size:11px;line-height:1.7}.student-page .locked-result{font-size:10.5px}.student-page .locked-result small{font-size:9.5px}
-.student-page .response-card{font-size:11.5px;line-height:1.65}.student-page .work-submit-sticky b{font-size:11px}.student-page .work-submit-sticky small{font-size:9.5px;line-height:1.5}
-.student-page .required-note{font-size:11px;line-height:1.65;padding:9px 10px}.student-page .required-note span{white-space:nowrap}
-.student-page .team-phase-banner span{font-size:11px}.student-page .team-phase-banner small{font-size:9.5px}.student-page .team-role-head small{font-size:9.5px}.student-page .team-role-head h3{font-size:16px!important}.student-page .team-role-head p{font-size:11.5px}
-.student-page .team-secret b{font-size:10.5px}.student-page .team-secret p{font-size:11.5px;line-height:1.75}.student-page .team-supplement b{font-size:10.5px}.student-page .team-supplement p{font-size:10.5px!important}.student-page .team-supplement article strong{font-size:11.5px}.student-page .team-supplement article span{font-size:9.5px}.student-page .team-supplement article p{font-size:10.5px!important}
-.student-page .role-submission-summary>span,.student-page .role-submission-summary>p{font-size:11px}.student-page .role-submission-summary b{font-size:9.5px}
-.student-page .team-board-head span{font-size:10px}.student-page .team-board-head h3{font-size:17px!important}.student-page .team-board-head>strong small{font-size:9px}.student-page .team-board-guide{font-size:11.5px;line-height:1.75}
-.student-page .team-board-member header b{font-size:12.5px}.student-page .team-board-member header span{font-size:10px}.student-page .team-board-member header em{font-size:9px}.student-page .team-board-metrics small{font-size:9px}.student-page .team-board-metrics b{font-size:11px}.student-page .team-board-member p{font-size:11px;line-height:1.7}.student-page .team-board-member p b{font-size:9.5px}.student-page .board-waiting,.student-page .team-board-member footer{font-size:10px}.student-page .team-final-progress{font-size:10.5px}
-.student-page .influence-card b{font-size:12px}.student-page .influence-card span{font-size:10.5px}.student-page .influence-card small{font-size:9.5px}.student-page .team-vendor-table>div{font-size:10px;line-height:1.55}
-.student-page .scorecard-row{font-size:10.5px}.student-page .work-result-feedback p{font-size:10.5px}.student-page .team-score-formula span{font-size:9.5px}.student-page .consensus-result span{font-size:10px}
+.student-page .track-choice-guide b{display:block;font-size:calc(13px * var(--student-zoom));color:#145f80}
+.student-page .track-choice-guide span{display:block;margin-top:4px;font-size:calc(11px * var(--student-zoom));line-height:1.65;color:#59717d}
+.student-page .track-option b{font-size:calc(14px * var(--student-zoom))}.student-page .track-option small{font-size:calc(11.5px * var(--student-zoom));line-height:1.65}
+.student-page .stage-tag{font-size:calc(10px * var(--student-zoom))}.student-page .student-context{font-size:calc(13px * var(--student-zoom));line-height:1.8}
+.student-page .choice{font-size:calc(13px * var(--student-zoom));line-height:1.65;padding:13px}
+.student-page .feedback{font-size:calc(12px * var(--student-zoom));line-height:1.75}
+.student-page .waiting p{font-size:calc(12px * var(--student-zoom))}.student-page .student-virtue span{font-size:calc(11.5px * var(--student-zoom))}.student-page .student-virtue b{font-size:calc(13px * var(--student-zoom))}
+.student-page .score-grid span,.student-page .public-result,.student-page .certificate .cert-text,.student-page .certificate .cert-date,.student-page .certificate .cert-type{font-size:calc(10.5px * var(--student-zoom))}
+.student-page .work-exam-head p{font-size:calc(12.5px * var(--student-zoom));line-height:1.75}.student-page .work-code small{font-size:calc(9px * var(--student-zoom))}.student-page .work-code b{font-size:calc(15px * var(--student-zoom))}
+.student-page .work-timer span{font-size:calc(10.5px * var(--student-zoom))}.student-page .work-timer small{font-size:calc(10px * var(--student-zoom));line-height:1.55}
+.student-page .work-notice b{font-size:calc(11px * var(--student-zoom))}.student-page .work-notice span{font-size:calc(11px * var(--student-zoom));line-height:1.7}
+.student-page .work-context{font-size:calc(12.5px * var(--student-zoom));line-height:1.8}
+.student-page .work-section-title>span{font-size:calc(11px * var(--student-zoom))}.student-page .work-section-title b{font-size:calc(13px * var(--student-zoom))}.student-page .work-section-title small{font-size:calc(10.5px * var(--student-zoom));line-height:1.55}
+.student-page .work-doc b{font-size:calc(11px * var(--student-zoom))}.student-page .work-doc small{font-size:calc(9.5px * var(--student-zoom))}.student-page .work-document b{font-size:calc(11.5px * var(--student-zoom))}.student-page .work-document p,.student-page .work-document.muted{font-size:calc(11px * var(--student-zoom));line-height:1.75}
+.student-page .mini-choice{font-size:calc(11.5px * var(--student-zoom));line-height:1.5}.student-page .criteria-chip span{font-size:calc(11px * var(--student-zoom));line-height:1.5}
+.student-page .vendor-head{font-size:calc(9.5px * var(--student-zoom))}.student-page .vendor-row{font-size:calc(10px * var(--student-zoom));line-height:1.5}
+.student-page .work-label{font-size:calc(11.5px * var(--student-zoom))}.student-page .work-check span{font-size:calc(11px * var(--student-zoom));line-height:1.7}.student-page .work-textarea{font-size:calc(12.5px * var(--student-zoom));line-height:1.75}
+.student-page .ledger-row{font-size:calc(10.5px * var(--student-zoom));line-height:1.55}.student-page .sequence-empty,.student-page .sequence-slot,.student-page .action-card{font-size:calc(11px * var(--student-zoom));line-height:1.6}.student-page .sequence-slot small{font-size:calc(9px * var(--student-zoom))}
+.student-page .rubric-strip span{font-size:calc(9.5px * var(--student-zoom))}.student-page .rubric-strip b{font-size:calc(10.5px * var(--student-zoom))}.student-page .candidate-head b{font-size:calc(12.5px * var(--student-zoom))}.student-page .candidate-card p{font-size:calc(11px * var(--student-zoom));line-height:1.7}.student-page .candidate-sliders label>span{font-size:calc(10.5px * var(--student-zoom))}
+.student-page .work-alert b{font-size:calc(11px * var(--student-zoom))}.student-page .work-alert span{font-size:calc(11px * var(--student-zoom));line-height:1.7}.student-page .locked-result{font-size:calc(10.5px * var(--student-zoom))}.student-page .locked-result small{font-size:calc(9.5px * var(--student-zoom))}
+.student-page .response-card{font-size:calc(11.5px * var(--student-zoom));line-height:1.65}.student-page .work-submit-sticky b{font-size:calc(11px * var(--student-zoom))}.student-page .work-submit-sticky small{font-size:calc(9.5px * var(--student-zoom));line-height:1.5}
+.student-page .required-note{font-size:calc(11px * var(--student-zoom));line-height:1.65;padding:9px 10px}.student-page .required-note span{white-space:nowrap}
+.student-page .team-phase-banner span{font-size:calc(11px * var(--student-zoom))}.student-page .team-phase-banner small{font-size:calc(9.5px * var(--student-zoom))}.student-page .team-role-head small{font-size:calc(9.5px * var(--student-zoom))}.student-page .team-role-head h3{font-size:calc(16px * var(--student-zoom))!important}.student-page .team-role-head p{font-size:calc(11.5px * var(--student-zoom))}
+.student-page .team-secret b{font-size:calc(10.5px * var(--student-zoom))}.student-page .team-secret p{font-size:calc(11.5px * var(--student-zoom));line-height:1.75}.student-page .team-supplement b{font-size:calc(10.5px * var(--student-zoom))}.student-page .team-supplement p{font-size:calc(10.5px * var(--student-zoom))!important}.student-page .team-supplement article strong{font-size:calc(11.5px * var(--student-zoom))}.student-page .team-supplement article span{font-size:calc(9.5px * var(--student-zoom))}.student-page .team-supplement article p{font-size:calc(10.5px * var(--student-zoom))!important}
+.student-page .role-submission-summary>span,.student-page .role-submission-summary>p{font-size:calc(11px * var(--student-zoom))}.student-page .role-submission-summary b{font-size:calc(9.5px * var(--student-zoom))}
+.student-page .team-board-head span{font-size:calc(10px * var(--student-zoom))}.student-page .team-board-head h3{font-size:calc(17px * var(--student-zoom))!important}.student-page .team-board-head>strong small{font-size:calc(9px * var(--student-zoom))}.student-page .team-board-guide{font-size:calc(11.5px * var(--student-zoom));line-height:1.75}
+.student-page .team-board-member header b{font-size:calc(12.5px * var(--student-zoom))}.student-page .team-board-member header span{font-size:calc(10px * var(--student-zoom))}.student-page .team-board-member header em{font-size:calc(9px * var(--student-zoom))}.student-page .team-board-metrics small{font-size:calc(9px * var(--student-zoom))}.student-page .team-board-metrics b{font-size:calc(11px * var(--student-zoom))}.student-page .team-board-member p{font-size:calc(11px * var(--student-zoom));line-height:1.7}.student-page .team-board-member p b{font-size:calc(9.5px * var(--student-zoom))}.student-page .board-waiting,.student-page .team-board-member footer{font-size:calc(10px * var(--student-zoom))}.student-page .team-final-progress{font-size:calc(10.5px * var(--student-zoom))}
+.student-page .influence-card b{font-size:calc(12px * var(--student-zoom))}.student-page .influence-card span{font-size:calc(10.5px * var(--student-zoom))}.student-page .influence-card small{font-size:calc(9.5px * var(--student-zoom))}.student-page .team-vendor-table>div{font-size:calc(10px * var(--student-zoom));line-height:1.55}
+.student-page .scorecard-row{font-size:calc(10.5px * var(--student-zoom))}.student-page .work-result-feedback p{font-size:calc(10.5px * var(--student-zoom))}.student-page .team-score-formula span{font-size:calc(9.5px * var(--student-zoom))}.student-page .consensus-result span{font-size:calc(10px * var(--student-zoom))}
 
 /* 교사용 직무회의 진행상태 */
 .team-teacher-controls .team-step-btn.completed{background:#e8f6ef!important;border:1px solid #9ccfb8!important;color:#17634a!important}
@@ -626,8 +626,8 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 }
 .work-submit-sticky .work-submit-info{min-width:0;flex:1}
 .work-submit-sticky .submit-check{margin-bottom:0}
-.student-page .submit-check{font-size:11px;line-height:1.6}
-.student-page .submit-check b{font-size:11px}
+.student-page .submit-check{font-size:calc(11px * var(--student-zoom));line-height:1.6}
+.student-page .submit-check b{font-size:calc(11px * var(--student-zoom))}
 @media(max-width:620px){
   .work-submit-sticky .submit-check{margin-top:7px}
 }
@@ -716,3 +716,50 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 .written-submit-result.wrong b{border:2px solid #d85349}
 .virtue-link-chip{display:inline-flex!important;align-items:center;gap:6px}
 .virtue-link-chip em{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;border-radius:999px;background:rgba(255,255,255,.72);font-style:normal;font-size:11px;font-weight:900;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)}
+
+/* =========================================================
+   v8.8.1 · 학생 화면확대 방식 개선
+   - 100/110/120% 변경 시 카드·화면 폭은 그대로 유지
+   - 글자와 핵심 조작요소만 확대하여 모바일 가독성 향상
+   ========================================================= */
+.student-page{--student-zoom:1}
+.student-page .student-shell{width:100%!important;max-width:540px!important;zoom:1!important;transform:none!important}
+.student-page .btn{font-size:calc(13px * var(--student-zoom));line-height:1.45}
+.student-page .btn.large{font-size:calc(15px * var(--student-zoom))}
+.student-page .score-main strong{font-size:calc(36px * var(--student-zoom))}
+.student-page .score-grid b{font-size:calc(16px * var(--student-zoom))}
+.student-page .certificate .cert-name{font-size:calc(19px * var(--student-zoom))}
+.student-page .certificate h2{font-size:calc(27px * var(--student-zoom))}
+.student-page .instant-feedback-head span{font-size:calc(12px * var(--student-zoom))}
+.student-page .instant-feedback-head h3{font-size:calc(19px * var(--student-zoom))}
+.student-page .instant-feedback-head em{font-size:calc(12px * var(--student-zoom))}
+.student-page .instant-feedback-explain b{font-size:calc(15px * var(--student-zoom))}
+.student-page .instant-feedback-explain p{font-size:calc(15px * var(--student-zoom))}
+.student-page .instant-feedback-transfer b{font-size:calc(13px * var(--student-zoom))}
+.student-page .instant-feedback-transfer span{font-size:calc(14px * var(--student-zoom))}
+.student-page .instant-feedback-lock{font-size:calc(12px * var(--student-zoom))}
+.student-page .written-ox b{font-size:calc(29px * var(--student-zoom))}
+.student-page .written-ox span{font-size:calc(10px * var(--student-zoom))}
+.student-page .written-virtue-links>b{font-size:calc(13px * var(--student-zoom))}
+.student-page .written-virtue-links>small{font-size:calc(10px * var(--student-zoom))}
+.student-page .virtue-link-chip{font-size:calc(12px * var(--student-zoom))}
+.student-page .virtue-link-chip em{font-size:calc(11px * var(--student-zoom))}
+.student-page .student-progress .progress-meta{font-size:calc(11px * var(--student-zoom))}
+.student-page .student-progress .progress-meta b{font-size:calc(12px * var(--student-zoom))}
+.student-page .team-judgment-journey small{font-size:calc(9px * var(--student-zoom))}
+.student-page .team-judgment-journey b{font-size:calc(12px * var(--student-zoom))}
+.student-page .team-feedback-grid article>span{font-size:calc(10px * var(--student-zoom))}
+.student-page .team-feedback-grid article h3{font-size:calc(15px * var(--student-zoom))}
+.student-page .team-feedback-grid article p{font-size:calc(12px * var(--student-zoom))}
+.student-page .team-feedback-virtues>b{font-size:calc(12px * var(--student-zoom))}
+.student-page .qualification-rule>b{font-size:calc(11px * var(--student-zoom))}
+.student-page .qualification-rule span{font-size:calc(9px * var(--student-zoom))}
+.student-page .qualification-rule em{font-size:calc(11px * var(--student-zoom))}
+.student-page .team-board-member .board-mid small{font-size:calc(10px * var(--student-zoom))}
+.student-page .written-submit-result b{font-size:calc(24px * var(--student-zoom))}
+.student-page .written-submit-result span{font-size:calc(17px * var(--student-zoom))}
+@media(max-width:640px){
+  .student-page .instant-feedback-head h3{font-size:calc(17px * var(--student-zoom))}
+  .student-page .instant-feedback-explain p{font-size:calc(14px * var(--student-zoom))}
+  .student-page .written-ox b{font-size:calc(25px * var(--student-zoom))}
+}

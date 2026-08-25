@@ -631,3 +631,16 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 @media(max-width:620px){
   .work-submit-sticky .submit-check{margin-top:7px}
 }
+
+
+/* v8.7.0 · 문항/과제 제출 직후 형성평가형 즉시 피드백 */
+.instant-feedback-card{margin-top:18px;border:1px solid #c8d9e8;border-top:5px solid #176b96;border-radius:14px;background:linear-gradient(180deg,#f8fcff 0%,#fff 62%);box-shadow:0 8px 22px rgba(31,78,111,.08);overflow:hidden}
+.instant-feedback-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 17px 13px;border-bottom:1px solid #deebf3;background:#f4f9fc}
+.instant-feedback-head>div{min-width:0}.instant-feedback-head span{display:block;font-size:12px;font-weight:800;letter-spacing:.02em;color:#176b96}.instant-feedback-head h3{margin:4px 0 0;font-size:19px;line-height:1.35;color:#17364a;word-break:keep-all}
+.instant-feedback-head em{flex:0 0 auto;padding:7px 10px;border-radius:999px;font-style:normal;font-size:12px;font-weight:800;white-space:nowrap}.instant-feedback-head em.matched{background:#e7f6ed;color:#19703d;border:1px solid #b8dfc7}.instant-feedback-head em.review{background:#fff5dc;color:#8a5c00;border:1px solid #efd494}
+.instant-feedback-explain{padding:16px 17px}.instant-feedback-explain b{display:block;margin-bottom:7px;font-size:15px;color:#17364a;word-break:keep-all}.instant-feedback-explain p{margin:0;font-size:15px;line-height:1.72;color:#354f60;word-break:keep-all}
+.instant-feedback-transfer{margin:0 17px 15px;padding:13px 14px;border-radius:10px;background:#eef7f2;border-left:4px solid #2a8a58}.instant-feedback-transfer b{display:block;margin-bottom:4px;font-size:13px;color:#236d49}.instant-feedback-transfer span{display:block;font-size:14px;line-height:1.6;color:#355247;word-break:keep-all}
+.instant-feedback-lock{padding:10px 17px;background:#f5f7f9;border-top:1px solid #e3e8ec;font-size:12px;line-height:1.55;color:#677784;word-break:keep-all}
+.practical-instant-feedback{border-top-color:#2a8a58}.practical-instant-feedback .instant-feedback-head span{color:#25744b}
+.teacher-auto-feedback-note{display:flex;align-items:center;gap:12px;margin:12px 0 16px;padding:13px 14px;border:1px solid #bfd9c9;border-left:5px solid #2a8a58;background:#f3faf6}.teacher-auto-feedback-note span{flex:0 0 auto;padding:5px 8px;border-radius:4px;background:#2a8a58;color:#fff;font-size:11px;font-weight:800}.teacher-auto-feedback-note b{font-size:14px;color:#183d2c}.teacher-auto-feedback-note small{margin-left:auto;color:#577064;line-height:1.45;text-align:right}
+@media(max-width:640px){.instant-feedback-head{align-items:flex-start}.instant-feedback-head h3{font-size:17px}.instant-feedback-explain p{font-size:14px}.teacher-auto-feedback-note{align-items:flex-start;flex-wrap:wrap}.teacher-auto-feedback-note small{width:100%;margin-left:0;text-align:left}}

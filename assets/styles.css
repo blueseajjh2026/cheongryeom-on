@@ -577,3 +577,57 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 }
 .teacher-page .teacher-side::-webkit-scrollbar{display:none;}
 .teacher-page .side-actions{margin-top:12px;}
+
+
+/* v8.6.2 · 실천약속 제출완료 상태 */
+.btn.submitted,
+.btn.submitted:disabled{
+  background:var(--green) !important;
+  color:#fff !important;
+  border:1px solid #11705a !important;
+  opacity:1 !important;
+  cursor:default !important;
+  box-shadow:0 6px 16px rgba(22,128,100,.16);
+}
+.pledge-area.submitted textarea.pledge-submitted{
+  background:#f2fbf7;
+  border-color:#8bc8b4;
+  color:#214d41;
+  font-weight:700;
+  cursor:default;
+}
+.pledge-area .pledge-complete-note{
+  background:#edf9f4;
+  border-color:#a9d9c9;
+  color:#12634f;
+}
+.pledge-area .pledge-complete-note span{
+  color:#417568;
+}
+
+/* v8.6.3 제출 비활성 원인 안내 */
+.submit-check{
+  margin:8px 0 9px;
+  padding:9px 10px;
+  border:1px solid #efc5bc;
+  border-radius:10px;
+  background:#fff6f3;
+  color:#8c3328;
+  font-size:9.5px;
+  line-height:1.6;
+  font-weight:750;
+}
+.submit-check b{display:block;margin-bottom:2px;font-size:10px;color:#9a2d22}
+.submit-check span{display:block}
+.submit-check.ok{
+  border-color:#b8ddcc;
+  background:#eef9f4;
+  color:#1d6b4c;
+}
+.work-submit-sticky .work-submit-info{min-width:0;flex:1}
+.work-submit-sticky .submit-check{margin-bottom:0}
+.student-page .submit-check{font-size:11px;line-height:1.6}
+.student-page .submit-check b{font-size:11px}
+@media(max-width:620px){
+  .work-submit-sticky .submit-check{margin-top:7px}
+}

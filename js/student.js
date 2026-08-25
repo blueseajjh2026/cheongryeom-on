@@ -725,17 +725,18 @@ function render() {
   }
 
   if (stage === 'pledge') {
+    const pledgeSubmitted = String(myPledge?.text || '').trim().length >= 10;
     h = `<span class="stage-tag">최종 미션</span>
       <h2>나의 청렴 실천약속</h2>
       <div class="student-context">
         내 전공의 미래 직업현장에서 실제로 지킬 수 있는 청렴·직업윤리 행동 한 가지를 구체적으로 적어주세요.
       </div>
-      <div class="pledge-area">
-        <textarea id="pledgeText" maxlength="160" placeholder="예: 직무기준과 실제 기록이 다르면 편의보다 사실대로 보고하겠습니다.">${myPledge?.text || ''}</textarea>
-        <div id="pledgeRequirement" class="required-note ${String(myPledge?.text||'').trim().length>=10?'ok':''}">※ 필수 · 실천약속을 <b>10글자 이상</b> 작성해야 서명할 수 있습니다. <span>현재 ${String(myPledge?.text||'').trim().length}/10자</span></div>
+      <div class="pledge-area ${pledgeSubmitted ? 'submitted' : ''}">
+        <textarea id="pledgeText" maxlength="160" ${pledgeSubmitted ? 'readonly aria-readonly="true" class="pledge-submitted"' : ''} placeholder="예: 직무기준과 실제 기록이 다르면 편의보다 사실대로 보고하겠습니다.">${myPledge?.text || ''}</textarea>
+        <div id="pledgeRequirement" class="required-note ${pledgeSubmitted ? 'ok pledge-complete-note' : ''}">${pledgeSubmitted ? '✓ 실천약속 제출이 완료되었습니다.' : `※ 필수 · 실천약속을 <b>10글자 이상</b> 작성해야 제출할 수 있습니다. <span>현재 ${String(myPledge?.text||'').trim().length}/10자</span>`}</div>
         <div class="student-submit">
-          <button id="pledgeBtn" class="btn primary large full" ${String(myPledge?.text||'').trim().length>=10?'':'disabled'}>
-            ${myPledge ? '실천약속 수정' : '실천약속 서명'}
+          <button id="pledgeBtn" class="btn ${pledgeSubmitted ? 'submitted' : 'primary'} large full" ${pledgeSubmitted ? 'disabled aria-disabled="true"' : 'disabled'}>
+            ${pledgeSubmitted ? '✓ 제출완료' : '실천약속 제출'}
           </button>
         </div>
       </div>`;
@@ -798,14 +799,14 @@ function render() {
   if ($('#submitBtn')) $('#submitBtn').onclick = submit;
   if ($('#pledgeBtn')) $('#pledgeBtn').onclick = savePledge;
   const pledgeTextEl = $('#pledgeText');
-  if (pledgeTextEl) pledgeTextEl.oninput = () => {
+  if (pledgeTextEl && !pledgeTextEl.readOnly) pledgeTextEl.oninput = () => {
     const n = pledgeTextEl.value.trim().length;
     const b = $('#pledgeBtn');
     const note = $('#pledgeRequirement');
     if (b) b.disabled = n < 10;
     if (note) {
       note.classList.toggle('ok', n >= 10);
-      note.innerHTML = `※ 필수 · 실천약속을 <b>10글자 이상</b> 작성해야 서명할 수 있습니다. <span>현재 ${n}/10자</span>`;
+      note.innerHTML = `※ 필수 · 실천약속을 <b>10글자 이상</b> 작성해야 제출할 수 있습니다. <span>현재 ${n}/10자</span>`;
     }
   };
   if ($('#saveCert')) $('#saveCert').onclick = saveCert;
@@ -846,12 +847,17 @@ async function submit() {
 }
 
 async function savePledge() {
+  if (String(myPledge?.text || '').trim().length >= 10) {
+    return toast('이미 제출이 완료된 실천약속입니다.');
+  }
   const t = $('#pledgeText').value.trim();
   if (t.length < 10) return toast('실천약속을 10글자 이상 구체적으로 적어주세요.');
 
   await DB.savePledge(code, t);
+  myPledge = { text: t, savedAt: Date.now() };
   await syncMyResult();
-  toast('실천약속을 저장했습니다.');
+  render();
+  toast('실천약속 제출이 완료되었습니다.');
 }
 
 async function saveCert() {
@@ -962,7 +968,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v8.6.1 최종 통합본';
+    $('#studentStatus').textContent = '실시간 연결 · v8.6.2';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

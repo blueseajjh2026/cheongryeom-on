@@ -39,6 +39,96 @@ function syncRequiredCounter(textarea, min){
   if(span) span.textContent = `현재 ${n}/${min}자`;
 }
 
+
+function submitCheckHTML(id, reasons, okText='필수 항목이 모두 입력되었습니다.'){
+  const items=(reasons||[]).filter(Boolean);
+  if(!items.length) return `<div id="${id}" class="submit-check ok">✓ ${okText}</div>`;
+  return `<div id="${id}" class="submit-check"><b>⚠️ 제출 전 확인</b><span>${items.map(x=>`· ${x}`).join('<br>')}</span></div>`;
+}
+function updateSubmitCheck(id, reasons, okText='필수 항목이 모두 입력되었습니다.'){
+  const el=$('#'+id); if(!el)return;
+  const items=(reasons||[]).filter(Boolean);
+  el.classList.toggle('ok', items.length===0);
+  el.innerHTML=items.length?`<b>⚠️ 제출 전 확인</b><span>${items.map(x=>`· ${x}`).join('<br>')}</span>`:`✓ ${okText}`;
+}
+function panelMissingScoreLabels(q,d){
+  const miss=[];
+  q.candidates.forEach(c=>q.rubricFields.forEach(f=>{
+    const v=Number(d.scores?.[c.id]?.[f.key]||0);
+    if(!(v>0&&v<=f.max)) miss.push(`${c.name} · ${f.label}`);
+  }));
+  return miss;
+}
+function practicalMissingReasons(q,d){
+  const r=[];
+  if(q.kind==='procurement'){
+    if(!d.conflictVendor) r.push('② 이해관계 확인 항목이 미선택입니다.');
+    if((d.criteria||[]).length<2) r.push(`③ 비교기준을 ${2-(d.criteria||[]).length}개 더 선택해주세요.`);
+    if(d.selectedVendor===null||!Number.isInteger(Number(d.selectedVendor))) r.push('④ 선정업체가 미선택입니다.');
+    const n=String(d.reason||'').trim().length;
+    if(n<10) r.push(`④ 선정사유 및 처리기록을 ${10-n}글자 더 작성해주세요.`);
+  } else if(q.kind==='sequence'){
+    if((d.order||[]).length<4) r.push(`② 처리절차 카드를 ${4-(d.order||[]).length}개 더 선택해주세요.`);
+    const n=String(d.note||'').trim().length;
+    if(n<10) r.push(`③ 처리의견을 ${10-n}글자 더 작성해주세요.`);
+  } else {
+    if(!d.revealed){
+      const miss=panelMissingScoreLabels(q,d);
+      if(miss.length){
+        const show=miss.slice(0,3).join(', ');
+        r.push(`② 평가점수 미입력: ${show}${miss.length>3?` 외 ${miss.length-3}개`:''}`);
+      }else{
+        r.push('② 1차 평가 확정 후 추가정보를 확인해주세요.');
+      }
+    }else{
+      if(d.response===null||!Number.isInteger(Number(d.response))) r.push('③ 추가정보 반영 원칙이 미선택입니다.');
+      const n=String(d.reason||'').trim().length;
+      if(n<10) r.push(`③ 최종 판단근거를 ${10-n}글자 더 작성해주세요.`);
+    }
+  }
+  return r;
+}
+function updatePracticalSubmitState(q,d){
+  const reasons=practicalExpired()?['작업시간이 종료되었습니다.']:practicalMissingReasons(q,d);
+  const ready=!practicalExpired()&&reasons.length===0;
+  const btn=$('#submitPracticalBtn');
+  if(btn) btn.disabled=!ready;
+  updateSubmitCheck('practicalSubmitCheck', reasons, '필수 작업이 모두 완료되어 제출할 수 있습니다.');
+}
+function teamRoleMissingReasons(){
+  const d=teamRoleDraft,r=[];
+  if(d.choice===null) r.push('① 핵심정보 해석 문항이 미선택입니다.');
+  if(!d.riskLevel) r.push('② 위험도가 미선택입니다.');
+  if(!d.preliminaryVendor) r.push('③ 1차 추천 대안이 미선택입니다.');
+  const n=String(d.note||'').trim().length;
+  if(n<15) r.push(`핵심근거를 ${15-n}글자 더 작성해주세요.`);
+  const q=String(d.question||'').trim().length;
+  if(q<8) r.push(`확인질문을 ${8-q}글자 더 작성해주세요.`);
+  return r;
+}
+function updateTeamRoleSubmitState(){
+  const reasons=teamRoleMissingReasons(),btn=$('#submitTeamRoleBtn');
+  if(btn)btn.disabled=reasons.length>0;
+  updateSubmitCheck('teamRoleSubmitCheck',reasons,'개인 직무분석을 제출할 수 있습니다.');
+}
+function teamReportMissingReasons(){
+  const d=teamReportDraft,r=[],needsInfluence=(teamRoster()?.members?.length||0)>1;
+  if((d.issues||[]).length<4) r.push(`① 핵심 문제를 ${4-(d.issues||[]).length}개 더 선택해주세요.`);
+  if((d.criteria||[]).length<4) r.push(`② 판단기준을 ${4-(d.criteria||[]).length}개 더 선택해주세요.`);
+  if(d.conflictResponse===null) r.push('③ 이해관계 처리 문항이 미선택입니다.');
+  if(d.twistResponse===null) r.push('④ 돌발상황 반영 문항이 미선택입니다.');
+  if(needsInfluence&&!d.influenceUid) r.push('⑤ 교차검증할 조원 정보가 미선택입니다.');
+  if(!d.vendor) r.push('⑥ 최종 대안이 미선택입니다.');
+  const n=String(d.reason||'').trim().length;
+  if(n<20) r.push(`⑥ 최종 판단근거를 ${20-n}글자 더 작성해주세요.`);
+  return r;
+}
+function updateTeamReportSubmitState(){
+  const reasons=teamReportMissingReasons(),btn=$('#submitTeamReportBtn');
+  if(btn)btn.disabled=reasons.length>0;
+  updateSubmitCheck('teamReportSubmitCheck',reasons,'최종위원 의견을 제출할 수 있습니다.');
+}
+
 function activeTrackKey(){ return me?.trackKey || localStorage.getItem('cheongryeomTrack') || 'business'; }
 function activateTrack(key){
   const t = CHEONGRYEOM_TRACK(key);
@@ -116,6 +206,8 @@ function bindChoices() {
 
       const s = $('#submitBtn');
       if (s) s.disabled = false;
+      const no=Number(control?.index||0)+1;
+      updateSubmitCheck('writtenSubmitCheck', [], `${no}번 문항 답안 선택 완료 · 제출할 수 있습니다.`);
     };
   });
 }
@@ -475,8 +567,9 @@ function renderPractical(q, ex) {
   }
   const d=practicalDraft(q);
   const body=q.kind==='procurement'?renderProcurement(q,d):q.kind==='sequence'?renderSequence(q,d):renderPanel(q,d);
-  const ready=practicalReady(q,d) && !practicalExpired();
-  return `${body}<div class="work-submit-sticky"><div><b>작업물 제출</b><small>${practicalExpired()?'시간이 종료되어 제출할 수 없습니다.':ready?'필수 작업이 완료되었습니다. 제출 후 수정할 수 없습니다.':'필수 작업을 모두 완성하면 제출할 수 있습니다.'}</small></div><button id="submitPracticalBtn" class="btn primary large" ${ready?'':'disabled'}>${practicalExpired()?'작업시간 종료':'작업물 최종 제출'}</button></div>`;
+  const reasons=practicalExpired()?['작업시간이 종료되었습니다.']:practicalMissingReasons(q,d);
+  const ready=reasons.length===0;
+  return `${body}<div class="work-submit-sticky"><div class="work-submit-info"><b>작업물 제출</b><small>${ready?'필수 작업이 완료되었습니다.':'아래 미완료 항목을 확인해주세요.'}</small>${submitCheckHTML('practicalSubmitCheck',reasons,'필수 작업이 모두 완료되어 제출할 수 있습니다.')}</div><button id="submitPracticalBtn" class="btn primary large" ${ready?'':'disabled'}>${practicalExpired()?'작업시간 종료':'작업물 최종 제출'}</button></div>`;
 }
 
 function bindPractical(q, ex) {
@@ -487,22 +580,22 @@ function bindPractical(q, ex) {
   document.querySelectorAll('[data-criteria]').forEach(x=>x.onchange=()=>{const k=x.dataset.criteria;d.criteria=x.checked?[...new Set([...d.criteria,k])]:d.criteria.filter(v=>v!==k);render();});
   document.querySelectorAll('[data-vendor]').forEach(b=>b.onclick=()=>{d.selectedVendor=Number(b.dataset.vendor);render();});
   const dc=$('#disclosureCheck'); if(dc) dc.onchange=()=>{d.disclosure=dc.checked;};
-  const pr=$('#practicalReason'); if(pr) pr.oninput=()=>{d.reason=pr.value;syncRequiredCounter(pr,10);const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
+  const pr=$('#practicalReason'); if(pr) pr.oninput=()=>{d.reason=pr.value;syncRequiredCounter(pr,10);const btn=$('#submitPracticalBtn');updatePracticalSubmitState(q,d);};
   document.querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>{if(d.order.length<4&&!d.order.includes(b.dataset.action)){d.order.push(b.dataset.action);render();}});
   document.querySelectorAll('[data-remove-action]').forEach(b=>b.onclick=()=>{d.order=d.order.filter(x=>x!==b.dataset.removeAction);render();});
-  const sn=$('#sequenceNote'); if(sn) sn.oninput=()=>{d.note=sn.value;syncRequiredCounter(sn,10);const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
-  document.querySelectorAll('input[data-candidate]').forEach(x=>x.oninput=()=>{const cid=x.dataset.candidate,f=x.dataset.field;d.scores[cid][f]=Number(x.value);const l=document.querySelector(`[data-score-label="${cid}:${f}"]`);if(l)l.textContent=x.value;const card=x.closest('.candidate-card');if(card){const t=card.querySelector('.candidate-head strong');if(t)t.textContent=candidateTotal(q,d,cid)+'점';}const rb=$('#revealRelationBtn');if(rb)rb.disabled=!panelScoresComplete(q,d);});
-  document.querySelectorAll('[data-presentation-score]').forEach(b=>b.onclick=()=>{const cid=b.dataset.candidate,f=b.dataset.field;d.scores[cid][f]=Number(b.dataset.presentationScore);const card=b.closest('.candidate-card');card?.querySelectorAll(`[data-presentation-score][data-candidate="${cid}"]`).forEach(x=>x.classList.toggle('selected',x===b));const l=document.querySelector(`[data-score-label="${cid}:${f}"]`);if(l)l.textContent=b.dataset.presentationScore;const t=card?.querySelector('.candidate-head strong');if(t)t.textContent=candidateTotal(q,d,cid)+'점';const rb=$('#revealRelationBtn');if(rb)rb.disabled=!panelScoresComplete(q,d);});
+  const sn=$('#sequenceNote'); if(sn) sn.oninput=()=>{d.note=sn.value;syncRequiredCounter(sn,10);const btn=$('#submitPracticalBtn');updatePracticalSubmitState(q,d);};
+  document.querySelectorAll('input[data-candidate]').forEach(x=>x.oninput=()=>{const cid=x.dataset.candidate,f=x.dataset.field;d.scores[cid][f]=Number(x.value);const l=document.querySelector(`[data-score-label="${cid}:${f}"]`);if(l)l.textContent=x.value;const card=x.closest('.candidate-card');if(card){const t=card.querySelector('.candidate-head strong');if(t)t.textContent=candidateTotal(q,d,cid)+'점';}const rb=$('#revealRelationBtn');if(rb)rb.disabled=!panelScoresComplete(q,d);updatePracticalSubmitState(q,d);});
+  document.querySelectorAll('[data-presentation-score]').forEach(b=>b.onclick=()=>{const cid=b.dataset.candidate,f=b.dataset.field;d.scores[cid][f]=Number(b.dataset.presentationScore);const card=b.closest('.candidate-card');card?.querySelectorAll(`[data-presentation-score][data-candidate="${cid}"]`).forEach(x=>x.classList.toggle('selected',x===b));const l=document.querySelector(`[data-score-label="${cid}:${f}"]`);if(l)l.textContent=b.dataset.presentationScore;const t=card?.querySelector('.candidate-head strong');if(t)t.textContent=candidateTotal(q,d,cid)+'점';const rb=$('#revealRelationBtn');if(rb)rb.disabled=!panelScoresComplete(q,d);updatePracticalSubmitState(q,d);});
   const rr=$('#revealRelationBtn'); if(rr) rr.onclick=()=>{if(!panelScoresComplete(q,d))return;d.lockedScores=JSON.parse(JSON.stringify(d.scores));d.revealed=true;render();};
   document.querySelectorAll('[data-response]').forEach(b=>b.onclick=()=>{d.response=Number(b.dataset.response);render();});
-  const pa=$('#panelReason'); if(pa) pa.oninput=()=>{d.reason=pa.value;syncRequiredCounter(pa,10);const btn=$('#submitPracticalBtn');if(btn)btn.disabled=!practicalReady(q,d)||practicalExpired();};
+  const pa=$('#panelReason'); if(pa) pa.oninput=()=>{d.reason=pa.value;syncRequiredCounter(pa,10);const btn=$('#submitPracticalBtn');updatePracticalSubmitState(q,d);};
   const sb=$('#submitPracticalBtn'); if(sb) sb.onclick=()=>submitPractical(q);
 }
 
 async function submitPractical(q) {
   if (submitting || practicalExpired()) return;
   const d=practicalDraft(q);
-  if(!practicalReady(q,d)) return toast('필수 작업을 모두 완성해주세요.');
+  if(!practicalReady(q,d)){const r=practicalMissingReasons(q,d);return toast(r[0]||'필수 작업을 확인해주세요.');}
   let choice=0;
   if(q.kind==='procurement') choice=Number(d.selectedVendor);
   if(q.kind==='panel') choice=Number(d.response);
@@ -564,7 +657,7 @@ function teamRoleCardHTML(){
   const ex=myAnswers?.team?.role;
   if(ex){const w=ex.work||{};return `<section class="team-role-card submitted"><div class="team-role-head"><span>${role.icon}</span><div><small>${me?.teamLabel||me?.teamId||'팀'} · 나의 직무</small><h3>${role.name}</h3><p>${roleDuty(me?.teamRoleKey)}</p></div></div><div class="feedback good"><b>✓ 개인 직무분석 제출 완료</b><br>핵심판단 · 위험도 · 1차 추천 · 확인질문까지 제출했습니다. 교사가 ‘팀 상황판’을 공개하면 조원들의 분석이 한 화면에 모입니다.</div><div class="role-submission-summary"><span><b>위험도</b>${riskName(w.riskLevel)}</span><span><b>1차 추천</b>${escapeHTML(vendorName(w.preliminaryVendor))}</span><p><b>내 핵심근거</b>${escapeHTML(w.note||'')}</p><p><b>다른 직무에 확인할 질문</b>${escapeHTML(w.question||'')}</p></div>${supplementalHTML()}</section>`;}
   const d=teamRoleDraft;
-  return `<section class="team-role-card"><div class="team-role-head"><span>${role.icon}</span><div><small>${me?.teamLabel||me?.teamId||'팀'} · 나의 직무</small><h3>${role.name}</h3><p>${roleDuty(me?.teamRoleKey)}</p></div></div><div class="team-secret"><b>🔐 나에게 우선 지급된 직무자료</b><p>${role.secret}</p></div>${supplementalHTML()}<div class="work-section-title"><span>01</span><div><b>핵심정보 해석</b><small>자료를 읽고 가장 타당한 직무판단을 선택하세요.</small></div></div><div class="response-list">${role.options.map((x,i)=>`<button type="button" class="response-card ${d.choice!==null&&Number(d.choice)===i?'selected':''}" data-team-role-choice="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="work-section-title"><span>02</span><div><b>위험도 판단</b><small>내 직무에서 이 사안을 어느 수준으로 관리해야 하는지 판단하세요.</small></div></div><div class="mini-choice-grid risk-grid">${[['low','낮음'],['mid','보통'],['high','높음']].map(([k,l])=>`<button type="button" class="mini-choice ${d.riskLevel===k?'selected':''}" data-team-risk="${k}">${l}</button>`).join('')}</div><div class="work-section-title"><span>03</span><div><b>1차 추천 대안</b><small>아직 다른 직무정보를 보기 전, 현재 자료만으로 1차 판단하세요. 나중에 바뀌어도 됩니다.</small></div></div><div class="mini-choice-grid">${[...C.team.vendors.map(v=>v.id),'HOLD'].map(id=>`<button type="button" class="mini-choice ${d.preliminaryVendor===id?'selected':''}" data-team-pre-vendor="${id}">${escapeHTML(vendorName(id))}</button>`).join('')}</div><label class="work-label">내 직무의 핵심근거</label><div class="required-note ${String(d.note||'').trim().length>=15?'ok':''}">※ 필수 · 숫자·기준·위험 중 핵심을 <b>15글자 이상</b> 적으세요. <span>현재 ${String(d.note||'').trim().length}/15자</span></div><textarea id="teamRoleNote" class="work-textarea" maxlength="260" placeholder="예: 09:30 이전 입고가 필수이므로 납기조건을 충족하지 못하면 가격이 낮아도 선정하기 어렵다.">${escapeHTML(d.note)}</textarea><label class="work-label">다른 담당자에게 확인할 질문</label><div class="required-note ${String(d.question||'').trim().length>=8?'ok':''}">※ 필수 · 내가 가진 정보만으로 부족한 점을 <b>8글자 이상</b> 질문하세요. <span>현재 ${String(d.question||'').trim().length}/8자</span></div><textarea id="teamRoleQuestion" class="work-textarea compact" maxlength="160" placeholder="예: 구매 담당에게 B대안의 정확한 납품시간을 확인하고 싶다.">${escapeHTML(d.question)}</textarea><button id="submitTeamRoleBtn" class="btn primary large full" ${teamRoleReady()?'':'disabled'}>개인 직무분석 제출</button></section>`;
+  return `<section class="team-role-card"><div class="team-role-head"><span>${role.icon}</span><div><small>${me?.teamLabel||me?.teamId||'팀'} · 나의 직무</small><h3>${role.name}</h3><p>${roleDuty(me?.teamRoleKey)}</p></div></div><div class="team-secret"><b>🔐 나에게 우선 지급된 직무자료</b><p>${role.secret}</p></div>${supplementalHTML()}<div class="work-section-title"><span>01</span><div><b>핵심정보 해석</b><small>자료를 읽고 가장 타당한 직무판단을 선택하세요.</small></div></div><div class="response-list">${role.options.map((x,i)=>`<button type="button" class="response-card ${d.choice!==null&&Number(d.choice)===i?'selected':''}" data-team-role-choice="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="work-section-title"><span>02</span><div><b>위험도 판단</b><small>내 직무에서 이 사안을 어느 수준으로 관리해야 하는지 판단하세요.</small></div></div><div class="mini-choice-grid risk-grid">${[['low','낮음'],['mid','보통'],['high','높음']].map(([k,l])=>`<button type="button" class="mini-choice ${d.riskLevel===k?'selected':''}" data-team-risk="${k}">${l}</button>`).join('')}</div><div class="work-section-title"><span>03</span><div><b>1차 추천 대안</b><small>아직 다른 직무정보를 보기 전, 현재 자료만으로 1차 판단하세요. 나중에 바뀌어도 됩니다.</small></div></div><div class="mini-choice-grid">${[...C.team.vendors.map(v=>v.id),'HOLD'].map(id=>`<button type="button" class="mini-choice ${d.preliminaryVendor===id?'selected':''}" data-team-pre-vendor="${id}">${escapeHTML(vendorName(id))}</button>`).join('')}</div><label class="work-label">내 직무의 핵심근거</label><div class="required-note ${String(d.note||'').trim().length>=15?'ok':''}">※ 필수 · 숫자·기준·위험 중 핵심을 <b>15글자 이상</b> 적으세요. <span>현재 ${String(d.note||'').trim().length}/15자</span></div><textarea id="teamRoleNote" class="work-textarea" maxlength="260" placeholder="예: 09:30 이전 입고가 필수이므로 납기조건을 충족하지 못하면 가격이 낮아도 선정하기 어렵다.">${escapeHTML(d.note)}</textarea><label class="work-label">다른 담당자에게 확인할 질문</label><div class="required-note ${String(d.question||'').trim().length>=8?'ok':''}">※ 필수 · 내가 가진 정보만으로 부족한 점을 <b>8글자 이상</b> 질문하세요. <span>현재 ${String(d.question||'').trim().length}/8자</span></div><textarea id="teamRoleQuestion" class="work-textarea compact" maxlength="160" placeholder="예: 구매 담당에게 B대안의 정확한 납품시간을 확인하고 싶다.">${escapeHTML(d.question)}</textarea>${submitCheckHTML('teamRoleSubmitCheck',teamRoleMissingReasons(),'개인 직무분석을 제출할 수 있습니다.')}<button id="submitTeamRoleBtn" class="btn primary large full" ${teamRoleReady()?'':'disabled'}>개인 직무분석 제출</button></section>`;
 }
 function teamBoardHTML(){
   const b=teamBoard(), roster=teamRoster();
@@ -577,7 +670,7 @@ function teamDecisionHTML(){
   const ex=myAnswers?.team?.report; const roster=teamRoster();
   if(ex) return `<section class="team-decision-card"><div class="feedback good"><b>✓ 나의 최종위원 의견 제출 완료</b><br>이제 다른 조원의 제출이 끝날 때까지 기다리세요. 팀 점수는 모두의 판단을 종합하여 산출됩니다.</div></section>`;
   const d=teamReportDraft, others=(roster?.members||[]).filter(x=>x.uid!==DB.uid);
-  return `<section class="team-decision-card"><div class="team-shared-screen"><span>👤 모든 조원이 직접 제출</span><h3>최종위원 의견서</h3><p>서기 한 명이 대신 작성하지 않습니다. <b>모든 조원이 동일한 상황판을 보고 자신의 최종 판단을 직접 제출</b>하며, 시스템이 팀의 합의도와 판단의 질을 함께 평가합니다.</p></div><div class="work-section-title"><span>01</span><div><b>핵심 문제 종합</b><small>팀 상황판과 지급정보를 종합해 관리해야 할 문제를 4개 이상 선택하세요.</small></div></div><div class="required-note ${d.issues.length>=4?'ok':''}">※ <b>4개 이상</b> 선택 · 현재 ${d.issues.length}개</div><div class="criteria-grid">${C.team.issues.map(x=>`<label class="criteria-chip ${d.issues.includes(x.key)?'selected':''}"><input type="checkbox" data-team-issue="${x.key}" ${d.issues.includes(x.key)?'checked':''}><span>${x.label}</span></label>`).join('')}</div><div class="work-section-title"><span>02</span><div><b>판단기준 확정</b><small>실제 최종결정에 적용할 기준을 4개 이상 선택하세요.</small></div></div><div class="required-note ${d.criteria.length>=4?'ok':''}">※ <b>4개 이상</b> 선택 · 현재 ${d.criteria.length}개</div><div class="criteria-grid">${C.team.criteria.map(x=>`<label class="criteria-chip ${d.criteria.includes(x.key)?'selected':''}"><input type="checkbox" data-team-criterion="${x.key}" ${d.criteria.includes(x.key)?'checked':''}><span>${x.label}</span></label>`).join('')}</div><div class="work-section-title"><span>03</span><div><b>이해관계 처리</b><small>${C.team.conflictPrompt||'이해관계를 어떻게 처리할지 결정하세요.'}</small></div></div><div class="response-list">${C.team.conflictResponses.map((x,i)=>`<button type="button" class="response-card ${d.conflictResponse!==null&&Number(d.conflictResponse)===i?'selected':''}" data-team-conflict="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="team-vendor-table">${C.team.vendors.map(v=>`<div><b>${v.id} · ${v.name}</b><span>${v.price}</span><span>${C.team.qualityLabel||'품질'} ${v.quality}</span><span>${C.team.deliveryLabel||'납기'} ${v.delivery}</span></div>`).join('')}</div><div class="work-section-title"><span>04</span><div><b>돌발상황 반영</b><small>새 정보가 들어온 뒤 기존 1차 판단을 다시 검토하세요.</small></div></div><div class="work-alert"><b>⚠️ 추가정보</b><span>${C.team.twist}</span></div><div class="response-list">${C.team.twistResponses.map((x,i)=>`<button type="button" class="response-card ${d.twistResponse!==null&&Number(d.twistResponse)===i?'selected':''}" data-team-twist="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="work-section-title"><span>05</span><div><b>교차검증</b><small>다른 조원의 정보 중 내 판단을 가장 크게 바꾸거나 확신시킨 정보를 선택하세요.</small></div></div>${others.length?`<div class="influence-grid">${others.map(x=>`<button type="button" class="influence-card ${d.influenceUid===x.uid?'selected':''}" data-team-influence="${x.uid}"><b>${escapeHTML(x.studentName||'학생')}</b><span>${escapeHTML(x.roleName||'')}</span><small>${roleDuty(x.roleKey)}</small></button>`).join('')}</div>`:'<div class="feedback info">1인 팀 예외 운영으로 교차검증 선택은 생략됩니다.</div>'}<div class="work-section-title"><span>06</span><div><b>최종 의사결정</b><small>돌발상황까지 반영한 최종 대안과 근거를 제출하세요.</small></div></div><label class="work-label">최종 대안</label><div class="mini-choice-grid">${C.team.vendors.map(v=>`<button type="button" class="mini-choice ${d.vendor===v.id?'selected':''}" data-team-vendor="${v.id}">${v.id} · ${v.name}</button>`).join('')}</div><label class="work-label">최종 판단근거</label><div class="required-note ${String(d.reason||'').trim().length>=20?'ok':''}">※ 팀 상황판·돌발상황·이해관계를 연결해 <b>20글자 이상</b> 작성하세요. <span>현재 ${String(d.reason||'').trim().length}/20자</span></div><textarea id="teamReportReason" class="work-textarea" maxlength="460" placeholder="예산·품질·납기·이해관계·돌발상황과 다른 조원의 정보를 어떻게 종합했는지 적으세요.">${escapeHTML(d.reason)}</textarea><button id="submitTeamReportBtn" class="btn primary large full" ${teamReportReady()?'':'disabled'}>나의 최종위원 의견 제출</button></section>`;
+  return `<section class="team-decision-card"><div class="team-shared-screen"><span>👤 모든 조원이 직접 제출</span><h3>최종위원 의견서</h3><p>서기 한 명이 대신 작성하지 않습니다. <b>모든 조원이 동일한 상황판을 보고 자신의 최종 판단을 직접 제출</b>하며, 시스템이 팀의 합의도와 판단의 질을 함께 평가합니다.</p></div><div class="work-section-title"><span>01</span><div><b>핵심 문제 종합</b><small>팀 상황판과 지급정보를 종합해 관리해야 할 문제를 4개 이상 선택하세요.</small></div></div><div class="required-note ${d.issues.length>=4?'ok':''}">※ <b>4개 이상</b> 선택 · 현재 ${d.issues.length}개</div><div class="criteria-grid">${C.team.issues.map(x=>`<label class="criteria-chip ${d.issues.includes(x.key)?'selected':''}"><input type="checkbox" data-team-issue="${x.key}" ${d.issues.includes(x.key)?'checked':''}><span>${x.label}</span></label>`).join('')}</div><div class="work-section-title"><span>02</span><div><b>판단기준 확정</b><small>실제 최종결정에 적용할 기준을 4개 이상 선택하세요.</small></div></div><div class="required-note ${d.criteria.length>=4?'ok':''}">※ <b>4개 이상</b> 선택 · 현재 ${d.criteria.length}개</div><div class="criteria-grid">${C.team.criteria.map(x=>`<label class="criteria-chip ${d.criteria.includes(x.key)?'selected':''}"><input type="checkbox" data-team-criterion="${x.key}" ${d.criteria.includes(x.key)?'checked':''}><span>${x.label}</span></label>`).join('')}</div><div class="work-section-title"><span>03</span><div><b>이해관계 처리</b><small>${C.team.conflictPrompt||'이해관계를 어떻게 처리할지 결정하세요.'}</small></div></div><div class="response-list">${C.team.conflictResponses.map((x,i)=>`<button type="button" class="response-card ${d.conflictResponse!==null&&Number(d.conflictResponse)===i?'selected':''}" data-team-conflict="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="team-vendor-table">${C.team.vendors.map(v=>`<div><b>${v.id} · ${v.name}</b><span>${v.price}</span><span>${C.team.qualityLabel||'품질'} ${v.quality}</span><span>${C.team.deliveryLabel||'납기'} ${v.delivery}</span></div>`).join('')}</div><div class="work-section-title"><span>04</span><div><b>돌발상황 반영</b><small>새 정보가 들어온 뒤 기존 1차 판단을 다시 검토하세요.</small></div></div><div class="work-alert"><b>⚠️ 추가정보</b><span>${C.team.twist}</span></div><div class="response-list">${C.team.twistResponses.map((x,i)=>`<button type="button" class="response-card ${d.twistResponse!==null&&Number(d.twistResponse)===i?'selected':''}" data-team-twist="${i}"><span>${i+1}</span>${x}</button>`).join('')}</div><div class="work-section-title"><span>05</span><div><b>교차검증</b><small>다른 조원의 정보 중 내 판단을 가장 크게 바꾸거나 확신시킨 정보를 선택하세요.</small></div></div>${others.length?`<div class="influence-grid">${others.map(x=>`<button type="button" class="influence-card ${d.influenceUid===x.uid?'selected':''}" data-team-influence="${x.uid}"><b>${escapeHTML(x.studentName||'학생')}</b><span>${escapeHTML(x.roleName||'')}</span><small>${roleDuty(x.roleKey)}</small></button>`).join('')}</div>`:'<div class="feedback info">1인 팀 예외 운영으로 교차검증 선택은 생략됩니다.</div>'}<div class="work-section-title"><span>06</span><div><b>최종 의사결정</b><small>돌발상황까지 반영한 최종 대안과 근거를 제출하세요.</small></div></div><label class="work-label">최종 대안</label><div class="mini-choice-grid">${C.team.vendors.map(v=>`<button type="button" class="mini-choice ${d.vendor===v.id?'selected':''}" data-team-vendor="${v.id}">${v.id} · ${v.name}</button>`).join('')}</div><label class="work-label">최종 판단근거</label><div class="required-note ${String(d.reason||'').trim().length>=20?'ok':''}">※ 팀 상황판·돌발상황·이해관계를 연결해 <b>20글자 이상</b> 작성하세요. <span>현재 ${String(d.reason||'').trim().length}/20자</span></div><textarea id="teamReportReason" class="work-textarea" maxlength="460" placeholder="예산·품질·납기·이해관계·돌발상황과 다른 조원의 정보를 어떻게 종합했는지 적으세요.">${escapeHTML(d.reason)}</textarea>${submitCheckHTML('teamReportSubmitCheck',teamReportMissingReasons(),'최종위원 의견을 제출할 수 있습니다.')}<button id="submitTeamReportBtn" class="btn primary large full" ${teamReportReady()?'':'disabled'}>나의 최종위원 의견 제출</button></section>`;
 }
 function teamScorecardHTML(){
   const pub=teamPublished(); if(!pub) return `<div class="waiting"><h3>팀 채점 대기</h3><p>교사가 팀별 작업결과를 채점·공개하면 결과가 표시됩니다.</p></div>`;
@@ -600,8 +693,8 @@ function bindTeam(){
   document.querySelectorAll('[data-team-role-choice]').forEach(b=>b.onclick=()=>{teamRoleDraft.choice=Number(b.dataset.teamRoleChoice);render();});
   document.querySelectorAll('[data-team-risk]').forEach(b=>b.onclick=()=>{teamRoleDraft.riskLevel=b.dataset.teamRisk;render();});
   document.querySelectorAll('[data-team-pre-vendor]').forEach(b=>b.onclick=()=>{teamRoleDraft.preliminaryVendor=b.dataset.teamPreVendor;render();});
-  const rn=$('#teamRoleNote'); if(rn) rn.oninput=()=>{teamRoleDraft.note=rn.value;syncRequiredCounter(rn,15);const b=$('#submitTeamRoleBtn');if(b)b.disabled=!teamRoleReady();};
-  const rq=$('#teamRoleQuestion'); if(rq) rq.oninput=()=>{teamRoleDraft.question=rq.value;syncRequiredCounter(rq,8);const b=$('#submitTeamRoleBtn');if(b)b.disabled=!teamRoleReady();};
+  const rn=$('#teamRoleNote'); if(rn) rn.oninput=()=>{teamRoleDraft.note=rn.value;syncRequiredCounter(rn,15);updateTeamRoleSubmitState();};
+  const rq=$('#teamRoleQuestion'); if(rq) rq.oninput=()=>{teamRoleDraft.question=rq.value;syncRequiredCounter(rq,8);updateTeamRoleSubmitState();};
   const rb=$('#submitTeamRoleBtn'); if(rb) rb.onclick=submitTeamRole;
   document.querySelectorAll('[data-team-issue]').forEach(x=>x.onchange=()=>{const k=x.dataset.teamIssue;teamReportDraft.issues=x.checked?[...new Set([...teamReportDraft.issues,k])]:teamReportDraft.issues.filter(v=>v!==k);render();});
   document.querySelectorAll('[data-team-criterion]').forEach(x=>x.onchange=()=>{const k=x.dataset.teamCriterion;teamReportDraft.criteria=x.checked?[...new Set([...teamReportDraft.criteria,k])]:teamReportDraft.criteria.filter(v=>v!==k);render();});
@@ -609,16 +702,16 @@ function bindTeam(){
   document.querySelectorAll('[data-team-twist]').forEach(b=>b.onclick=()=>{teamReportDraft.twistResponse=Number(b.dataset.teamTwist);render();});
   document.querySelectorAll('[data-team-influence]').forEach(b=>b.onclick=()=>{teamReportDraft.influenceUid=b.dataset.teamInfluence;render();});
   document.querySelectorAll('[data-team-vendor]').forEach(b=>b.onclick=()=>{teamReportDraft.vendor=b.dataset.teamVendor;render();});
-  const tr=$('#teamReportReason'); if(tr) tr.oninput=()=>{teamReportDraft.reason=tr.value;syncRequiredCounter(tr,20);const b=$('#submitTeamReportBtn');if(b)b.disabled=!teamReportReady();};
+  const tr=$('#teamReportReason'); if(tr) tr.oninput=()=>{teamReportDraft.reason=tr.value;syncRequiredCounter(tr,20);updateTeamReportSubmitState();};
   const sr=$('#submitTeamReportBtn'); if(sr) sr.onclick=submitTeamReport;
 }
 async function submitTeamRole(){
-  if(submitting||myAnswers?.team?.role||!teamRoleReady())return; const role=teamRoleConfig(); if(!role)return;
+  if(submitting||myAnswers?.team?.role)return; if(!teamRoleReady()){const r=teamRoleMissingReasons();return toast(r[0]||'필수 항목을 확인해주세요.');} const role=teamRoleConfig(); if(!role)return;
   const b=$('#submitTeamRoleBtn');submitting=true;if(b){b.disabled=true;b.textContent='직무분석 저장 중...';}
   try{await DB.submitAnswer(code,'team','role',{choice:Number(teamRoleDraft.choice),work:{teamId:me.teamId,roleKey:me.teamRoleKey,riskLevel:teamRoleDraft.riskLevel,preliminaryVendor:teamRoleDraft.preliminaryVendor,note:teamRoleDraft.note.trim(),question:teamRoleDraft.question.trim(),extraRoleKeys:extraRoles()}});await syncMyResult();toast('개인 직무분석을 제출했습니다.');}catch(e){toast('직무분석 저장 중 오류가 발생했습니다.');if(b){b.disabled=false;b.textContent='개인 직무분석 제출';}}finally{submitting=false;}
 }
 async function submitTeamReport(){
-  if(submitting||myAnswers?.team?.report||control?.teamPhase!=='decision'||!teamReportReady())return;
+  if(submitting||myAnswers?.team?.report||control?.teamPhase!=='decision')return; if(!teamReportReady()){const r=teamReportMissingReasons();return toast(r[0]||'필수 항목을 확인해주세요.');}
   const b=$('#submitTeamReportBtn');submitting=true;if(b){b.disabled=true;b.textContent='최종의견 저장 중...';}
   const vendorIndex=C.team.vendors.findIndex(v=>v.id===teamReportDraft.vendor);
   try{await DB.submitAnswer(code,'team','report',{choice:vendorIndex,work:{teamId:me.teamId,issues:[...teamReportDraft.issues],criteria:[...teamReportDraft.criteria],conflictResponse:Number(teamReportDraft.conflictResponse),twistResponse:Number(teamReportDraft.twistResponse),vendor:teamReportDraft.vendor,influenceUid:teamReportDraft.influenceUid||null,reason:teamReportDraft.reason.trim()}});await syncMyResult();toast('나의 최종위원 의견을 제출했습니다.');}catch(e){toast('최종의견 저장 중 오류가 발생했습니다.');if(b){b.disabled=false;b.textContent='나의 최종위원 의견 제출';}}finally{submitting=false;}
@@ -660,6 +753,7 @@ function render() {
       <h2>${q.q}</h2>
       ${choiceHTML(q.options, ex, pending)}
       ${!ex ? `<div class="student-submit">
+        ${submitCheckHTML('writtenSubmitCheck',pending==null?[`${Number(control.index)+1}번 문항이 미선택입니다. 답안을 선택해주세요.`]:[],`${Number(control.index)+1}번 문항 답안 선택 완료 · 제출할 수 있습니다.`)}
         <button id="submitBtn" class="btn primary large full" ${pending == null ? 'disabled' : ''}>
           답안 제출
         </button>

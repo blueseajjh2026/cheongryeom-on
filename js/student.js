@@ -212,6 +212,44 @@ function bindChoices() {
   });
 }
 
+function virtueMeta(key){
+  return C.virtues.find(v=>v.key===key)||{name:'청렴',tag:'바른 판단'};
+}
+const writtenTransferTips={
+  honesty:'다음 상황에서도 사실·수치·기록을 편의에 맞게 바꾸지 않았는지 먼저 확인해보세요.',
+  promise:'다음 상황에서는 시간이 촉박해도 정해진 절차·기한·안전기준이 무엇인지 먼저 확인해보세요.',
+  care:'다음 상황에서는 내 선택이 동료·고객·사용자·생명·환경에 미칠 영향까지 함께 살펴보세요.',
+  responsibility:'다음 상황에서는 문제를 발견한 뒤 보고·조치·기록까지 끝까지 이어지는지 확인해보세요.',
+  restraint:'다음 상황에서는 친분·선물·개인 편의 같은 사적 요소를 직무판단에서 분리해보세요.',
+  fairness:'다음 상황에서는 누구에게나 설명할 수 있는 같은 기준을 세우고 일관되게 적용해보세요.'
+};
+function writtenInstantFeedbackHTML(q,ex){
+  if(!ex)return '';
+  const v=virtueMeta(q.virtue);
+  const matched=Number(ex.choice)===Number(q.correct);
+  return `<section class="instant-feedback-card written-instant-feedback">
+    <div class="instant-feedback-head"><div><span>✓ 답안 제출완료 · 즉시 피드백</span><h3>${escapeHTML(v.name)} · ${escapeHTML(v.tag)}</h3></div><em class="${matched?'matched':'review'}">${matched?'권장 판단과 일치':'판단 원리 확인'}</em></div>
+    <div class="instant-feedback-explain"><b>왜 이렇게 판단할까요?</b><p>${q.ex}</p></div>
+    <div class="instant-feedback-transfer"><b>다음 문항에 적용하기</b><span>${writtenTransferTips[q.virtue]||'다음 상황에서도 같은 청렴원리를 기준으로 판단해보세요.'}</span></div>
+    <div class="instant-feedback-lock">제출한 답안은 확정되었습니다. 해설을 확인한 뒤 교사가 다음 문항을 열 때까지 기다려주세요.</div>
+  </section>`;
+}
+
+function practicalLearningHTML(q,ex){
+  if(!ex)return '';
+  const lessons={
+    procurement:{title:'공정한 선택은 “관계를 숨기지 않고 같은 기준으로 비교한 뒤 기록하는 것”입니다.',body:'이해관계가 있다는 이유만으로 자동 탈락시키거나, 반대로 친분 때문에 가점을 주는 것이 공정은 아닙니다. 이해관계를 공개하고 비용·품질·납기 등 공개된 기준을 동일하게 적용한 뒤 선정사유를 기록하는 과정이 핵심입니다.',next:'다음 과제에서는 기준을 세우는 것에서 한 걸음 더 나아가, 문제가 생겼을 때 올바른 처리절차를 끝까지 수행해보세요.'},
+    sequence:{title:'누락은 추정으로 메우지 않고 “실제 확인 → 재점검 → 보고 → 실제 기록”으로 처리합니다.',body:'기록이 비어 있다고 정상으로 추정하거나 다른 기록을 복사하면 사실과 절차가 왜곡됩니다. 확인 가능한 근거를 다시 확보하고, 누락 사실과 확인 결과를 그대로 보고·기록하는 것이 책임 있는 직무처리입니다.',next:'다음 과제에서는 절차를 아는 것에서 더 나아가, 상급자나 주변의 선호가 개입해도 같은 기준을 유지해보세요.'},
+    panel:{title:'압력이나 선호가 추가되어도 “처음 공개한 평가기준”은 흔들리지 않아야 합니다.',body:'추가정보는 판단에 영향을 줄 수 있는 요소로 인식하고 기록하되, 특정 사람의 선호 때문에 점수를 올리거나 반대로 일괄 감점하지 않습니다. 최초 평가를 보존하고 같은 기준과 근거로 최종 판단을 설명하는 것이 핵심입니다.',next:'종합평가에서는 이제 내 판단만으로 끝내지 않고, 다른 직무의 정보와 돌발상황까지 교차검증하여 최종 결정을 만들어보세요.'}
+  };
+  const l=lessons[q.kind]||{title:'제출한 작업을 직무기준과 연결해 다시 확인해보세요.',body:q.objective||'자료와 기준을 바탕으로 판단하고 그 근거를 기록하는 것이 중요합니다.',next:'다음 과제에서도 판단기준과 기록을 일관되게 적용해보세요.'};
+  return `<section class="instant-feedback-card practical-instant-feedback">
+    <div class="instant-feedback-head"><div><span>✓ 작업 제출완료 · 핵심 해설</span><h3>${escapeHTML(q.code)}에서 배운 직무원리</h3></div><em class="matched">학습 연결</em></div>
+    <div class="instant-feedback-explain"><b>${l.title}</b><p>${l.body}</p></div>
+    <div class="instant-feedback-transfer"><b>다음 단계에 적용하기</b><span>${l.next}</span></div>
+  </section>`;
+}
+
 function writtenComp() {
   const sums = Object.fromEntries(C.virtues.map(v => [v.key, { s: 0, n: 0 }]));
   C.written.forEach(q => {
@@ -467,7 +505,7 @@ function practicalHeader(q, ex) {
   </div>
   ${studentTimerHTML(q)}
   <div class="work-notice"><b>수험자 유의사항</b><span>지급자료를 충분히 확인하고 작업물을 완성한 뒤 한 번만 제출합니다. 제출 후에는 수정할 수 없습니다.</span></div>
-  ${ex ? `<div class="feedback good"><b>✓ 작업물 제출 완료</b><br>이 과제는 확정되었습니다. 교사의 안내에 따라 다음 과제로 이동하세요.</div>` : ''}`;
+  ${ex ? `<div class="feedback good"><b>✓ 작업물 제출 완료</b><br>아래 작업결과와 핵심 해설을 확인한 뒤 교사가 다음 과제를 열 때까지 기다려주세요.</div>` : ''}`;
 }
 
 function renderProcurement(q, d) {
@@ -563,7 +601,7 @@ function practicalReady(q,d) {
 function renderPractical(q, ex) {
   if (ex) {
     const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,ex);
-    return `${practicalHeader(q, ex)}${practicalScorecardHTML(q,ex)}`;
+    return `${practicalHeader(q, ex)}${practicalScorecardHTML(q,ex)}${practicalLearningHTML(q,ex)}`;
   }
   const d=practicalDraft(q);
   const body=q.kind==='procurement'?renderProcurement(q,d):q.kind==='sequence'?renderSequence(q,d):renderPanel(q,d);
@@ -758,13 +796,7 @@ function render() {
           답안 제출
         </button>
       </div>` : ''}
-      ${ex
-        ? (control.reveal
-          ? `<div class="feedback ${ex.correct ? 'good' : 'info'}">
-              <b>${ex.correct ? '정답입니다.' : '해설을 확인해보세요.'}</b><br>${q.ex}
-            </div>`
-          : `<div class="feedback info">✓ 답안 제출 완료<br>교사가 해설을 공개하면 설명을 확인할 수 있습니다.</div>`)
-        : ''}`;
+      ${ex ? writtenInstantFeedbackHTML(q,ex) : ''}`;
   }
 
   if (stage === 'writtenFeedback') {
@@ -1062,7 +1094,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v8.6.2';
+    $('#studentStatus').textContent = 'v8.7.0';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

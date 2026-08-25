@@ -1,4 +1,4 @@
-﻿(function(){
+(function(){
 'use strict';
 const DB=window.CheongDB;
 let dock=null;
@@ -17,5 +17,5 @@ async function advance(){if(typeof code==='undefined'||!code)return;const r=DB.d
  if(st==='pledge'){if(!r.pledges?.[DB.uid]?.text){toast('청렴 실천약속을 먼저 작성해 서명해주세요.');return;}return DB.setControl(code,{stage:'result',index:0});}
  if(st==='result'){toast('학생용 실전 데모의 전 과정을 완료했습니다.');}
 }
-function update(){ensureDock();const joined=document.getElementById('examPanel')&&!document.getElementById('examPanel').classList.contains('hidden');dock.style.display=joined?'flex':'none';if(!joined)return;const st=control?.stage||'waiting',ph=control?.teamPhase||'';const names={waiting:'교사가 오리엔테이션을 시작하는 상황을 재현합니다.',intro:'오리엔테이션 확인 후 필기평가로 이동합니다.',written:'답안을 제출한 뒤 다음 문항으로 이동합니다.',writtenFeedback:'1차 피드백 확인 후 작업형 실기로 전환합니다.',practical:'작업물을 제출한 뒤 다음 실기로 이동합니다.',practicalFeedback:'2차 피드백과 종합평가 방법을 확인합니다.',team:'직무회의 단계를 교사 제어처럼 순서대로 전환합니다.',diagnosis:'최종 역량진단을 확인합니다.',pledge:'실천약속을 서명한 뒤 자격판정으로 이동합니다.',result:'전 과정 체험 완료'};message(st==='team'?`${names.team} · 현재 ${ph}`:names[st]||'다음 단계로 이동합니다.');const b=document.getElementById('demoAdvanceBtn');if(b)b.textContent=st==='result'?'체험 완료':(st==='team'&&ph==='scored'?'역량진단 →':'다음 단계 →');}
+function update(){ensureDock();const joined=document.getElementById('examPanel')&&!document.getElementById('examPanel').classList.contains('hidden');dock.style.display=joined?'flex':'none';if(!joined)return;const st=control?.stage||'waiting',ph=control?.teamPhase||'';const names={waiting:'교사가 오리엔테이션을 시작하는 상황을 재현합니다.',intro:'오리엔테이션 확인 후 필기평가로 이동합니다.',written:'답안을 제출하면 즉시 핵심 해설이 표시됩니다. 해설 확인 후 다음 문항으로 이동합니다.',writtenFeedback:'1차 피드백 확인 후 작업형 실기로 전환합니다.',practical:'작업물을 제출하면 채점표와 핵심 직무해설이 표시됩니다. 확인 후 다음 실기로 이동합니다.',practicalFeedback:'2차 피드백과 종합평가 방법을 확인합니다.',team:'직무회의 단계를 교사 제어처럼 순서대로 전환합니다.',diagnosis:'최종 역량진단을 확인합니다.',pledge:'실천약속을 서명한 뒤 자격판정으로 이동합니다.',result:'전 과정 체험 완료'};message(st==='team'?`${names.team} · 현재 ${ph}`:names[st]||'다음 단계로 이동합니다.');const b=document.getElementById('demoAdvanceBtn');if(b)b.textContent=st==='result'?'체험 완료':(st==='team'&&ph==='scored'?'역량진단 →':'다음 단계 →');}
 setInterval(update,350);})();

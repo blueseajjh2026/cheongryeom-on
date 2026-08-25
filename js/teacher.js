@@ -404,8 +404,8 @@ function renderContent() {
 
   let h = '';
   const idx = Number(control.index || 0);
-  $('#revealBtn').classList.toggle('hidden', control.stage !== 'written');
-  $('#revealBtn').textContent = control.reveal ? '해설 숨기기' : '해설 공개';
+  const revealBtn=$('#revealBtn');
+  if(revealBtn) revealBtn.classList.add('hidden');
 
   if (control.stage === 'waiting') {
     h = `<span class="eyebrow">READY</span>
@@ -427,8 +427,9 @@ function renderContent() {
   if (control.stage === 'written') {
     h = `<span class="eyebrow">전공맞춤 필기 ${idx + 1}/${C.written.length}</span>
       <h2>같은 시간, 전공별로 서로 다른 직업윤리 문항이 출제됩니다.</h2>
-      <p class="context-box">현재는 5개 전공분야 모두 <b>${idx+1}번 문항</b>을 풀고 있습니다. 해설 공개 시 각 학생에게 자신의 전공 문항 해설이 표시됩니다.</p>
-      <div class="teacher-track-question-grid">${C.trackList.map(tl=>{const q=trackForKey(tl.key).written[idx];return `<article class="teacher-track-question"><div><span>${tl.icon}</span><b>${tl.short}</b></div><p>${q.q}</p>${control.reveal?`<small><strong>정답 ${String.fromCharCode(65+q.correct)}</strong> · ${q.ex}</small>`:''}</article>`}).join('')}</div>`;
+      <p class="context-box"><b>문항별 즉시 피드백 방식</b>입니다. 학생은 답안을 제출하는 순간 답안이 잠기고, 자신의 화면 아래에 해당 문항의 핵심 청렴역량과 해설이 자동 표시됩니다. 교사가 별도로 해설 버튼을 누를 필요 없이, 모든 학생이 자기 판단 직후 피드백을 확인한 다음 다음 문항으로 이동합니다.</p>
+      <div class="teacher-auto-feedback-note"><span>자동 피드백</span><b>답안 제출 → 즉시 해설 → 다음 문항</b><small>제출 전 학생에게는 해설이 보이지 않으며, 제출한 답안은 변경되지 않습니다.</small></div>
+      <div class="teacher-track-question-grid">${C.trackList.map(tl=>{const q=trackForKey(tl.key).written[idx];return `<article class="teacher-track-question"><div><span>${tl.icon}</span><b>${tl.short}</b></div><p>${q.q}</p><small><strong>권장 판단 ${String.fromCharCode(65+q.correct)}</strong> · ${q.ex}</small></article>`}).join('')}</div>`;
   }
 
   if (control.stage === 'writtenFeedback') {
@@ -437,7 +438,7 @@ function renderContent() {
     const complete=Object.keys(participants||{}).filter(uid=>writtenFeedbackForUser(uid).answered===trackForUid(uid).written.length).length;
     h = `<span class="eyebrow">WRITTEN RESULT · TRANSITION FEEDBACK</span>
       <h2>필기 종료 · 실기 전환 피드백</h2>
-      <p class="context-box"><b>주의환기 단계</b>입니다. 학생 화면에는 필기에서 확인된 6대 청렴역량 수치, 강점 2개, 실기에서 더 연습할 역량 1개가 표시됩니다. 다음 단계부터는 보기 선택이 아니라 <b>지급자료 확인 → 기준 설정 → 실제 처리 → 기록 제출</b> 방식으로 전환됩니다.</p>
+      <p class="context-box"><b>문항별 즉시 피드백을 거친 뒤의 1차 종합피드백 단계</b>입니다. 학생 화면에는 필기에서 확인된 6대 청렴역량 수치, 강점 2개, 실기에서 더 연습할 역량 1개가 표시됩니다. 다음 단계부터는 보기 선택이 아니라 <b>지급자료 확인 → 기준 설정 → 실제 처리 → 기록 제출</b> 방식으로 전환됩니다.</p>
       <div class="teacher-feedback-summary"><div><span>필기 완료</span><b>${complete}/${Object.keys(participants||{}).length}명</b></div><div><span>학급 강점</span><b>${ranked[0]?.name||'-'} ${ranked[0]?.score||0}</b></div><div><span>성장 포인트</span><b>${ranked[ranked.length-1]?.name||'-'} ${ranked[ranked.length-1]?.score||0}</b></div></div>
       <div class="teacher-transition-guide"><b>다음 단계</b><strong>전공맞춤 작업형 실기 P-01 시작</strong><span>학생들이 피드백을 확인한 뒤 ‘다음 단계 →’를 눌러주세요.</span></div>`;
   }
@@ -446,7 +447,7 @@ function renderContent() {
     const q0=trackForKey('business').practical[idx];
     h = `<span class="eyebrow">5-TRACK WORK-BASED PRACTICAL · P-0${idx+1}</span>
       <h2>전공맞춤 작업형 실기 ${idx+1}/${C.practical.length}</h2>
-      <p class="context-box">모든 학생은 같은 작업원리(자료검토 → 기준설정 → 실제처리 → 기록)를 적용하되, 지급자료와 직무상황은 자신의 전공분야에 맞게 달라집니다.</p>
+      <p class="context-box">모든 학생은 같은 작업원리(자료검토 → 기준설정 → 실제처리 → 기록)를 적용하되, 지급자료와 직무상황은 자신의 전공분야에 맞게 달라집니다. <b>각 과제를 제출하면 작업결과 채점표와 핵심 직무해설이 즉시 제공</b>되어, 앞 과제에서 배운 원리를 다음 과제에 적용하도록 구성했습니다.</p>
       ${teacherTimerHTML(q0)}
       <div class="teacher-track-practical-grid">${C.trackList.map(tl=>{const q=trackForKey(tl.key).practical[idx];return `<article class="teacher-track-practical"><div><span>${tl.icon}</span><b>${tl.short}</b></div><h3>${q.title}</h3><p>${q.context}</p><small>${q.rubric.join(' · ')}</small></article>`}).join('')}</div>`;
   }
@@ -752,7 +753,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = '실시간 서버 연결 · v8.6.1 단계표시 수정';
+    $('#serverStatus').textContent = 'v8.7.0';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);
@@ -760,9 +761,6 @@ function csv() {
     $('#createRoomBtn').onclick = create;
     $('#nextBtn').onclick = next;
     $('#prevBtn').onclick = prev;
-
-    $('#revealBtn').onclick = () =>
-      DB.setControl(code, { reveal: !control.reveal });
 
     $('#copyLink').onclick = () =>
       navigator.clipboard.writeText(studentURL())

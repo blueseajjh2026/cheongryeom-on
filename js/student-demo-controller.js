@@ -1,4 +1,4 @@
-(function(){
+﻿(function(){
 'use strict';
 const DB=window.CheongDB;
 let dock=null;
@@ -12,10 +12,39 @@ async function advance(){if(typeof code==='undefined'||!code)return;const r=DB.d
  if(st==='writtenFeedback')return DB.setControl(code,{stage:'practical',index:0,reveal:false,timerEnd:null});
  if(st==='practical'){const q=tr.practical[i];if(!pathAnswer('practical',q.id)){toast('현재 작업형 실기를 먼저 제출해주세요.');return;}if(i<tr.practical.length-1)return DB.setControl(code,{index:i+1,timerEnd:null});return DB.setControl(code,{stage:'practicalFeedback',index:0,timerEnd:null});}
  if(st==='practicalFeedback')return DB.setControl(code,{stage:'team',index:0,teamPhase:'briefing',teamBoards:null,teamScores:null});
- if(st==='team'){const ph=control?.teamPhase||'briefing';if(ph==='briefing'){if(!r.answers?.team?.role?.[DB.uid]){toast('개인 직무분석을 먼저 제출해주세요.');return;}DB.demo.seedStudentMateAnswers(code);r.control.teamBoards=DB.demo.makeBoards(code);DB.demo.notify(code);return DB.setControl(code,{teamPhase:'board',teamBoards:r.control.teamBoards});}if(ph==='board'){DB.demo.seedStudentMateMidAnswers(code);r.control.teamBoards=DB.demo.makeBoards(code);DB.demo.notify(code);return DB.setControl(code,{teamPhase:'checkpoint',teamBoards:r.control.teamBoards});}if(ph==='checkpoint'){if(!r.answers?.team?.mid?.[DB.uid]){toast('중간판단을 먼저 제출해주세요.');return;}return DB.setControl(code,{teamPhase:'twist',teamBoards:DB.demo.makeBoards(code)});}if(ph==='twist')return DB.setControl(code,{teamPhase:'decision',teamBoards:DB.demo.makeBoards(code)});if(ph==='decision'){if(!r.answers?.team?.report?.[DB.uid]){toast('나의 최종위원 의견을 먼저 제출해주세요.');return;}DB.demo.scoreStudentTeam(code);DB.demo.notify(code);return DB.setControl(code,{teamPhase:'scored',teamBoards:r.control.teamBoards,teamScores:r.control.teamScores});}if(ph==='scored')return DB.setControl(code,{stage:'diagnosis',index:0});}
+ if(st==='team'){const ph=control?.teamPhase||'briefing';if(ph==='briefing'){if(!r.answers?.team?.role?.[DB.uid]){toast('개인 직무분석을 먼저 제출해주세요.');return;}DB.demo.seedStudentMateAnswers(code);r.control.teamBoards=DB.demo.makeBoards(code);DB.demo.notify(code);return DB.setControl(code,{teamPhase:'board',teamBoards:r.control.teamBoards});}if(ph==='board')return DB.setControl(code,{teamPhase:'twist',teamBoards:DB.demo.makeBoards(code)});if(ph==='twist')return DB.setControl(code,{teamPhase:'decision',teamBoards:DB.demo.makeBoards(code)});if(ph==='decision'){if(!r.answers?.team?.report?.[DB.uid]){toast('나의 최종위원 의견을 먼저 제출해주세요.');return;}DB.demo.scoreStudentTeam(code);DB.demo.notify(code);return DB.setControl(code,{teamPhase:'scored',teamBoards:r.control.teamBoards,teamScores:r.control.teamScores});}if(ph==='scored')return DB.setControl(code,{stage:'diagnosis',index:0});}
  if(st==='diagnosis')return DB.setControl(code,{stage:'pledge',index:0});
  if(st==='pledge'){if(!r.pledges?.[DB.uid]?.text){toast('청렴 실천약속을 먼저 작성해 서명해주세요.');return;}return DB.setControl(code,{stage:'result',index:0});}
  if(st==='result'){toast('학생용 실전 데모의 전 과정을 완료했습니다.');}
 }
-function update(){ensureDock();const joined=document.getElementById('examPanel')&&!document.getElementById('examPanel').classList.contains('hidden');dock.style.display=joined?'flex':'none';if(!joined)return;const st=control?.stage||'waiting',ph=control?.teamPhase||'';const names={waiting:'교사가 오리엔테이션을 시작하는 상황을 재현합니다.',intro:'오리엔테이션 확인 후 필기평가로 이동합니다.',written:'답안을 제출하면 즉시 핵심 해설이 표시됩니다. 해설 확인 후 다음 문항으로 이동합니다.',writtenFeedback:'1차 피드백 확인 후 작업형 실기로 전환합니다.',practical:'작업물을 제출하면 채점표와 핵심 직무해설이 표시됩니다. 확인 후 다음 실기로 이동합니다.',practicalFeedback:'2차 피드백과 종합평가 방법을 확인합니다.',team:'직무회의를 1차 자료 → 상황판 → 중간판단 → 돌발상황 → 최종판단 → 종합피드백 순서로 체험합니다.',diagnosis:'최종 역량진단을 확인합니다.',pledge:'실천약속을 서명한 뒤 자격판정으로 이동합니다.',result:'전 과정 체험 완료'};message(st==='team'?`${names.team} · 현재 ${ph}`:names[st]||'다음 단계로 이동합니다.');const b=document.getElementById('demoAdvanceBtn');if(b)b.textContent=st==='result'?'체험 완료':(st==='team'&&ph==='scored'?'역량진단 →':'다음 단계 →');}
+function update(){ensureDock();const joined=document.getElementById('examPanel')&&!document.getElementById('examPanel').classList.contains('hidden');dock.style.display=joined?'flex':'none';if(!joined)return;const st=control?.stage||'waiting',ph=control?.teamPhase||'';const names={waiting:'교사가 오리엔테이션을 시작하는 상황을 재현합니다.',intro:'오리엔테이션 확인 후 필기평가로 이동합니다.',written:'답안을 제출한 뒤 다음 문항으로 이동합니다.',writtenFeedback:'1차 피드백 확인 후 작업형 실기로 전환합니다.',practical:'작업물을 제출한 뒤 다음 실기로 이동합니다.',practicalFeedback:'2차 피드백과 종합평가 방법을 확인합니다.',team:'직무회의 단계를 교사 제어처럼 순서대로 전환합니다.',diagnosis:'최종 역량진단을 확인합니다.',pledge:'실천약속을 서명한 뒤 자격판정으로 이동합니다.',result:'전 과정 체험 완료'};message(st==='team'?`${names.team} · 현재 ${ph}`:names[st]||'다음 단계로 이동합니다.');const b=document.getElementById('demoAdvanceBtn');if(b)b.textContent=st==='result'?'체험 완료':(st==='team'&&ph==='scored'?'역량진단 →':'다음 단계 →');}
+
+
+// v8.6.1 exact-demo zoom fallback
+// 실제 학생용의 100/110/120 확대 방식(CSS zoom)을 그대로 사용하되,
+// 데모 페이지에서 캐시/브라우저 차이로 CSS 변수만 갱신되고 화면 확대가 보이지 않는 경우를 대비해
+// student-shell에 zoom 값을 직접 동기화한다.
+const DEMO_ZOOM_KEY='cheongryeomStudentZoom';
+function forceDemoStudentZoom(value){
+  const z=['1','1.1','1.2'].includes(String(value))?String(value):'1';
+  document.documentElement.style.setProperty('--student-zoom',z);
+  try{ localStorage.setItem(DEMO_ZOOM_KEY,z); }catch(e){}
+  document.querySelectorAll('[data-student-zoom]').forEach(b=>b.classList.toggle('active',b.dataset.studentZoom===z));
+  const shell=document.querySelector('.student-shell');
+  if(shell){
+    shell.style.setProperty('zoom',z,'important');
+    shell.style.setProperty('width',`calc(100% / ${z})`,'important');
+    shell.style.setProperty('max-width',`calc(540px / ${z})`,'important');
+  }
+}
+function bindDemoZoomFallback(){
+  const saved=(()=>{try{return localStorage.getItem(DEMO_ZOOM_KEY)||'1'}catch(e){return '1'}})();
+  forceDemoStudentZoom(saved);
+  document.querySelectorAll('[data-student-zoom]').forEach(b=>{
+    b.addEventListener('click',()=>setTimeout(()=>forceDemoStudentZoom(b.dataset.studentZoom),0));
+  });
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',bindDemoZoomFallback,{once:true});
+else bindDemoZoomFallback();
+
 setInterval(update,350);})();

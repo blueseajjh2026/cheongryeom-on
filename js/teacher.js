@@ -52,10 +52,11 @@ function charBox(stage) {
 }
 
 function responseProgress(uid) {
-  let answered=0; const total=C.written.length+C.practical.length+2;
+  let answered=0; const total=C.written.length+C.practical.length+3;
   C.written.forEach(q=>{if(answers?.written?.[q.id]?.[uid])answered++;});
   C.practical.forEach(q=>{if(answers?.practical?.[q.id]?.[uid])answered++;});
   if(answers?.team?.role?.[uid])answered++;
+  if(answers?.team?.mid?.[uid])answered++;
   if(answers?.team?.report?.[uid])answered++;
   return {answered,total};
 }
@@ -77,7 +78,7 @@ function renderRoster() {
           <b>${p.studentName || '이름 미확인'}</b>
           <span>
             ${p.trackName?`<span class="track-chip">${p.trackName}</span>`:'전공미선택'} ${p.teamLabel?`${p.teamLabel} · ${p.teamRoleName} · `:''}
-            ${atResult ? `${r.qualification} · ${r.total}점 · ${typeForUser(uid).name}` : `응답 ${rp.answered}/${rp.total}`}
+            ${atResult ? `${r.documentType==='응시확인서'?'응시확인서':r.qualification} · ${r.total}점 · ${typeForUser(uid).name}` : `응답 ${rp.answered}/${rp.total}`}
           </span>
         </div>`;
       }).join('')
@@ -98,7 +99,7 @@ function renderNav() {
   ).join('');
 
   document.querySelectorAll('.stage-btn').forEach(b => {
-    b.onclick = () => { const target=b.dataset.key; if(control.stage==='team'&&stageIdx(target)>stageIdx('team')&&control.teamPhase!=='scored') return toast('팀 채점·결과공개 후 다음 단계로 이동하세요.'); go(target,0); };
+    b.onclick = () => { const target=b.dataset.key; if(control.stage==='team'&&stageIdx(target)>stageIdx('team')&&control.teamPhase!=='scored') return toast('종합평가 채점·피드백 공개 후 다음 단계로 이동하세요.'); go(target,0); };
   });
 }
 
@@ -198,7 +199,7 @@ function practicalClassValues(){
   C.virtues.forEach(v=>out[v.key]=ids.length?Math.round(out[v.key]/ids.length):0);return out;
 }
 function teacherTeamHowToHTML(){
-  return `<div class="teacher-team-how"><header><span>다음 평가 운영방법</span><h3>전공맞춤 직무상황 종합평가 · 무이동 디지털 직무회의</h3><p>학생은 자리를 옮겨 한 명에게 의견을 몰아주는 방식이 아니라, 각자 다른 직무정보를 분석해 제출하고 시스템이 같은 팀의 판단을 자동으로 결합합니다.</p></header><div class="teacher-team-how-grid"><span><b>① 랜덤 팀 편성</b>같은 전공 3~5명 중심 · 부족 역할 겸임</span><span><b>② 개인분석 → 상황판</b>근거·위험도·1차추천·확인질문 자동 취합</span><span><b>③ 돌발상황</b>새 조건을 전원에게 동시 공개</span><span><b>④ 전원 최종판단</b>다른 조원의 정보를 실제로 활용해 각자 제출</span><span><b>⑤ 채점·피드백</b>팀 판단 80% + 개인 직무기여 20%</span></div></div>`;
+  return `<div class="teacher-team-how"><header><span>다음 평가 운영방법</span><h3>전공맞춤 직무상황 종합평가 · 무이동 디지털 직무회의</h3><p>학생은 각자 다른 직무정보를 분석해 1차 자료를 제출하고, 팀 상황판을 확인한 뒤 <b>돌발상황 전 중간판단을 한 번 확정</b>합니다. 이후 새로운 조건을 반영해 전원이 최종판단을 제출합니다.</p></header><div class="teacher-team-how-grid six"><span><b>① 랜덤 팀 편성</b>같은 전공 3~5명 중심 · 부족 역할 겸임</span><span><b>② 1차 자료·상황판</b>근거·위험도·1차추천·확인질문 자동 취합</span><span><b>③ 중간판단 제출</b>조원정보를 본 뒤 돌발상황 전 판단 확정</span><span><b>④ 돌발상황</b>새 조건을 전원에게 동시 공개</span><span><b>⑤ 전원 최종판단</b>모든 조원이 직접 최종 근거 제출</span><span><b>⑥ 채점·종합피드백</b>팀 판단 80% + 개인기여 20% · 활동 제언</span></div></div>`;
 }
 
 function compForUser(uid) {
@@ -266,9 +267,9 @@ function calcStudent(uid) {
   tr.practical.forEach(q=>{const a=answers?.practical?.[q.id]?.[uid];const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);if(a)pa++;ps+=a?ev.score:0;practicalTaskScores.push(a?ev.score:0);});
   const p=Math.round(ps/tr.practical.length);const roleEv=CHEONGRYEOM_EVALUATE_TEAM_MEMBER(tr.team,answers?.team?.role?.[uid],answers?.team?.report?.[uid]);
   const part=participants?.[uid]||{};const pub=part.teamId?control?.teamScores?.[part.teamId]:null;const teamBase=Number(pub?.teamScore||0);const teamScore=pub?Math.round(teamBase*.8+roleEv.score*.2):0;const pl=pledges?.[uid]?.text?100:0;
-  const total=Math.round(w*S.writtenWeight/100+p*S.practicalWeight/100+teamScore*S.teamWeight/100+pl*S.pledgeWeight/100);const qualification=total>=S.leaderTotal&&p>=S.leaderPractical&&teamScore>=S.leaderTeam?'청렴 리더':'청렴 서포터';
-  const missingQuestions=(tr.written.length-wa)+(tr.practical.length-pa)+(answers?.team?.role?.[uid]?0:1)+(answers?.team?.report?.[uid]?0:1);
-  return {uid,w,p,team:teamScore,teamBase,roleScore:roleEv.score,teamComplete:!!pub,pl,total,qualification,practicalTaskScores,missingQuestions};
+  const total=Math.round(w*S.writtenWeight/100+p*S.practicalWeight/100+teamScore*S.teamWeight/100+pl*S.pledgeWeight/100);const qualification=total>=Number(S.leaderTotal||60)?'청렴 리더':total>Number(S.confirmationMax??40)?'청렴 서포터':'청렴 응시자';const documentType=total<=Number(S.confirmationMax??40)?'응시확인서':'청렴자격증';
+  const missingQuestions=(tr.written.length-wa)+(tr.practical.length-pa)+(answers?.team?.role?.[uid]?0:1)+(answers?.team?.mid?.[uid]?0:1)+(answers?.team?.report?.[uid]?0:1);
+  return {uid,w,p,team:teamScore,teamBase,roleScore:roleEv.score,teamComplete:!!pub,pl,total,qualification,documentType,practicalTaskScores,missingQuestions};
 }
 
 function teacherTimerHTML(q){
@@ -351,45 +352,62 @@ async function assignTeams(){
   await DB.setControl(code,{teamPhase:'briefing',teamScores:null,teamBoards:null,teamRosters});toast(`${teamNo}개 팀을 무작위 편성했습니다. 학생은 자리 이동 없이 화면으로 협업합니다.`);
 }
 function teamRoleAnswer(uid){return answers?.team?.role?.[uid]||null;}
+function teamMidAnswer(uid){return answers?.team?.mid?.[uid]||null;}
 function teamFinalAnswer(uid){return answers?.team?.report?.[uid]||null;}
 function buildTeamBoards(){
   const boards={};
-  teamGroups().forEach(g=>{const teamDef=trackTeamForGroup(g);boards[g.id]={teamId:g.id,teamLabel:g.label,trackKey:g.trackKey,trackName:g.trackName,updatedAt:Date.now(),members:g.members.map(m=>{const a=teamRoleAnswer(m.uid),w=a?.work||{},role=teamDef.roles?.[m.teamRoleKey];return {uid:m.uid,studentName:m.studentName,roleKey:m.teamRoleKey,roleName:m.teamRoleName,roleSubmitted:!!a,reportSubmitted:!!teamFinalAnswer(m.uid),coreJudgment:a&&role?role.options?.[Number(a.choice)]||'':'',riskLevel:w.riskLevel||'',preliminaryVendor:w.preliminaryVendor||'',note:w.note||'',question:w.question||'',extraRoleNames:(m.teamExtraRoleKeys||[]).map(k=>teamDef.roles?.[k]?.name).filter(Boolean)};})};});
+  teamGroups().forEach(g=>{const teamDef=trackTeamForGroup(g);boards[g.id]={teamId:g.id,teamLabel:g.label,trackKey:g.trackKey,trackName:g.trackName,updatedAt:Date.now(),members:g.members.map(m=>{const a=teamRoleAnswer(m.uid),w=a?.work||{},mid=teamMidAnswer(m.uid),mw=mid?.work||{},role=teamDef.roles?.[m.teamRoleKey];return {uid:m.uid,studentName:m.studentName,roleKey:m.teamRoleKey,roleName:m.teamRoleName,roleSubmitted:!!a,midSubmitted:!!mid,midVendor:mw.vendor||'',midReason:mw.reason||'',reportSubmitted:!!teamFinalAnswer(m.uid),coreJudgment:a&&role?role.options?.[Number(a.choice)]||'':'',riskLevel:w.riskLevel||'',preliminaryVendor:w.preliminaryVendor||'',note:w.note||'',question:w.question||'',extraRoleNames:(m.teamExtraRoleKeys||[]).map(k=>teamDef.roles?.[k]?.name).filter(Boolean)};})};});
   return boards;
 }
 let lastTeamBoardHash='',teamBoardSyncing=false;
 async function syncTeamBoards(force=false){
-  if(teamBoardSyncing||!teamGroups().length)return; const phase=control?.teamPhase||'briefing'; if(!force&&!['board','twist','decision'].includes(phase))return;
+  if(teamBoardSyncing||!teamGroups().length)return; const phase=control?.teamPhase||'briefing'; if(!force&&!['board','checkpoint','twist','decision'].includes(phase))return;
   const boards=buildTeamBoards();const stable=JSON.stringify(boards,(k,v)=>k==='updatedAt'?0:v);if(!force&&stable===lastTeamBoardHash)return;lastTeamBoardHash=stable;teamBoardSyncing=true;
   try{await DB.setControl(code,{teamBoards:boards});}finally{teamBoardSyncing=false;}
 }
 function teamMemberPackets(group){return group.members.map(m=>({uid:m.uid,roleKey:m.teamRoleKey,answer:teamRoleAnswer(m.uid)}));}
 function teamReportPackets(group){return group.members.map(m=>({uid:m.uid,answer:teamFinalAnswer(m.uid)}));}
 function teamEval(group){const teamDef=trackTeamForGroup(group);return CHEONGRYEOM_EVALUATE_TEAM_REPORT(teamDef,teamReportPackets(group),teamMemberPackets(group));}
+function teamAllMembers(){return teamGroups().flatMap(g=>g.members);}
 async function setTeamPhase(phase){
   if(!teamGroups().length)return toast('먼저 팀을 편성해주세요.');
+  const members=teamAllMembers();
   if(phase==='board'&&Object.keys(answers?.team?.role||{}).length===0)return toast('아직 제출된 개인 직무분석이 없습니다.');
-  const update={teamPhase:phase}; if(['board','twist','decision'].includes(phase))update.teamBoards=buildTeamBoards(); await DB.setControl(code,update);
+  if(phase==='checkpoint'){
+    const roleDone=members.filter(m=>teamRoleAnswer(m.uid)).length;
+    if(roleDone<members.length)return toast(`개인 직무분석을 ${members.length-roleDone}명이 더 제출해야 합니다.`);
+  }
+  if(phase==='twist'){
+    const midDone=members.filter(m=>teamMidAnswer(m.uid)).length;
+    if(midDone<members.length)return toast(`돌발상황 공개 전 중간판단을 ${members.length-midDone}명이 더 제출해야 합니다.`);
+  }
+  if(phase==='decision'&&control?.teamPhase!=='twist'&&control?.teamPhase!=='decision')return toast('먼저 돌발상황을 공개해주세요.');
+  const update={teamPhase:phase}; if(['board','checkpoint','twist','decision'].includes(phase))update.teamBoards=buildTeamBoards(); await DB.setControl(code,update);
 }
 async function publishTeamScores(){
   const groups=teamGroups(); if(!groups.length)return toast('먼저 팀을 편성해주세요.');
+  const members=teamAllMembers(),finalDone=members.filter(m=>teamFinalAnswer(m.uid)).length;
+  if(finalDone<members.length)return toast(`최종판단을 ${members.length-finalDone}명이 더 제출해야 결과를 공개할 수 있습니다.`);
   const scores={};groups.forEach(g=>{const ev=teamEval(g);scores[g.id]={teamLabel:g.label,trackKey:g.trackKey,trackName:g.trackName,teamScore:ev.score,details:ev.details,impact:ev.impact,consensus:ev.consensus||{},submitted:ev.submitted||0,memberCount:g.members.length,publishedAt:Date.now()};});
-  await DB.setControl(code,{teamPhase:'scored',teamScores:scores,teamBoards:buildTeamBoards()});toast('전원 최종의견과 팀 합의도를 종합해 결과를 공개했습니다.');
+  await DB.setControl(code,{teamPhase:'scored',teamScores:scores,teamBoards:buildTeamBoards()});toast('최종판단을 종합해 채점 결과와 활동 피드백을 공개했습니다.');
+}
+function teacherTeamFeedbackHTML(pub){
+  if(!pub)return '';
+  const details=(pub.details||[]).filter(x=>Number(x[2]||0)>0).map(x=>({label:x[0],got:Number(x[1]||0),max:Number(x[2]||0),ratio:Number(x[1]||0)/Number(x[2]||1)})).sort((a,b)=>b.ratio-a.ratio);
+  const best=details[0],growth=details[details.length-1];
+  return `<div class="teacher-team-feedback"><b>활동 종합 피드백</b><div><span><strong>강점</strong>${escapeHTML(best?.label||'직무정보 분석·공유')} · ${best?.got||0}/${best?.max||0}</span><span><strong>보완</strong>${escapeHTML(growth?.label||'교차검증')} · ${growth?.got||0}/${growth?.max||0}</span></div><p><b>제언</b> 처음의 결론을 지키는 것 자체보다, 조원의 직무정보와 새로운 사실을 확인한 뒤 판단을 바꾸거나 유지한 이유를 설명하고 기록하는 과정이 중요합니다.</p></div>`;
 }
 function teamTeacherHTML(){
  const groups=teamGroups(),phase=control?.teamPhase||'briefing';
- const phaseNames={briefing:'① 개인 직무분석',board:'② 디지털 팀 상황판',twist:'③ 돌발상황 공개',decision:'④ 전원 최종판단',scored:'⑤ 채점·결과공개'};
- const phaseStep={briefing:1,board:2,twist:3,decision:4,scored:5}[phase]||0;
- const stepBtn=(n,id,label,kind='outline',disabled=false)=>{
-   const completed=(groups.length&&n<phaseStep)||(phase==='scored'&&n===5);
-   const current=groups.length&&n===phaseStep;
-   return `<button id="${id}" class="btn ${kind} team-step-btn ${completed?'completed':''} ${current?'current':''}" ${disabled?'disabled':''}>${completed?'✓ ':''}${n}. ${label}</button>`;
- };
- return `<span class="eyebrow">5-TRACK VOCATIONAL DIGITAL COMMITTEE</span><h2>전공맞춤 직무상황 종합평가</h2><p class="context-box"><b>무이동 디지털 직무회의 방식</b>입니다. 같은 전공 학생을 무작위로 3~5명 중심으로 편성하고, 인원이 맞지 않으면 누락 역할을 기존 조원에게 ‘겸임 직무자료’로 자동 배정합니다. 학생은 자기 자리에서 분석을 제출하고, 모든 의견은 팀 상황판으로 자동 취합됩니다.</p><div class="team-teacher-controls five-step">${stepBtn(1,'assignTeamsBtn','랜덤 팀 편성','soft',false)}${stepBtn(2,'teamBoardBtn','팀 상황판 공개','outline',!groups.length)}${stepBtn(3,'teamTwistBtn','돌발상황 공개','outline',!groups.length)}${stepBtn(4,'teamDecisionBtn','전원 최종판단','outline',!groups.length)}${stepBtn(5,'teamScoreBtn','채점·결과공개','outline',!groups.length)}</div><div class="team-phase-teacher prominent"><b>현재 진행단계</b><span>${groups.length?(phaseNames[phase]||phase):'팀 편성 전'}</span><small>${groups.length?'색이 표시된 버튼이 현재 단계이며 ✓ 표시는 완료 단계입니다.':'① 랜덤 팀 편성부터 시작하세요.'}</small></div>${groups.length?`<div class="team-group-list">${groups.map(g=>{const teamDef=trackTeamForGroup(g),roleDone=g.members.filter(m=>teamRoleAnswer(m.uid)).length,finalDone=g.members.filter(m=>teamFinalAnswer(m.uid)).length,pub=control?.teamScores?.[g.id],dist={};g.members.forEach(m=>{const v=teamFinalAnswer(m.uid)?.work?.vendor;if(v)dist[v]=(dist[v]||0)+1;});return `<article class="team-group-card"><div class="team-group-head"><div><span class="team-track-title">${escapeHTML(g.trackName)}</span><b>${escapeHTML(g.label)}</b></div><span>${g.members.length}명</span>${pub?`<strong>${pub.teamScore}점</strong>`:''}</div><p class="context-box" style="margin:8px 0">${escapeHTML(teamDef.title)}<br><small>${escapeHTML(teamDef.context)}</small></p><div class="team-members detailed">${g.members.map(m=>{const ra=teamRoleAnswer(m.uid),w=ra?.work||{};return `<span><b>${escapeHTML(m.studentName)}</b><small>${escapeHTML(m.teamRoleName)} · ${escapeHTML(roleDuty(m.teamRoleKey))}</small>${m.teamExtraRoleKeys?.length?`<em>겸임 ${m.teamExtraRoleKeys.map(k=>teamDef.roles?.[k]?.name).filter(Boolean).map(escapeHTML).join(' · ')}</em>`:''}<i>${ra?`✓ 분석 · 1차 ${escapeHTML(w.preliminaryVendor||'보류')}`:'분석 대기'}${teamFinalAnswer(m.uid)?' · ✓ 최종':''}</i></span>`}).join('')}</div><div class="team-group-foot">개인 직무분석 <b>${roleDone}/${g.members.length}</b> · 최종위원 의견 <b>${finalDone}/${g.members.length}</b></div><div class="teacher-live-board"><b>팀 직무분석 상세 상황판</b>${g.members.map(m=>{const ra=teamRoleAnswer(m.uid),w=ra?.work||{},role=teamDef.roles?.[m.teamRoleKey];if(!ra)return `<div class="teacher-live-member waiting"><header><b>${escapeHTML(m.studentName)}</b><span>${escapeHTML(m.teamRoleName)}</span></header><p>개인 직무분석 제출 대기 중</p></div>`;const core=role?.options?.[Number(ra.choice)]||'';return `<div class="teacher-live-member"><header><div><b>${escapeHTML(m.studentName)}</b><span>${escapeHTML(m.teamRoleName)} · ${escapeHTML(roleDuty(m.teamRoleKey))}</span></div><em>위험도 ${escapeHTML(teacherRiskName(w.riskLevel))} · 1차 ${escapeHTML(teacherVendorName(teamDef,w.preliminaryVendor))}</em></header><p><b>핵심판단</b>${escapeHTML(core)}</p><p><b>근거</b>${escapeHTML(w.note||'')}</p><p class="teacher-question"><b>확인질문</b>${escapeHTML(w.question||'')}</p></div>`}).join('')}</div>${Object.keys(dist).length?`<div class="teacher-consensus"><b>현재 최종의견</b>${Object.entries(dist).map(([k,v])=>`<span>${escapeHTML(k)}안 ${v}명</span>`).join('')}</div>`:''}${pub?`<div class="teacher-team-score">${pub.details.map(d=>`<span>${escapeHTML(d[0])} <b>${d[1]}/${d[2]}</b></span>`).join('')}</div>`:''}</article>`}).join('')}</div>`:`<div class="empty">학생이 전공분야를 선택해 입장한 뒤 ‘랜덤 팀 편성’을 눌러주세요.</div>`}`;
+ const phaseNames={briefing:'① 개인 직무분석·1차 자료 제출',board:'② 디지털 팀 상황판',checkpoint:'③ 중간판단 제출',twist:'④ 돌발상황 공개',decision:'⑤ 전원 최종판단',scored:'⑥ 채점·종합피드백'};
+ const phaseStep={briefing:1,board:2,checkpoint:3,twist:4,decision:5,scored:6}[phase]||0;
+ const stepBtn=(n,id,label,kind='outline',disabled=false)=>{const completed=(groups.length&&n<phaseStep)||(phase==='scored'&&n===6);const current=groups.length&&n===phaseStep;return `<button id="${id}" class="btn ${kind} team-step-btn ${completed?'completed':''} ${current?'current':''}" ${disabled?'disabled':''}>${completed?'✓ ':''}${n}. ${label}</button>`;};
+ return `<span class="eyebrow">5-TRACK VOCATIONAL DIGITAL COMMITTEE</span><h2>전공맞춤 직무상황 종합평가</h2><p class="context-box"><b>무이동 디지털 직무회의 방식</b>입니다. 같은 전공 학생을 무작위로 3~5명 중심으로 편성하고, 학생은 각자의 직무자료를 분석한 뒤 팀 상황판을 확인합니다. <b>돌발상황 공개 전 ‘중간판단’을 한 번 제출</b>하여 1차 판단 → 교차검증 → 중간판단 → 돌발상황 → 최종판단의 변화과정을 분명하게 구분합니다.</p><div class="team-teacher-controls six-step">${stepBtn(1,'assignTeamsBtn','랜덤 팀 편성','soft',false)}${stepBtn(2,'teamBoardBtn','팀 상황판 공개','outline',!groups.length)}${stepBtn(3,'teamCheckpointBtn','중간판단 제출','outline',!groups.length)}${stepBtn(4,'teamTwistBtn','돌발상황 공개','outline',!groups.length)}${stepBtn(5,'teamDecisionBtn','전원 최종판단','outline',!groups.length)}${stepBtn(6,'teamScoreBtn','채점·종합피드백','outline',!groups.length)}</div><div class="team-phase-teacher prominent"><b>현재 진행단계</b><span>${groups.length?(phaseNames[phase]||phase):'팀 편성 전'}</span><small>${groups.length?'색이 표시된 버튼이 현재 단계이며 ✓ 표시는 완료 단계입니다. 돌발상황은 전원 중간판단 제출 후 공개됩니다.':'① 랜덤 팀 편성부터 시작하세요.'}</small></div>${groups.length?`<div class="team-group-list">${groups.map(g=>{const teamDef=trackTeamForGroup(g),roleDone=g.members.filter(m=>teamRoleAnswer(m.uid)).length,midDone=g.members.filter(m=>teamMidAnswer(m.uid)).length,finalDone=g.members.filter(m=>teamFinalAnswer(m.uid)).length,pub=control?.teamScores?.[g.id],dist={};g.members.forEach(m=>{const v=teamFinalAnswer(m.uid)?.work?.vendor;if(v)dist[v]=(dist[v]||0)+1;});return `<article class="team-group-card"><div class="team-group-head"><div><span class="team-track-title">${escapeHTML(g.trackName)}</span><b>${escapeHTML(g.label)}</b></div><span>${g.members.length}명</span>${pub?`<strong>${pub.teamScore}점</strong>`:''}</div><p class="context-box" style="margin:8px 0">${escapeHTML(teamDef.title)}<br><small>${escapeHTML(teamDef.context)}</small></p><div class="team-members detailed">${g.members.map(m=>{const ra=teamRoleAnswer(m.uid),w=ra?.work||{},mid=teamMidAnswer(m.uid),mw=mid?.work||{};return `<span><b>${escapeHTML(m.studentName)}</b><small>${escapeHTML(m.teamRoleName)} · ${escapeHTML(roleDuty(m.teamRoleKey))}</small>${m.teamExtraRoleKeys?.length?`<em>겸임 ${m.teamExtraRoleKeys.map(k=>teamDef.roles?.[k]?.name).filter(Boolean).map(escapeHTML).join(' · ')}</em>`:''}<i>${ra?`✓ 1차 ${escapeHTML(w.preliminaryVendor||'보류')}`:'1차 대기'}${mid?` · ✓ 중간 ${escapeHTML(mw.vendor||'보류')}`:''}${teamFinalAnswer(m.uid)?' · ✓ 최종':''}</i></span>`}).join('')}</div><div class="team-group-foot">1차 자료 <b>${roleDone}/${g.members.length}</b> · 중간판단 <b>${midDone}/${g.members.length}</b> · 최종판단 <b>${finalDone}/${g.members.length}</b></div><div class="teacher-live-board"><b>팀 직무분석 상세 상황판</b>${g.members.map(m=>{const ra=teamRoleAnswer(m.uid),w=ra?.work||{},mid=teamMidAnswer(m.uid),mw=mid?.work||{},role=teamDef.roles?.[m.teamRoleKey];if(!ra)return `<div class="teacher-live-member waiting"><header><b>${escapeHTML(m.studentName)}</b><span>${escapeHTML(m.teamRoleName)}</span></header><p>개인 직무분석 제출 대기 중</p></div>`;const core=role?.options?.[Number(ra.choice)]||'';return `<div class="teacher-live-member"><header><div><b>${escapeHTML(m.studentName)}</b><span>${escapeHTML(m.teamRoleName)} · ${escapeHTML(roleDuty(m.teamRoleKey))}</span></div><em>위험도 ${escapeHTML(teacherRiskName(w.riskLevel))} · 1차 ${escapeHTML(teacherVendorName(teamDef,w.preliminaryVendor))}</em></header><p><b>핵심판단</b>${escapeHTML(core)}</p><p><b>근거</b>${escapeHTML(w.note||'')}</p><p class="teacher-question"><b>확인질문</b>${escapeHTML(w.question||'')}</p>${mid?`<p class="teacher-mid"><b>중간판단</b>${escapeHTML(teacherVendorName(teamDef,mw.vendor))} · ${escapeHTML(mw.reason||'')}</p>`:''}</div>`}).join('')}</div>${Object.keys(dist).length?`<div class="teacher-consensus"><b>현재 최종의견</b>${Object.entries(dist).map(([k,v])=>`<span>${escapeHTML(k)}안 ${v}명</span>`).join('')}</div>`:''}${pub?`<div class="teacher-team-score">${pub.details.map(d=>`<span>${escapeHTML(d[0])} <b>${d[1]}/${d[2]}</b></span>`).join('')}</div>${teacherTeamFeedbackHTML(pub)}`:''}</article>`}).join('')}</div>`:`<div class="empty">학생이 전공분야를 선택해 입장한 뒤 ‘랜덤 팀 편성’을 눌러주세요.</div>`}`;
 }
 function bindTeacherTeam(){
   const a=$('#assignTeamsBtn');if(a)a.onclick=assignTeams;
   const b=$('#teamBoardBtn');if(b)b.onclick=()=>setTeamPhase('board');
+  const c=$('#teamCheckpointBtn');if(c)c.onclick=()=>setTeamPhase('checkpoint');
   const t=$('#teamTwistBtn');if(t)t.onclick=()=>setTeamPhase('twist');
   const d=$('#teamDecisionBtn');if(d)d.onclick=()=>setTeamPhase('decision');
   const s=$('#teamScoreBtn');if(s)s.onclick=publishTeamScores;
@@ -404,8 +422,8 @@ function renderContent() {
 
   let h = '';
   const idx = Number(control.index || 0);
-  $('#revealBtn').classList.toggle('hidden', control.stage !== 'written');
-  $('#revealBtn').textContent = control.reveal ? '해설 숨기기' : '해설 공개';
+  const revealBtn=$('#revealBtn');
+  if(revealBtn) revealBtn.classList.add('hidden');
 
   if (control.stage === 'waiting') {
     h = `<span class="eyebrow">READY</span>
@@ -427,8 +445,9 @@ function renderContent() {
   if (control.stage === 'written') {
     h = `<span class="eyebrow">전공맞춤 필기 ${idx + 1}/${C.written.length}</span>
       <h2>같은 시간, 전공별로 서로 다른 직업윤리 문항이 출제됩니다.</h2>
-      <p class="context-box">현재는 5개 전공분야 모두 <b>${idx+1}번 문항</b>을 풀고 있습니다. 해설 공개 시 각 학생에게 자신의 전공 문항 해설이 표시됩니다.</p>
-      <div class="teacher-track-question-grid">${C.trackList.map(tl=>{const q=trackForKey(tl.key).written[idx];return `<article class="teacher-track-question"><div><span>${tl.icon}</span><b>${tl.short}</b></div><p>${q.q}</p>${control.reveal?`<small><strong>정답 ${String.fromCharCode(65+q.correct)}</strong> · ${q.ex}</small>`:''}</article>`}).join('')}</div>`;
+      <p class="context-box"><b>문항별 즉시 피드백 방식</b>입니다. 학생은 답안을 제출하는 순간 답안이 잠기고, 자신의 화면 아래에 해당 문항의 핵심 청렴역량과 해설이 자동 표시됩니다. 교사가 별도로 해설 버튼을 누를 필요 없이, 모든 학생이 자기 판단 직후 피드백을 확인한 다음 다음 문항으로 이동합니다.</p>
+      <div class="teacher-auto-feedback-note"><span>자동 피드백</span><b>답안 제출 → 즉시 해설 → 다음 문항</b><small>제출 전 학생에게는 해설이 보이지 않으며, 제출한 답안은 변경되지 않습니다.</small></div>
+      <div class="teacher-track-question-grid">${C.trackList.map(tl=>{const q=trackForKey(tl.key).written[idx];return `<article class="teacher-track-question"><div><span>${tl.icon}</span><b>${tl.short}</b></div><p>${q.q}</p><small><strong>권장 판단 ${String.fromCharCode(65+q.correct)}</strong> · ${q.ex}</small></article>`}).join('')}</div>`;
   }
 
   if (control.stage === 'writtenFeedback') {
@@ -437,7 +456,7 @@ function renderContent() {
     const complete=Object.keys(participants||{}).filter(uid=>writtenFeedbackForUser(uid).answered===trackForUid(uid).written.length).length;
     h = `<span class="eyebrow">WRITTEN RESULT · TRANSITION FEEDBACK</span>
       <h2>필기 종료 · 실기 전환 피드백</h2>
-      <p class="context-box"><b>주의환기 단계</b>입니다. 학생 화면에는 필기에서 확인된 6대 청렴역량 수치, 강점 2개, 실기에서 더 연습할 역량 1개가 표시됩니다. 다음 단계부터는 보기 선택이 아니라 <b>지급자료 확인 → 기준 설정 → 실제 처리 → 기록 제출</b> 방식으로 전환됩니다.</p>
+      <p class="context-box"><b>문항별 즉시 피드백을 거친 뒤의 1차 종합피드백 단계</b>입니다. 학생 화면에는 필기에서 확인된 6대 청렴역량 수치, 강점 2개, 실기에서 더 연습할 역량 1개가 표시됩니다. 다음 단계부터는 보기 선택이 아니라 <b>지급자료 확인 → 기준 설정 → 실제 처리 → 기록 제출</b> 방식으로 전환됩니다.</p>
       <div class="teacher-feedback-summary"><div><span>필기 완료</span><b>${complete}/${Object.keys(participants||{}).length}명</b></div><div><span>학급 강점</span><b>${ranked[0]?.name||'-'} ${ranked[0]?.score||0}</b></div><div><span>성장 포인트</span><b>${ranked[ranked.length-1]?.name||'-'} ${ranked[ranked.length-1]?.score||0}</b></div></div>
       <div class="teacher-transition-guide"><b>다음 단계</b><strong>전공맞춤 작업형 실기 P-01 시작</strong><span>학생들이 피드백을 확인한 뒤 ‘다음 단계 →’를 눌러주세요.</span></div>`;
   }
@@ -446,7 +465,7 @@ function renderContent() {
     const q0=trackForKey('business').practical[idx];
     h = `<span class="eyebrow">5-TRACK WORK-BASED PRACTICAL · P-0${idx+1}</span>
       <h2>전공맞춤 작업형 실기 ${idx+1}/${C.practical.length}</h2>
-      <p class="context-box">모든 학생은 같은 작업원리(자료검토 → 기준설정 → 실제처리 → 기록)를 적용하되, 지급자료와 직무상황은 자신의 전공분야에 맞게 달라집니다.</p>
+      <p class="context-box">모든 학생은 같은 작업원리(자료검토 → 기준설정 → 실제처리 → 기록)를 적용하되, 지급자료와 직무상황은 자신의 전공분야에 맞게 달라집니다. <b>각 과제를 제출하면 작업결과 채점표와 핵심 직무해설이 즉시 제공</b>되어, 앞 과제에서 배운 원리를 다음 과제에 적용하도록 구성했습니다.</p>
       ${teacherTimerHTML(q0)}
       <div class="teacher-track-practical-grid">${C.trackList.map(tl=>{const q=trackForKey(tl.key).practical[idx];return `<article class="teacher-track-practical"><div><span>${tl.icon}</span><b>${tl.short}</b></div><h3>${q.title}</h3><p>${q.context}</p><small>${q.rubric.join(' · ')}</small></article>`}).join('')}</div>`;
   }
@@ -484,14 +503,16 @@ function renderContent() {
     const rs = Object.keys(participants).map(calcStudent);
     const leader = rs.filter(r => r.qualification === '청렴 리더').length;
     const supporter = rs.filter(r => r.qualification === '청렴 서포터').length;
+    const confirmation = rs.filter(r => r.documentType === '응시확인서').length;
     const avg = rs.length ? Math.round(rs.reduce((a, b) => a + b.total, 0) / rs.length) : 0;
     const missing = rs.reduce((a, b) => a + b.missingQuestions + (!b.teamComplete ? 1 : 0) + (b.pl === 0 ? 1 : 0), 0);
     h = `<span class="eyebrow">QUALIFICATION</span>
       <h2>예비 직업인 청렴역량 자격판정</h2>
       <p class="context-box">학생이 선택한 전공분야별 직무상황 수행결과를 공통 청렴역량으로 종합합니다. 학생 화면에는 전공분야, 개인 결과, 청렴유형과 교육용 디지털 자격이 표시됩니다.</p>
-      <div class="result-summary">
-        <div class="result-tile"><b>${supporter}</b><span>청렴 서포터</span></div>
-        <div class="result-tile"><b>${leader}</b><span>청렴 리더</span></div>
+      <div class="result-summary four">
+        <div class="result-tile"><b>${leader}</b><span>청렴 리더 · 60점 이상</span></div>
+        <div class="result-tile"><b>${supporter}</b><span>청렴 서포터 · 41~59점</span></div>
+        <div class="result-tile"><b>${confirmation}</b><span>응시확인서 · 40점 이하</span></div>
         <div class="result-tile"><b>${avg}</b><span>학급 평균</span></div>
       </div>
       ${typeDistributionHTML()}
@@ -657,7 +678,7 @@ function subscribe() {
     DB.on('answers', code, v => {
       answers = v || {};
       renderContent();
-      if(['board','twist','decision'].includes(control?.teamPhase)) void syncTeamBoards(false);
+      if(['board','checkpoint','twist','decision'].includes(control?.teamPhase)) void syncTeamBoards(false);
     }),
     DB.on('pledges', code, v => {
       pledges = v || {};
@@ -752,7 +773,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = '실시간 서버 연결 · v8.6.3 최종 통합';
+    $('#serverStatus').textContent = 'v8.8.2';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);
@@ -760,9 +781,6 @@ function csv() {
     $('#createRoomBtn').onclick = create;
     $('#nextBtn').onclick = next;
     $('#prevBtn').onclick = prev;
-
-    $('#revealBtn').onclick = () =>
-      DB.setControl(code, { reveal: !control.reveal });
 
     $('#copyLink').onclick = () =>
       navigator.clipboard.writeText(studentURL())

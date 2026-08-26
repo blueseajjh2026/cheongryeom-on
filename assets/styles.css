@@ -290,8 +290,8 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 .student-page .student-zoom-controls{display:flex;gap:5px;overflow-x:auto;padding:2px 0}
 .student-page .student-zoom-controls button{border:1px solid #bfd3dd;background:#fff;color:#315f74;border-radius:8px;padding:7px 9px;font-size:11px;font-weight:900;white-space:nowrap}
 .student-page .student-zoom-controls button.active{background:#075d8b;color:#fff;border-color:#075d8b;box-shadow:0 3px 10px rgba(7,93,139,.18)}
-.student-page .student-shell{zoom:var(--student-zoom);width:calc(100% / var(--student-zoom));max-width:calc(540px / var(--student-zoom));word-break:keep-all;overflow-wrap:break-word;line-break:strict}
-.student-page .student-card,.student-page .student-card *{word-break:keep-all;overflow-wrap:break-word;line-break:strict}
+.student-page .student-shell{width:100%;max-width:540px;word-break:keep-all;overflow-wrap:normal;line-break:strict}
+.student-page .student-card,.student-page .student-card *{word-break:keep-all;overflow-wrap:normal;line-break:strict}
 .student-page .progress-meta{font-size:11px}
 .student-page .student-card{padding:21px}
 .student-page .student-card h1{font-size:29px;line-height:1.42}
@@ -580,7 +580,7 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 
 
 /* =========================================================
-   v8.6.2 학생 가독성 확대 개선
+   v8.6.3 학생 가독성 확대 개선
    - 100/110/120%는 화면 전체 zoom이 아니라 '글자 크기'만 확대
    - 학생 본문 가로 폭(최대 540px)은 모든 배율에서 동일
    - 한글 단어를 음절 단위로 강제 분리하지 않음
@@ -630,4 +630,45 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 .student-page .public-result{
   overflow-wrap:anywhere!important;
   word-break:normal!important;
+}
+
+
+/* =========================================================
+   v8.6.3 필기 O/X 결과 · 해설 표시
+   - 실제/데모 공통 student.js가 동일하게 사용
+   - 정답 공개 전에는 기존 제출완료 안내만 표시
+   ========================================================= */
+.student-page .choice{position:relative;padding-right:52px}
+.student-page .choice .choice-text{min-width:0;word-break:keep-all!important;overflow-wrap:normal!important;line-break:strict!important}
+.student-page .choice-result-mark{
+  flex:0 0 auto;width:31px;height:31px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;
+  font-size:17px!important;font-weight:1000;line-height:1!important;margin-left:auto;border:2px solid currentColor;background:#fff
+}
+.student-page .choice.reveal-correct{border-color:#27845b!important;background:#eff9f4!important;box-shadow:inset 4px 0 0 #27845b}
+.student-page .choice.reveal-correct .choice-letter{background:#27845b!important;color:#fff!important;border-color:#27845b!important}
+.student-page .choice.reveal-wrong{border-color:#b34f54!important;background:#fff3f3!important;box-shadow:inset 4px 0 0 #b34f54}
+.student-page .choice.reveal-wrong .choice-letter{background:#b34f54!important;color:#fff!important;border-color:#b34f54!important}
+.student-page .choice-result-mark.correct{color:#27845b}
+.student-page .choice-result-mark.wrong{color:#b34f54}
+.student-page .written-answer-result{display:grid;grid-template-columns:66px minmax(0,1fr);gap:14px;align-items:start;margin-top:14px;padding:16px;border:1px solid;border-radius:11px}
+.student-page .written-answer-result.correct{background:#eff9f4;border-color:#a9d6bd;color:#245f48}
+.student-page .written-answer-result.wrong{background:#fff5f5;border-color:#e1b8bb;color:#7b363b}
+.student-page .written-ox-mark{width:58px;height:58px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:#fff;border:4px solid currentColor;font-size:32px!important;font-weight:1000;line-height:1!important}
+.student-page .written-answer-result>div:last-child>b{display:block;font-size:18px!important;margin:1px 0 4px}
+.student-page .written-answer-result>div:last-child>span{display:block;font-size:12px!important;font-weight:900;opacity:.8;margin-bottom:7px}
+.student-page .written-answer-result p{margin:0;font-size:14px;line-height:1.7;color:inherit}
+.student-page .written-question-review{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0 14px}
+.student-page .written-question-review article{display:grid;grid-template-columns:auto 34px;grid-template-rows:auto auto;align-items:center;gap:2px 8px;padding:10px 11px;border:1px solid #d9e5ea;border-radius:9px;background:#fff}
+.student-page .written-question-review article>span{font-size:11px!important;font-weight:900;color:#607985}
+.student-page .written-question-review article>b{grid-row:1/3;grid-column:2;font-size:25px!important;line-height:1!important;text-align:center}
+.student-page .written-question-review article>small{font-size:10.5px!important;color:#607985;white-space:nowrap}
+.student-page .written-question-review article.correct{border-color:#b7ddc8;background:#f1faf5}.student-page .written-question-review article.correct>b{color:#27845b}
+.student-page .written-question-review article.wrong{border-color:#e4c1c4;background:#fff5f5}.student-page .written-question-review article.wrong>b{color:#b34f54}
+.student-page .written-question-review article.missing>b{color:#83949d}
+@media(max-width:420px){
+  .student-page .written-question-review{grid-template-columns:repeat(2,1fr)}
+  .student-page .written-answer-result{grid-template-columns:54px minmax(0,1fr);gap:11px;padding:13px}
+  .student-page .written-ox-mark{width:48px;height:48px;font-size:27px!important}
+  .student-page .choice{padding-right:44px}
+  .student-page .choice-result-mark{width:28px;height:28px;font-size:15px!important}
 }

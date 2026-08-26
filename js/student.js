@@ -17,7 +17,7 @@ let teamRoleDraft = {choice:null,riskLevel:'',preliminaryVendor:null,note:'',que
 let teamReportDraft = {issues:[],criteria:[],conflictResponse:null,twistResponse:null,vendor:null,influenceUid:null,reason:''};
 let timerTicker = null;
 
-// v8.6.2 학생 가독성 · 가로폭을 유지하는 '글자 확대' 100/110/120
+// v8.6.3 학생 가독성 · 가로폭을 유지하는 '글자 확대' 100/110/120
 // CSS zoom/transform로 화면 전체를 키우지 않고, 실제 텍스트의 계산된 글자 크기만 확대한다.
 // 따라서 110/120%에서도 학생 화면의 가로 폭은 그대로 유지되고 글자만 커진다.
 const STUDENT_ZOOM_KEY = 'cheongryeomStudentZoom';
@@ -177,14 +177,23 @@ function mine(stage, key) {
   return myAnswers?.[stage]?.[key] || null;
 }
 
-function choiceHTML(opts, existing, pending) {
+function choiceHTML(opts, existing, pending, reveal=false, correctIndex=null) {
+  const submittedChoice = existing ? Number(existing.choice) : null;
+  const correctChoice = Number(correctIndex);
   return `<div class="choices">${
     opts.map((x, i) => {
-      const isSelected = existing?.choice === i || (!existing && pending === i);
-      return `<button class="choice ${isSelected ? 'selected' : ''}"
+      const isSelected = submittedChoice === i || (!existing && pending === i);
+      const isCorrect = !!existing && reveal && i === correctChoice;
+      const isWrongMine = !!existing && reveal && i === submittedChoice && i !== correctChoice;
+      const resultClass = isCorrect ? ' reveal-correct' : (isWrongMine ? ' reveal-wrong' : '');
+      const mark = isCorrect
+        ? '<span class="choice-result-mark correct" aria-label="정답">O</span>'
+        : (isWrongMine ? '<span class="choice-result-mark wrong" aria-label="오답">X</span>' : '');
+      return `<button class="choice ${isSelected ? 'selected' : ''}${resultClass}"
         data-choice="${i}" ${existing ? 'disabled' : ''}>
         <span class="choice-letter">${String.fromCharCode(65 + i)}</span>
-        <span>${typeof x === 'string' ? x : x.text}</span>
+        <span class="choice-text">${typeof x === 'string' ? x : x.text}</span>
+        ${mark}
       </button>`;
     }).join('')
   }</div>`;
@@ -743,10 +752,13 @@ function render() {
   if (stage === 'written') {
     const ex = mine('written', q.id);
     const pending = pendingChoices[answerKey()];
+    const isWrittenCorrect = !!ex && Number(ex.choice) === Number(q.correct);
+    const myLetter = ex ? String.fromCharCode(65 + Number(ex.choice)) : '';
+    const correctLetter = String.fromCharCode(65 + Number(q.correct));
 
     h = `<span class="stage-tag">필기평가 ${Number(control.index) + 1}/${C.written.length}</span>
       <h2>${q.q}</h2>
-      ${choiceHTML(q.options, ex, pending)}
+      ${choiceHTML(q.options, ex, pending, !!control.reveal, q.correct)}
       ${!ex ? `<div class="student-submit">
         <button id="submitBtn" class="btn primary large full" ${pending == null ? 'disabled' : ''}>
           답안 제출
@@ -754,10 +766,11 @@ function render() {
       </div>` : ''}
       ${ex
         ? (control.reveal
-          ? `<div class="feedback ${ex.correct ? 'good' : 'info'}">
-              <b>${ex.correct ? '정답입니다.' : '해설을 확인해보세요.'}</b><br>${q.ex}
-            </div>`
-          : `<div class="feedback info">✓ 답안 제출 완료<br>교사가 해설을 공개하면 설명을 확인할 수 있습니다.</div>`)
+          ? `<section class="written-answer-result ${isWrittenCorrect ? 'correct' : 'wrong'}">
+              <div class="written-ox-mark" aria-label="${isWrittenCorrect ? '정답' : '오답'}">${isWrittenCorrect ? 'O' : 'X'}</div>
+              <div><b>${isWrittenCorrect ? '정답입니다.' : '오답입니다.'}</b><span>내 답 ${myLetter} · 정답 ${correctLetter}</span><p>${q.ex}</p></div>
+            </section>`
+          : `<div class="feedback info">✓ 답안 제출 완료<br>교사가 해설을 공개하면 O/X 결과와 설명을 확인할 수 있습니다.</div>`)
         : ''}`;
   }
 
@@ -769,6 +782,7 @@ function render() {
         <div><span>WRITTEN → PRACTICAL</span><h2>필기는 끝났습니다.<br>이제 <em>직접 처리하는 실기</em>로 넘어갑니다.</h2><p>필기에서 드러난 6대 청렴역량을 잠깐 확인하고, 다음 작업에서 무엇을 의식할지 정리해보세요.</p></div>
         <div class="written-result-ring"><b>${f.correct}</b><span>/ ${C.written.length} 정답</span></div>
       </div>
+      <div class="written-question-review">${C.written.map((wq,wi)=>{const a=mine('written',wq.id);const ok=!!a&&Number(a.choice)===Number(wq.correct);const my=a?String.fromCharCode(65+Number(a.choice)):'-';const ans=String.fromCharCode(65+Number(wq.correct));return `<article class="${a?(ok?'correct':'wrong'):'missing'}"><span>Q${wi+1}</span><b>${a?(ok?'O':'X'):'-'}</b><small>내 답 ${my} · 정답 ${ans}</small></article>`}).join('')}</div>
       <div class="written-feedback-bars">${C.virtues.map(v=>{const x=f.values[v.key]||0;return `<div class="written-feedback-row"><div><b>${v.name}</b><span>${v.tag}</span></div><div class="written-feedback-track"><i style="width:${x}%"></i></div><strong>${x}</strong></div>`}).join('')}</div>
       <div class="written-feedback-cards">
         <article class="written-strength"><span>✓ 잘하고 있어요</span><h3>${f.strengths.map(x=>`${x.name} ${x.score}`).join(' · ')}</h3><p>${f.strengths[0]?.desc||'필기에서 강점이 확인되었습니다.'}</p></article>
@@ -1051,7 +1065,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = '실시간 연결 · v8.6.2 가독성 확대 개선';
+    $('#studentStatus').textContent = '실시간 연결 · v8.6.3 최종 통합 · 가독성/OX 개선';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

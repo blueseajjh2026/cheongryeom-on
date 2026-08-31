@@ -18,7 +18,7 @@ let teamMidDraft = {vendor:null,reason:''};
 let teamReportDraft = {issues:[],criteria:[],conflictResponse:null,twistResponse:null,vendor:null,influenceUid:null,reason:''};
 let timerTicker = null;
 
-// v8.8.2 학생 가독성 · 가로폭 유지 글자확대 100/110/120
+// v8.8.3 학생 가독성 · 가로폭 유지 글자확대 100/110/120 · 판정기준 80/60
 // 화면 전체 zoom/transform을 사용하지 않고 실제 계산된 글자 크기만 확대한다.
 // 따라서 110/120%에서도 카드와 화면의 가로 폭은 그대로 유지된다.
 const STUDENT_ZOOM_KEY = 'cheongryeomStudentZoom';
@@ -474,8 +474,7 @@ function scores() {
   const pl=myPledge?.text?100:0;
 
   const total=Math.round(w*S.writtenWeight/100+p*S.practicalWeight/100+teamScore*S.teamWeight/100+pl*S.pledgeWeight/100);
-  const qualification=total>=Number(S.leaderTotal||60)?'청렴 리더':total>Number(S.confirmationMax??40)?'청렴 서포터':'청렴 응시자';
-  const documentType=total<=Number(S.confirmationMax??40)?'응시확인서':'청렴자격증';
+  const {qualification,documentType}=CHEONGRYEOM_QUALIFICATION(total,S);
   const missingQuestions=(C.written.length-writtenAnswered)+(C.practical.length-practicalAnswered)+(myAnswers?.team?.role?0:1)+(myAnswers?.team?.mid?0:1)+(myAnswers?.team?.report?0:1);
   return {w,p,team:teamScore,teamBase,roleScore:roleEv.score,teamComplete,pl,total,qualification,documentType,writtenAnswered,practicalAnswered,practicalTaskScores,missingQuestions};
 }
@@ -1055,7 +1054,7 @@ function render() {
         <div class="cert-date">${new Date().toLocaleDateString('ko-KR')}</div>
       </div>
       <div class="student-submit"><button id="saveCert" class="btn ${s.qualification === '청렴 리더' ? 'gold' : 'primary'} full">${isConfirmation?'응시확인서':'자격증'} 이미지 저장</button></div>
-      <div class="qualification-rule"><b>청렴ON 교육용 판정기준</b><span><em>60점 이상</em> 청렴 리더</span><span><em>41~59점</em> 청렴 서포터</span><span><em>40점 이하</em> 응시확인서</span></div>
+      <div class="qualification-rule"><b>청렴ON 교육용 판정기준</b><span><em>80점 이상</em> 청렴 리더</span><span><em>60~79점</em> 청렴 서포터</span><span><em>60점 미만</em> 응시확인서</span></div>
       <div class="score-box"><div class="score-main"><span>종합 청렴역량 점수</span><strong>${s.total}</strong></div><div class="score-grid"><div><span>필기</span><b>${s.w}</b></div><div><span>실기</span><b>${s.p}</b></div><div><span>종합평가</span><b>${s.team}</b></div><div><span>실천</span><b>${s.pl}</b></div></div></div>
       ${practicalBreakdownHTML(s)}
       ${s.teamComplete?teamScorecardHTML():''}
@@ -1244,7 +1243,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = 'v8.8.2';
+    $('#studentStatus').textContent = 'v8.8.3';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

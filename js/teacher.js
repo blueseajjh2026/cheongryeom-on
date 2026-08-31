@@ -267,7 +267,7 @@ function calcStudent(uid) {
   tr.practical.forEach(q=>{const a=answers?.practical?.[q.id]?.[uid];const ev=CHEONGRYEOM_EVALUATE_PRACTICAL(q,a);if(a)pa++;ps+=a?ev.score:0;practicalTaskScores.push(a?ev.score:0);});
   const p=Math.round(ps/tr.practical.length);const roleEv=CHEONGRYEOM_EVALUATE_TEAM_MEMBER(tr.team,answers?.team?.role?.[uid],answers?.team?.report?.[uid]);
   const part=participants?.[uid]||{};const pub=part.teamId?control?.teamScores?.[part.teamId]:null;const teamBase=Number(pub?.teamScore||0);const teamScore=pub?Math.round(teamBase*.8+roleEv.score*.2):0;const pl=pledges?.[uid]?.text?100:0;
-  const total=Math.round(w*S.writtenWeight/100+p*S.practicalWeight/100+teamScore*S.teamWeight/100+pl*S.pledgeWeight/100);const qualification=total>=Number(S.leaderTotal||60)?'청렴 리더':total>Number(S.confirmationMax??40)?'청렴 서포터':'청렴 응시자';const documentType=total<=Number(S.confirmationMax??40)?'응시확인서':'청렴자격증';
+  const total=Math.round(w*S.writtenWeight/100+p*S.practicalWeight/100+teamScore*S.teamWeight/100+pl*S.pledgeWeight/100);const {qualification,documentType}=CHEONGRYEOM_QUALIFICATION(total,S);
   const missingQuestions=(tr.written.length-wa)+(tr.practical.length-pa)+(answers?.team?.role?.[uid]?0:1)+(answers?.team?.mid?.[uid]?0:1)+(answers?.team?.report?.[uid]?0:1);
   return {uid,w,p,team:teamScore,teamBase,roleScore:roleEv.score,teamComplete:!!pub,pl,total,qualification,documentType,practicalTaskScores,missingQuestions};
 }
@@ -510,9 +510,9 @@ function renderContent() {
       <h2>예비 직업인 청렴역량 자격판정</h2>
       <p class="context-box">학생이 선택한 전공분야별 직무상황 수행결과를 공통 청렴역량으로 종합합니다. 학생 화면에는 전공분야, 개인 결과, 청렴유형과 교육용 디지털 자격이 표시됩니다.</p>
       <div class="result-summary four">
-        <div class="result-tile"><b>${leader}</b><span>청렴 리더 · 60점 이상</span></div>
-        <div class="result-tile"><b>${supporter}</b><span>청렴 서포터 · 41~59점</span></div>
-        <div class="result-tile"><b>${confirmation}</b><span>응시확인서 · 40점 이하</span></div>
+        <div class="result-tile"><b>${leader}</b><span>청렴 리더 · 80점 이상</span></div>
+        <div class="result-tile"><b>${supporter}</b><span>청렴 서포터 · 60~79점</span></div>
+        <div class="result-tile"><b>${confirmation}</b><span>응시확인서 · 60점 미만</span></div>
         <div class="result-tile"><b>${avg}</b><span>학급 평균</span></div>
       </div>
       ${typeDistributionHTML()}
@@ -773,7 +773,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = 'v8.8.2';
+    $('#serverStatus').textContent = 'v8.8.3';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);

@@ -9,6 +9,7 @@ let myPledge = null;
 let me = null;
 let unsubs = [];
 let submitting = false;
+let joining = false;
 
 // 실시간 화면 갱신이 일어나도 학생이 선택한 답이 사라지지 않도록 문항별 임시선택을 보관
 const pendingChoices = {};
@@ -18,83 +19,23 @@ let teamMidDraft = {vendor:null,reason:''};
 let teamReportDraft = {issues:[],criteria:[],conflictResponse:null,twistResponse:null,vendor:null,influenceUid:null,reason:''};
 let timerTicker = null;
 
-// v8.8.3 학생 가독성 · 가로폭 유지 글자확대 100/110/120 · 판정기준 80/60
-// 화면 전체 zoom/transform을 사용하지 않고 실제 계산된 글자 크기만 확대한다.
-// 따라서 110/120%에서도 카드와 화면의 가로 폭은 그대로 유지된다.
+// v8.8.4 학생 가독성 · 가로폭 유지 글자확대 100/110/120 · 판정기준 80/60
+// CSS 변수로 글자 크기만 제어해 화면 재렌더링이나 클릭 때 확대값이 누적되지 않도록 한다.
 const STUDENT_ZOOM_KEY = 'cheongryeomStudentZoom';
-let studentTypographyObserver = null;
-let studentTypographyFrame = 0;
-let studentZoomApplying = false;
 
 function normalizedStudentZoom(value){
   return ['1','1.1','1.2'].includes(String(value)) ? String(value) : '1';
-}
-
-function studentTypographyElements(){
-  const roots = [
-    document.querySelector('.student-accessibility-bar'),
-    document.querySelector('.student-shell')
-  ].filter(Boolean);
-  const all = [];
-  roots.forEach(root => {
-    all.push(root);
-    root.querySelectorAll('*').forEach(el => all.push(el));
-  });
-  return all.filter(el => !['SCRIPT','STYLE','SVG','PATH','IMG','CANVAS'].includes(el.tagName));
-}
-
-function clearStudentTypographyScale(elements){
-  elements.forEach(el => {
-    if (el.dataset.studentZoomFont === '1') {
-      el.style.removeProperty('font-size');
-      el.style.removeProperty('line-height');
-      delete el.dataset.studentZoomFont;
-    }
-  });
-}
-
-function applyStudentTypographyScale(scale){
-  const elements = studentTypographyElements();
-  clearStudentTypographyScale(elements);
-  const metrics = elements.map(el => {
-    const cs = getComputedStyle(el);
-    const fontSize = parseFloat(cs.fontSize);
-    const lineHeight = parseFloat(cs.lineHeight);
-    return {el, fontSize, lineHeight};
-  });
-  metrics.forEach(({el,fontSize,lineHeight}) => {
-    if (Number.isFinite(fontSize) && fontSize > 0) {
-      el.style.setProperty('font-size', `${(fontSize * scale).toFixed(2)}px`, 'important');
-      if (Number.isFinite(lineHeight) && lineHeight > 0) {
-        el.style.setProperty('line-height', `${(lineHeight * scale).toFixed(2)}px`, 'important');
-      }
-      el.dataset.studentZoomFont = '1';
-    }
-  });
-}
-
-function queueStudentTypographyScale(){
-  cancelAnimationFrame(studentTypographyFrame);
-  studentTypographyFrame = requestAnimationFrame(() => {
-    if (studentZoomApplying) return;
-    studentZoomApplying = true;
-    let saved='1';
-    try { saved=localStorage.getItem(STUDENT_ZOOM_KEY)||'1'; } catch(e) {}
-    const z = Number(normalizedStudentZoom(saved));
-    try { applyStudentTypographyScale(z); }
-    finally { studentZoomApplying = false; }
-  });
 }
 
 function applyStudentZoom(value){
   const z = normalizedStudentZoom(value);
   try { localStorage.setItem(STUDENT_ZOOM_KEY, z); } catch(e) {}
   document.documentElement.dataset.studentZoom = z;
+  document.documentElement.style.setProperty('--student-zoom', z, 'important');
   document.querySelectorAll('[data-student-zoom]').forEach(b => {
     b.classList.toggle('active', b.dataset.studentZoom === z);
     b.setAttribute('aria-pressed', b.dataset.studentZoom === z ? 'true' : 'false');
   });
-  queueStudentTypographyScale();
 }
 
 function bindStudentZoom(){
@@ -105,16 +46,6 @@ function bindStudentZoom(){
   document.querySelectorAll('[data-student-zoom]').forEach(b => {
     b.onclick = () => applyStudentZoom(b.dataset.studentZoom);
   });
-  const shell = document.querySelector('.student-shell');
-  if (shell && !studentTypographyObserver) {
-    studentTypographyObserver = new MutationObserver(mutations => {
-      if (studentZoomApplying) return;
-      if (mutations.some(m => m.type === 'childList' && (m.addedNodes.length || m.removedNodes.length))) {
-        queueStudentTypographyScale();
-      }
-    });
-    studentTypographyObserver.observe(shell, {childList:true, subtree:true});
-  }
 }
 
 function syncRequiredCounter(textarea, min){
@@ -1198,6 +1129,7 @@ function subscribe() {
 }
 
 async function join() {
+  if (joining) return;
   const c = $('#joinCode').value.trim();
   let name = $('#studentName').value.trim().replace(/\s+/g, ' ');
   const trackKey=document.querySelector('input[name="trackKey"]:checked')?.value||'';
@@ -1208,6 +1140,9 @@ async function join() {
   if(!trackKey||!track) return toast('나의 전공분야를 먼저 선택해주세요.');
   if (!/^[가-힣A-Za-z ]+$/.test(name)) return toast('이름에는 한글·영문과 띄어쓰기만 사용할 수 있습니다.');
 
+  const joinButton=$('#joinBtn');
+  joining=true;
+  if(joinButton){joinButton.disabled=true;joinButton.setAttribute('aria-busy','true');}
   try {
     await DB.joinRoom(c, name, $('#schoolLevel').value);
     await DB.updateMe(c,{trackKey,trackName:track.name});
@@ -1226,6 +1161,9 @@ async function join() {
     toast(`${name} 학생, 수험등록을 완료했습니다.`);
   } catch (e) {
     toast(e.message || '수업방에 입장할 수 없습니다.');
+  } finally {
+    joining=false;
+    if(joinButton){joinButton.disabled=false;joinButton.removeAttribute('aria-busy');}
   }
 }
 
@@ -1243,7 +1181,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = 'v8.8.3';
+    $('#studentStatus').textContent = 'v8.8.4';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

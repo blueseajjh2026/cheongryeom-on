@@ -19,7 +19,7 @@ let teamMidDraft = {vendor:null,reason:''};
 let teamReportDraft = {issues:[],criteria:[],conflictResponse:null,twistResponse:null,vendor:null,influenceUid:null,reason:''};
 let timerTicker = null;
 
-// v8.8.4 학생 가독성 · 가로폭 유지 글자확대 100/110/120 · 판정기준 80/60
+// v8.8.5 학생 가독성 · 가로폭 유지 글자확대 100/110/120 · 판정기준 80/60
 // CSS 변수로 글자 크기만 제어해 화면 재렌더링이나 클릭 때 확대값이 누적되지 않도록 한다.
 const STUDENT_ZOOM_KEY = 'cheongryeomStudentZoom';
 
@@ -32,6 +32,9 @@ function applyStudentZoom(value){
   try { localStorage.setItem(STUDENT_ZOOM_KEY, z); } catch(e) {}
   document.documentElement.dataset.studentZoom = z;
   document.documentElement.style.setProperty('--student-zoom', z, 'important');
+  // .student-page가 자체 기본값(--student-zoom:1)을 가지므로 본문에도 직접 적용한다.
+  // 화면 폭은 고정한 채 calc()로 지정된 글자·조작요소 크기만 확대된다.
+  if (document.body) document.body.style.setProperty('--student-zoom', z, 'important');
   document.querySelectorAll('[data-student-zoom]').forEach(b => {
     b.classList.toggle('active', b.dataset.studentZoom === z);
     b.setAttribute('aria-pressed', b.dataset.studentZoom === z ? 'true' : 'false');
@@ -1181,7 +1184,7 @@ async function join() {
 
   try {
     await DB.init();
-    $('#studentStatus').textContent = 'v8.8.4';
+    $('#studentStatus').textContent = 'v8.8.5';
     $('#studentStatus').classList.add('online');
     $('#joinPanel').classList.remove('hidden');
     $('#joinBtn').onclick = join;

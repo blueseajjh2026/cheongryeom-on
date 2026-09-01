@@ -724,6 +724,9 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
    - 글자와 핵심 조작요소만 확대하여 모바일 가독성 향상
    ========================================================= */
 .student-page{--student-zoom:1}
+:root[data-student-zoom="1"] .student-page{--student-zoom:1!important}
+:root[data-student-zoom="1.1"] .student-page{--student-zoom:1.1!important}
+:root[data-student-zoom="1.2"] .student-page{--student-zoom:1.2!important}
 .student-page .student-shell{width:100%!important;max-width:540px!important;zoom:1!important;transform:none!important}
 .student-page .btn{font-size:calc(13px * var(--student-zoom));line-height:1.45}
 .student-page .btn.large{font-size:calc(15px * var(--student-zoom))}
@@ -767,7 +770,7 @@ input,textarea,select{width:100%;border:1px solid #c8d5dc;border-radius:10px;pad
 
 
 /* =========================================================
-   v8.8.4 · 실제/데모 공통 모바일 레이아웃·확대 누적 방지 보정
+   v8.8.5 · 실제/데모 공통 모바일 레이아웃·확대 누적 방지 보정
    - 100/110/120%는 글자만 확대, 가로폭 고정
    - 한글 단어를 음절 단위로 쪼개지 않음
    ========================================================= */

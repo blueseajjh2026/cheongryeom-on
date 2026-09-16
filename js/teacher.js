@@ -346,7 +346,7 @@ async function assignTeams(){
       const assigned=new Set(members.map(x=>x.roleKey)); const missing=teamDef.roleOrder.filter(k=>!assigned.has(k));
       missing.forEach((rk,i)=>{if(members.length)members[i%members.length].extraRoleKeys.push(rk);});
       teamRosters[teamId]={teamId,teamLabel,trackKey:tl.key,trackName:tl.name,members};
-      for(const m of members){await DB.db.ref(`rooms/${code}/participants/${m.uid}`).update({teamId,teamLabel,teamSize:size,teamRoleKey:m.roleKey,teamRoleName:m.roleName,teamExtraRoleKeys:m.extraRoleKeys});}
+      for(const m of members){await DB.updateParticipant(code,m.uid,{teamId,teamLabel,teamSize:size,teamRoleKey:m.roleKey,teamRoleName:m.roleName,teamExtraRoleKeys:m.extraRoleKeys});}
     }
   }
   await DB.setControl(code,{teamPhase:'briefing',teamScores:null,teamBoards:null,teamRosters});toast(`${teamNo}개 팀을 무작위 편성했습니다. 학생은 자리 이동 없이 화면으로 협업합니다.`);
@@ -705,9 +705,11 @@ async function create() {
   button.disabled = true;
   button.textContent = '수업방 개설 중…';
   if (message) {
-    message.textContent = DB.transport === 'long-polling'
-      ? 'PC 호환 방식으로 실시간 서버에 수업방을 만드는 중입니다.'
-      : '실시간 서버에 수업방을 만드는 중입니다.';
+    message.textContent = DB.transport === 'https-polling'
+      ? 'PC 호환 HTTPS 방식으로 수업방을 만드는 중입니다.'
+      : DB.transport === 'long-polling'
+        ? 'PC 호환 방식으로 실시간 서버에 수업방을 만드는 중입니다.'
+        : '실시간 서버에 수업방을 만드는 중입니다.';
     message.style.color = '';
   }
 
@@ -724,8 +726,8 @@ async function create() {
     toast('수업방을 개설했습니다.');
   } catch (e) {
     console.error('수업방 개설 실패', e);
-    const detail = e?.code === 'SERVER_TIMEOUT'
-      ? '서버 응답이 지연되고 있습니다. 잠시 후 다시 누르거나 다른 네트워크에서 시도해주세요.'
+    const detail = e?.code === 'SERVER_TIMEOUT' || e?.code === 'NETWORK_ERROR'
+      ? 'PC 호환 HTTPS 방식도 서버에 연결되지 않습니다. 사내망에서 Firebase 주소가 차단됐을 수 있습니다.'
       : e?.code === 'PERMISSION_DENIED'
         ? '수업방 저장 권한이 거부되었습니다. Firebase 보안 규칙을 확인해주세요.'
         : (e.message || '수업방 개설에 실패했습니다.');
@@ -804,7 +806,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = 'v8.9.0';
+    $('#serverStatus').textContent = DB.transport === 'https-polling' ? 'v8.9.1 · PC호환' : 'v8.9.1';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);

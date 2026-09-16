@@ -688,11 +688,27 @@ function subscribe() {
 }
 
 async function create() {
+  const button = $('#createRoomBtn');
+  const message = $('#createRoomMessage');
   let c = $('#roomCodeInput').value.trim() ||
     String(Math.floor(100000 + Math.random() * 900000));
 
   if (!/^\d{6}$/.test(c)) {
+    if (message) {
+      message.textContent = '수업방 코드는 비워두거나 6자리 숫자로 입력해주세요.';
+      message.style.color = '#b42318';
+    }
     return toast('6자리 숫자로 입력해주세요.');
+  }
+
+  if (button.disabled) return;
+  button.disabled = true;
+  button.textContent = '수업방 개설 중…';
+  if (message) {
+    message.textContent = DB.transport === 'long-polling'
+      ? 'PC 호환 방식으로 실시간 서버에 수업방을 만드는 중입니다.'
+      : '실시간 서버에 수업방을 만드는 중입니다.';
+    message.style.color = '';
   }
 
   try {
@@ -707,7 +723,22 @@ async function create() {
     subscribe();
     toast('수업방을 개설했습니다.');
   } catch (e) {
-    toast(e.message || '수업방 개설 실패');
+    console.error('수업방 개설 실패', e);
+    const detail = e?.code === 'SERVER_TIMEOUT'
+      ? '서버 응답이 지연되고 있습니다. 잠시 후 다시 누르거나 다른 네트워크에서 시도해주세요.'
+      : e?.code === 'PERMISSION_DENIED'
+        ? '수업방 저장 권한이 거부되었습니다. Firebase 보안 규칙을 확인해주세요.'
+        : (e.message || '수업방 개설에 실패했습니다.');
+    if (message) {
+      message.textContent = detail;
+      message.style.color = '#b42318';
+    }
+    toast(detail);
+  } finally {
+    if (!code) {
+      button.disabled = false;
+      button.textContent = '수업방 개설';
+    }
   }
 }
 
@@ -773,7 +804,7 @@ function csv() {
   try {
     await DB.init();
 
-    $('#serverStatus').textContent = 'v8.8.5';
+    $('#serverStatus').textContent = 'v8.9.0';
     $('#serverStatus').classList.add('online');
     $('#roomSetup').classList.remove('hidden');
     setInterval(updateTeacherTimer, 500);

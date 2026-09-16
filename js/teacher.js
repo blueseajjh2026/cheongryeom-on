@@ -1,6 +1,7 @@
 const C = CHEONGRYEOM_CONTENT;
 const DB = CheongDB;
 const $ = s => document.querySelector(s);
+const IS_TEACHER_DEMO = /\/teacher-demo\.html$/i.test(window.location?.pathname || '');
 
 let code = null;
 let control = { stage: 'waiting', index: 0, phase: 'pre', reveal: false };
@@ -99,7 +100,7 @@ function renderNav() {
   ).join('');
 
   document.querySelectorAll('.stage-btn').forEach(b => {
-    b.onclick = () => { const target=b.dataset.key; if(control.stage==='team'&&stageIdx(target)>stageIdx('team')&&control.teamPhase!=='scored') return toast('종합평가 채점·피드백 공개 후 다음 단계로 이동하세요.'); go(target,0); };
+    b.onclick = () => { const target=b.dataset.key; if(!IS_TEACHER_DEMO&&control.stage==='team'&&stageIdx(target)>stageIdx('team')&&control.teamPhase!=='scored') return toast('종합평가 채점·피드백 공개 후 다음 단계로 이동하세요.'); go(target,0); };
   });
 }
 
@@ -613,7 +614,7 @@ async function go(stage, index = 0) {
 }
 
 async function next() {
-  if(control.stage==='team'&&control.teamPhase!=='scored') return toast('먼저 팀 채점·결과공개를 완료해주세요.');
+  if(!IS_TEACHER_DEMO&&control.stage==='team'&&control.teamPhase!=='scored') return toast('먼저 팀 채점·결과공개를 완료해주세요.');
   const a = items(control.stage);
   const i = Number(control.index || 0);
 
